@@ -10,7 +10,7 @@ require (
 	github.com/UpCloudLtd/upcloud-go-api v0.0.0-20210127073406-2964ed7e5972
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/armon/go-metrics v0.3.6 // indirect
-	github.com/aws/aws-sdk-go v1.37.13 // indirect
+	github.com/aws/aws-sdk-go v1.37.14 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/frankban/quicktest v1.11.3 // indirect
 	github.com/gofrs/flock v0.8.0 // indirect
@@ -40,7 +40,7 @@ require (
 	github.com/zclconf/go-cty v1.7.1
 	go.opencensus.io v0.22.6 // indirect
 	golang.org/x/crypto v0.0.0-20210218145215-b8e89b74b9df
-	golang.org/x/oauth2 v0.0.0-20210216194517-16ff1888fd2e // indirect
+	golang.org/x/oauth2 v0.0.0-20210218202405-ba52d332ba99 // indirect
 	golang.org/x/sys v0.0.0-20210218155724-8ebf48af031b // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect

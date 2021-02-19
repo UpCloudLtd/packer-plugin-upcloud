@@ -1,20 +1,20 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	upcloud "github.com/UpCloudLtd/packer-plugin-upcloud/builder/upcloud"
 
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
 )
 
 func main() {
-	server, err := plugin.Server()
+	pps := plugin.NewSet()
+	pps.RegisterBuilder(plugin.DEFAULT_NAME, new(upcloud.Builder))
+	err := pps.Run()
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 	}
-
-	if err := server.RegisterBuilder(new(upcloud.Builder)); err != nil {
-		panic(err)
-	}
-
-	server.Serve()
 }

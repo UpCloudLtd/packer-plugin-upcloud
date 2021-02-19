@@ -8,6 +8,15 @@ variable "password" {
   default = "${env("UPCLOUD_API_PASSWORD")}"
 }
 
+packer {
+    required_plugins {
+        upcloud = {
+            version = ">=v1.0.0"
+            source = "github.com/UpCloudLtd/upcloud"
+        }
+    }
+}
+
 source "upcloud" "test" {
   username = "${var.username}"
   password = "${var.password}"

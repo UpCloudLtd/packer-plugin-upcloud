@@ -1,10 +1,35 @@
 # UpCloud Packer builder
 
 ![Build Status](https://github.com/UpCloudLtd/packer-plugin-upcloud/workflows/test/badge.svg)
+![Release Status](https://github.com/UpCloudLtd/packer-plugin-upcloud/workflows/test/release.svg)
 
 This is a builder plugin for Packer which can be used to generate storage templates on UpCloud. It utilises the [UpCloud Go API](https://github.com/UpCloudLtd/upcloud-go-api) to interface with the UpCloud API.
 
 ## Installation
+
+### Installing using Packer Packet Manager
+
+In order to use `packer init` you need to have Packer version ">=1.7.0" installed. Config template should be in `hcl` format and contains `required_plugins` block. For example:
+
+```hcl
+...
+packer {
+    required_plugins {
+        upcloud = {
+            version = ">=v1.0.0"
+            source = "github.com/UpCloudLtd/upcloud"
+        }
+    }
+}
+...
+```
+
+Runn following command and check the output:
+```sh
+$ packer init examples/basic_example.pkr.hcl
+
+Installed plugin github.com/upcloudltd/upcloud v1.0.0 in "/Users/johndoe/.packer.d/plugins/github.com/upcloudltd/upcloud/packer-plugin-upcloud_v1.0.0_x5.0_darwin_amd64"
+```
 
 ### Pre-built binaries
 
@@ -24,7 +49,7 @@ Run the following commands to download and install the plugin from the source.
 git clone https://github.com/UpCloudLtd/packer-plugin-upcloud
 cd packer-plugin-upcloud
 go build
-cp packer-plugin-upcloud ~/.packer.d/plugins/packer-builder-upcloud
+cp packer-plugin-upcloud ~/.packer.d/plugins/
 ```
 
 ## Usage
