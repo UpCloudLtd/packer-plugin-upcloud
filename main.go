@@ -1,7 +1,7 @@
 package main
 
 import (
-	upcloud "github.com/UpCloudLtd/upcloud-packer/builder/upcloud"
+	upcloud "github.com/UpCloudLtd/packer-plugin-upcloud/builder/upcloud"
 
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
 )

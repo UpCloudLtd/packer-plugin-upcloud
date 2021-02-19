@@ -1,5 +1,5 @@
 .idea
 examples/crash.log
 dist
-upcloud-packer
+packer-plugin-upcloud
 vendor

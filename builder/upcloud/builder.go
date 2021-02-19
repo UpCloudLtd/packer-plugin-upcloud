@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
-	internal "github.com/UpCloudLtd/upcloud-packer/internal"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"

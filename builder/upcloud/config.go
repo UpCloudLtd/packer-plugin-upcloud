@@ -9,7 +9,7 @@ import (
 
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud/request"
-	internal "github.com/UpCloudLtd/upcloud-packer/internal"
+	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/packer"

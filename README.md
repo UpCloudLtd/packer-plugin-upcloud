@@ -1,6 +1,6 @@
 # UpCloud Packer builder
 
-[![Build Status](https://travis-ci.org/UpCloudLtd/upcloud-packer.svg?branch=master)](https://travis-ci.org/UpCloudLtd/upcloud-packer)
+![Build Status](https://github.com/UpCloudLtd/packer-plugin-upcloud/workflows/test/badge.svg)
 
 This is a builder plugin for Packer which can be used to generate storage templates on UpCloud. It utilises the [UpCloud Go API](https://github.com/UpCloudLtd/upcloud-go-api) to interface with the UpCloud API.
 
@@ -8,7 +8,7 @@ This is a builder plugin for Packer which can be used to generate storage templa
 
 ### Pre-built binaries
 
-You can download the pre-built binaries of the plugin from the [GitHub releases page](https://github.com/UpCloudLtd/upcloud-packer/releases). Just download the archive for your operating system and architecture, unpack it, and place the binary in the appropriate location, e.g. on Linux `~/.packer.d/plugins`. Make sure the file is executable, then install [Packer](https://www.packer.io/).
+You can download the pre-built binaries of the plugin from the [GitHub releases page](https://github.com/UpCloudLtd/packer-plugin-upcloud/releases). Just download the archive for your operating system and architecture, unpack it, and place the binary in the appropriate location, e.g. on Linux `~/.packer.d/plugins`. Make sure the file is executable, then install [Packer](https://www.packer.io/).
 
 ### Installing from source
 
@@ -21,10 +21,10 @@ You will need to have the [Go](https://golang.org/) programming language and the
 Run the following commands to download and install the plugin from the source.
 
 ```sh
-git clone https://github.com/UpCloudLtd/upcloud-packer
-cd upcloud-packer
+git clone https://github.com/UpCloudLtd/packer-plugin-upcloud
+cd packer-plugin-upcloud
 go build
-cp upcloud-packer ~/.packer.d/plugins/packer-builder-upcloud
+cp packer-plugin-upcloud ~/.packer.d/plugins/packer-builder-upcloud
 ```
 
 ## Usage

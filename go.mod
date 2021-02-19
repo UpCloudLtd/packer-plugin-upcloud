@@ -1,4 +1,4 @@
-module github.com/UpCloudLtd/upcloud-packer
+module github.com/UpCloudLtd/packer-plugin-upcloud
 
 go 1.15
 

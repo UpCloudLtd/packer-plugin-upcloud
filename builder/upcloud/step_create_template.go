@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
-	internal "github.com/UpCloudLtd/upcloud-packer/internal"
+	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"

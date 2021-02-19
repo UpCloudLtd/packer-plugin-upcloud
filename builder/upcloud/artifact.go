@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
-	internal "github.com/UpCloudLtd/upcloud-packer/internal"
+	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 )
 
 // packersdk.Artifact implementation

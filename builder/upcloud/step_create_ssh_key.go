@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	internal "github.com/UpCloudLtd/upcloud-packer/internal"
+	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
 	"golang.org/x/crypto/ssh"
