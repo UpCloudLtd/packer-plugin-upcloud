@@ -1,0 +1,5 @@
+.idea
+examples/crash.log
+dist
+upcloud-packer
+vendor
