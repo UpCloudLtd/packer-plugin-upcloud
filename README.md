@@ -1,7 +1,7 @@
 # UpCloud Packer builder
 
 ![Build Status](https://github.com/UpCloudLtd/packer-plugin-upcloud/workflows/test/badge.svg)
-![Release Status](https://github.com/UpCloudLtd/packer-plugin-upcloud/workflows/test/release.svg)
+![Release Status](https://github.com/UpCloudLtd/packer-plugin-upcloud/workflows/release/badge.svg)
 
 This is a builder plugin for Packer which can be used to generate storage templates on UpCloud. It utilises the [UpCloud Go API](https://github.com/UpCloudLtd/upcloud-go-api) to interface with the UpCloud API.
 
