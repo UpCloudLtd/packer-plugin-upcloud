@@ -15,6 +15,6 @@ build:
 
 install: build
 	mkdir -p ~/.packer.d/plugins
-	install ./packer-plugin-upcloud ~/.packer.d/plugins/
+	install ./packer-plugin-upcloud ~/.packer.d/plugins/packer-builder-upcloud
 
 .PHONY: default test test_integration lint build install
