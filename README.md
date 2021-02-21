@@ -9,7 +9,12 @@ This is a builder plugin for Packer which can be used to generate storage templa
 
 ### Installing using Packer Packet Manager
 
-In order to use `packer init` you need to have Packer version ">=1.7.0" installed. Config template should be in `hcl` format and contains `required_plugins` block. For example:
+In order to use `packer init`:
+
+ 1. You need to have Packer version ">=1.7.0" installed. 
+ 2. The config template should be in `hcl` format.
+ 3. The config template file, when in `hcl` format, must have the extension `.pkr.hcl`.
+ 4. The config template must contain `required_plugins` block. For example:
 
 ```hcl
 ...
@@ -24,7 +29,7 @@ packer {
 ...
 ```
 
-Runn following command and check the output:
+Run following command and check the output (NOTE: The file extension must be `*.pkr.hcl`):
 ```sh
 $ packer init examples/basic_example.pkr.hcl
 
