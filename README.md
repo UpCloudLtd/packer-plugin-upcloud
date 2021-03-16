@@ -49,6 +49,9 @@ Successfully created example.json.pkr.hcl
 
 You can download the pre-built binaries of the plugin from the [GitHub releases page](https://github.com/UpCloudLtd/packer-plugin-upcloud/releases). Just download the archive for your operating system and architecture, unpack it, and place the binary in the appropriate location, e.g. on Linux `~/.packer.d/plugins`. Make sure the file is executable, then install [Packer](https://www.packer.io/).
 
+Please note that use of symlinks with plugin binary can break Packer functionality ([see for details and workaround](https://github.com/hashicorp/packer/issues/10749#issuecomment-800120263)).
+
+
 ### Installing from source
 
 #### Prerequisites
