@@ -107,5 +107,6 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 			"template_prefix": b.config.TemplatePrefix,
 		},
 	}
+
 	return artifact, nil
 }

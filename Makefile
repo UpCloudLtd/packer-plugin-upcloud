@@ -3,7 +3,8 @@ default: build
 test:
 	go test -v ./...
 
-test_integration:
+test_integration: build
+	cp ./packer-plugin-upcloud builder/upcloud/
 	PACKER_ACC=1 go test -count 1 -v ./...  -timeout=120m
 
 lint:

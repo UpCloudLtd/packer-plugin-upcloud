@@ -1,0 +1,28 @@
+{
+    "builders": [{
+        "type": "upcloud",
+        "zone": "nl-ams1",
+        "storage_name": "ubuntu server 20.04",
+        "ssh_username": "root",
+        "template_prefix": "test-builder",
+        "storage_size": "20",
+        "network_interfaces": [
+            {
+                "type": "public",
+                "ip_addresses": [
+                    {
+                        "family": "IPv4"
+                    }
+                ]
+            },
+            {
+                "type": "utility",
+                "ip_addresses": [
+                    {
+                        "family": "IPv4"
+                    }
+                ]
+            }
+        ]
+    }]
+}

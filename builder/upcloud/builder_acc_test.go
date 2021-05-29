@@ -1,147 +1,220 @@
 package upcloud
 
 import (
+	_ "embed"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"os/exec"
+	"regexp"
 	"strings"
 	"testing"
 
-	builderT "github.com/hashicorp/packer-plugin-sdk/acctest"
-	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
+	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
+	"github.com/hashicorp/packer-plugin-sdk/acctest"
 )
 
 // Run tests: PACKER_ACC=1 go test -count 1 -v ./...  -timeout=120m
+
+// json
+
+//go:embed test-fixtures/json/basic.json
+var testBuildBasic string
+
+//go:embed test-fixtures/json/storage-uuid.json
+var testBuilderStorageUuid string
+
+//go:embed test-fixtures/json/storage-name.json
+var testBuilderStorageName string
+
+//go:embed test-fixtures/json/networking.json
+var testBuilderNetworking string
+
 func TestBuilderAcc_default(t *testing.T) {
-	builderT.Test(t, builderT.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Builder:  &Builder{},
+	testAccPreCheck(t)
+
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
 		Template: testBuildBasic,
-		Check:    checkTemplateDefaultSettings(),
-	})
+		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_storageUuid(t *testing.T) {
-	builderT.Test(t, builderT.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Builder:  &Builder{},
-		Template: testBuilderAccStorageUuid,
-	})
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderStorageUuid,
+		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_storageName(t *testing.T) {
-	builderT.Test(t, builderT.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Builder:  &Builder{},
-		Template: testBuilderAccStorageName,
-	})
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderStorageName,
+		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_networking(t *testing.T) {
-	builderT.Test(t, builderT.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
-		Builder:  &Builder{},
-		Template: testBuilderAccNetworking,
-	})
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderNetworking,
+		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
+// pkr.hcl
+
+//go:embed test-fixtures/json/basic.json
+var testBuildBasicHcl string
+
+//go:embed test-fixtures/json/storage-uuid.json
+var testBuilderStorageUuidHcl string
+
+//go:embed test-fixtures/json/storage-name.json
+var testBuilderStorageNameHcl string
+
+func TestBuilderAcc_default_hcl(t *testing.T) {
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuildBasicHcl,
+		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
+func TestBuilderAcc_storageUuid_hcl(t *testing.T) {
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderStorageUuidHcl,
+		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
+func TestBuilderAcc_storageName_hcl(t *testing.T) {
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderStorageNameHcl,
+		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
 }
 
 func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("UPCLOUD_API_USER"); v == "" {
-		t.Fatal("UPCLOUD_API_USER must be set for acceptance tests")
+		t.Skip("UPCLOUD_API_USER must be set for acceptance tests")
 	}
 	if v := os.Getenv("UPCLOUD_API_PASSWORD"); v == "" {
-		t.Fatal("UPCLOUD_API_PASSWORD must be set for acceptance tests")
+		t.Skip("UPCLOUD_API_PASSWORD must be set for acceptance tests")
 	}
 }
 
-const testBuildBasic = `
-{
-	"builders": [{
-            "type": "test",
-            "zone": "nl-ams1",
-            "storage_uuid": "01000000-0000-4000-8000-000050010400"
-	}]
-}
-`
+func readLog(logfile string) (string, error) {
+	logs, err := os.Open(logfile)
+	if err != nil {
+		return "", fmt.Errorf("Unable find %s", logfile)
+	}
+	defer logs.Close()
 
-const testBuilderAccStorageUuid = `
-{
-	"builders": [{
-            "type": "test",
-            "zone": "nl-ams1",
-            "storage_uuid": "01000000-0000-4000-8000-000050010400",
-            "ssh_username": "root",
-            "template_prefix": "test-builder",
-            "storage_size": "20"
-	}]
+	logsBytes, err := ioutil.ReadAll(logs)
+	if err != nil {
+		return "", fmt.Errorf("Unable to read %s", logfile)
+	}
+	return string(logsBytes), nil
 }
-`
 
-const testBuilderAccStorageName = `
-{
-	"builders": [{
-            "type": "test",
-            "zone": "nl-ams1",
-            "storage_name": "ubuntu server 20.04",
-            "ssh_username": "root",
-            "template_prefix": "test-builder",
-            "storage_size": "20"
-	}]
-}
-`
+func checkTestResult() func(*exec.Cmd, string) error {
+	return func(buildCommand *exec.Cmd, logfile string) error {
 
-const testBuilderAccNetworking = `
-{
-	"builders": [{
-            "type": "test",
-            "zone": "nl-ams1",
-            "storage_name": "ubuntu server 20.04",
-            "ssh_username": "root",
-            "template_prefix": "test-builder",
-            "storage_size": "20",
-            "network_interfaces": [
-                {
-                    "type": "public",
-                    "ip_addresses": [
-                        {
-                            "family": "IPv4"
-                        }
-                    ]
-                },
-                {
-                    "type": "utility",
-                    "ip_addresses": [
-                        {
-                            "family": "IPv4"
-                        }
-                    ]
-                }
-            ]
-	}]
-}
-`
-
-func checkTemplateDefaultSettings() builderT.TestCheckFunc {
-	return func(artifacts []packersdk.Artifact) error {
-		if len(artifacts) > 1 {
-			return fmt.Errorf("more than 1 artifact")
+		log, err := readLog(logfile)
+		if err != nil {
+			return err
 		}
 
-		artifactRaw := artifacts[0]
-		artifact, ok := artifactRaw.(*Artifact)
-		if !ok {
-			return fmt.Errorf("unknown artifact: %#v", artifactRaw)
+		fmt.Print(log)
+
+		if buildCommand.ProcessState != nil {
+			if buildCommand.ProcessState.ExitCode() != 0 {
+				return fmt.Errorf("Bad exit code. Logfile: %s", logfile)
+			}
 		}
 
-		expectedSize := 25
-		expectedTitle := "custom-image"
+		_, err = getUuidsFromLog(log)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
 
-		if artifact.Templates[0].Size != expectedSize {
-			return fmt.Errorf("Wrong size. Expected %d, got %d", expectedSize, artifact.Templates[0].Size)
+var re = regexp.MustCompile(`"Storage template created, UUID: (.*?)"`)
+
+func getUuidsFromLog(log string) ([]string, error) {
+	var match string
+	ms := re.FindAllStringSubmatch(log, -1)
+	for _, m := range ms {
+		match = m[1]
+	}
+	if match == "" {
+		return nil, errors.New("Created template UUIDs not found in the log")
+	}
+
+	uuid := []string{}
+	for _, item := range strings.Split(match, ",") {
+		item = strings.TrimSpace(item)
+		uuid = append(uuid, item)
+	}
+	return uuid, nil
+}
+
+func teardown(testName string) func() error {
+	logfile := fmt.Sprintf("packer_log_%s.txt", testName)
+
+	return func() error {
+
+		log, err := readLog(logfile)
+		if err != nil {
+			return err
 		}
 
-		if !strings.HasPrefix(artifact.Templates[0].Title, expectedTitle) {
-			return fmt.Errorf("Wrong title prefix. Expected %q, got %q", expectedTitle, artifact.Templates[0].Title)
+		uuids, err := getUuidsFromLog(log)
+		if err != nil {
+			return err
 		}
+
+		driver := internal.NewDriver(&internal.DriverConfig{
+			Username: os.Getenv("UPCLOUD_API_USER"),
+			Password: os.Getenv("UPCLOUD_API_PASSWORD"),
+			Timeout:  DefaultTimeout,
+		})
+
+		for _, u := range uuids {
+			fmt.Printf("Cleaning up created templates: %s\n", u)
+			if err := driver.DeleteTemplate(u); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}
 }
