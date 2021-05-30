@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	DefaultPlan = "1xCPU-2GB"
+	DefaultPlan     = "1xCPU-2GB"
+	DefaultHostname = "custom"
 )
 
 type (
@@ -40,12 +41,11 @@ type (
 	}
 
 	ServerOpts struct {
-		StorageUuid    string
-		StorageSize    int
-		Zone           string
-		TemplatePrefix string
-		SshPublicKey   string
-		Networking     []request.CreateServerInterface
+		StorageUuid  string
+		StorageSize  int
+		Zone         string
+		SshPublicKey string
+		Networking   []request.CreateServerInterface
 	}
 )
 
@@ -269,13 +269,12 @@ func (d *driver) GetServerStorage(serverUuid string) (*upcloud.ServerStorageDevi
 }
 
 func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerRequest {
-	title := fmt.Sprintf("packer-%s-%s", opts.TemplatePrefix, GetNowString())
-	hostname := opts.TemplatePrefix
-	titleDisk := fmt.Sprintf("%s-disk1", title)
+	title := fmt.Sprintf("packer-%s-%s", DefaultHostname, GetNowString())
+	titleDisk := fmt.Sprintf("%s-disk1", DefaultHostname)
 
 	request := request.CreateServerRequest{
 		Title:            title,
-		Hostname:         hostname,
+		Hostname:         DefaultHostname,
 		Zone:             opts.Zone,
 		PasswordDelivery: request.PasswordDeliveryNone,
 		Plan:             DefaultPlan,
