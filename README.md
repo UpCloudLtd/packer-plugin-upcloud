@@ -36,6 +36,13 @@ $ packer init examples/basic_example.pkr.hcl
 Installed plugin github.com/upcloudltd/upcloud v1.0.0 in "/Users/johndoe/.packer.d/plugins/github.com/upcloudltd/upcloud/packer-plugin-upcloud_v1.0.0_x5.0_darwin_amd64"
 ```
 
+After successful plugin installation, you can run the build command:
+```sh
+$ packer build examples/basic_example.pkr.hcl
+
+...
+```
+
 From Packer version 1.7.0, template HCL2 becomes officially the preferred way to write Packer configuration. While the `json` format is still supported, but certain new features, such as `packer init` works only in newer HCL2 format.
 If you are using `json` config templates, please consider upgrading them using the packer built-in command:
 
@@ -43,6 +50,8 @@ If you are using `json` config templates, please consider upgrading them using t
 $ packer hcl2_upgrade example.json
 Successfully created example.json.pkr.hcl
 ```
+
+
 
 
 ### Pre-built binaries
