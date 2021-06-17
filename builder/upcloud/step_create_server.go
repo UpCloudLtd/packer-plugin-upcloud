@@ -37,12 +37,11 @@ func (s *StepCreateServer) Run(_ context.Context, state multistep.StateBag) mult
 	ui.Say(fmt.Sprintf("Creating server based on storage %q...", storage.Title))
 
 	response, err := driver.CreateServer(&internal.ServerOpts{
-		StorageUuid:    storage.UUID,
-		StorageSize:    s.Config.StorageSize,
-		Zone:           s.Config.Zone,
-		TemplatePrefix: s.Config.TemplatePrefix,
-		SshPublicKey:   sshKeyPublic,
-		Networking:     s.Config.Networking,
+		StorageUuid:  storage.UUID,
+		StorageSize:  s.Config.StorageSize,
+		Zone:         s.Config.Zone,
+		SshPublicKey: sshKeyPublic,
+		Networking:   s.Config.Networking,
 	})
 	if err != nil {
 		return internal.StepHaltWithError(state, err)

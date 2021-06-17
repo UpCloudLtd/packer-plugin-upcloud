@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
+	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud/request"
-	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -144,6 +144,12 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 			errs = packer.MultiErrorAppend(
 				errs, fmt.Errorf("Failed to read public key: %s", err))
 		}
+	}
+
+	if len(c.TemplatePrefix) > 40 {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("'template_prefix' must be 0-40 characters"),
+		)
 	}
 
 	if errs != nil && len(errs.Errors) > 0 {

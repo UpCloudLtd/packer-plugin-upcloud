@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
 	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
+	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"
@@ -37,7 +37,7 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 
 	for _, zone := range s.Config.CloneZones {
 		ui.Say(fmt.Sprintf("Cloning storage %q to zone %q...", storage.UUID, zone))
-		title := fmt.Sprintf("packer-%s-%s-cloned-disk1", s.Config.TemplatePrefix, internal.GetNowString())
+		title := fmt.Sprintf("packer-%s-cloned-disk1", internal.GetNowString())
 		clonedStorage, err := driver.CloneStorage(storage.UUID, zone, title)
 		if err != nil {
 			return internal.StepHaltWithError(state, err)
