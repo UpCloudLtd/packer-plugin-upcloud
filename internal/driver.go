@@ -113,9 +113,8 @@ func (d *driver) StopServer(serverUuid string) error {
 	return nil
 }
 
-func (d *driver) CreateTemplate(serverStorageUuid, prefix string) (*upcloud.Storage, error) {
+func (d *driver) CreateTemplate(serverStorageUuid, templateTitle string) (*upcloud.Storage, error) {
 	// create image
-	templateTitle := fmt.Sprintf("%s-%s", prefix, GetNowString())
 	response, err := d.svc.TemplatizeStorage(&request.TemplatizeStorageRequest{
 		UUID:  serverStorageUuid,
 		Title: templateTitle,

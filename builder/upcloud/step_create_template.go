@@ -53,10 +53,16 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 	for _, uuid := range storageUuids {
 		ui.Say(fmt.Sprintf("Creating template for storage %q...", uuid))
 
-		t, err := driver.CreateTemplate(uuid, s.Config.TemplatePrefix)
+		templateTitle := s.Config.TemplatePrefix
+		if !s.Config.IsTemplateNameFixed {
+			templateTitle = fmt.Sprintf("%s-%s", templateTitle, internal.GetNowString())
+		}
+
+		t, err := driver.CreateTemplate(uuid, templateTitle)
 		if err != nil {
 			return internal.StepHaltWithError(state, err)
 		}
+		
 		templates = append(templates, t)
 		ui.Say(fmt.Sprintf("Template for storage %q created...", uuid))
 	}

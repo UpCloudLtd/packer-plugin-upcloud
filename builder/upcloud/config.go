@@ -49,10 +49,11 @@ type Config struct {
 	StorageName string `mapstructure:"storage_name"`
 
 	// Optional configuration values
-	TemplatePrefix string        `mapstructure:"template_prefix"`
-	StorageSize    int           `mapstructure:"storage_size"`
-	Timeout        time.Duration `mapstructure:"state_timeout_duration"`
-	CloneZones     []string      `mapstructure:"clone_zones"`
+	TemplatePrefix      string        `mapstructure:"template_prefix"`
+	IsTemplateNameFixed bool          `mapstructure:"is_template_name_fixed"`
+	StorageSize         int           `mapstructure:"storage_size"`
+	Timeout             time.Duration `mapstructure:"state_timeout_duration"`
+	CloneZones          []string      `mapstructure:"clone_zones"`
 
 	RawNetworking []internal.NetworkInterface `mapstructure:"network_interfaces"`
 	Networking    []request.CreateServerInterface
