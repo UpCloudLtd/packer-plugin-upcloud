@@ -50,19 +50,21 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 	// creating template
 	templates := []*upcloud.Storage{}
 
+	// we either use template name or prefix.
+	var templateTitle string
+	if len(s.Config.TemplatePrefix) > 0 {
+		templateTitle = fmt.Sprintf("%s-%s", s.Config.TemplatePrefix, internal.GetNowString())
+	} else {
+		templateTitle = s.Config.TemplateName
+	}
+
 	for _, uuid := range storageUuids {
 		ui.Say(fmt.Sprintf("Creating template for storage %q...", uuid))
-
-		templateTitle := s.Config.TemplatePrefix
-		if !s.Config.IsTemplateNameFixed {
-			templateTitle = fmt.Sprintf("%s-%s", templateTitle, internal.GetNowString())
-		}
-
 		t, err := driver.CreateTemplate(uuid, templateTitle)
 		if err != nil {
 			return internal.StepHaltWithError(state, err)
 		}
-		
+
 		templates = append(templates, t)
 		ui.Say(fmt.Sprintf("Template for storage %q created...", uuid))
 	}

@@ -49,11 +49,11 @@ type Config struct {
 	StorageName string `mapstructure:"storage_name"`
 
 	// Optional configuration values
-	TemplatePrefix      string        `mapstructure:"template_prefix"`
-	IsTemplateNameFixed bool          `mapstructure:"is_template_name_fixed"`
-	StorageSize         int           `mapstructure:"storage_size"`
-	Timeout             time.Duration `mapstructure:"state_timeout_duration"`
-	CloneZones          []string      `mapstructure:"clone_zones"`
+	TemplatePrefix string        `mapstructure:"template_prefix"`
+	TemplateName   string        `mapstructure:"template_name"`
+	StorageSize    int           `mapstructure:"storage_size"`
+	Timeout        time.Duration `mapstructure:"state_timeout_duration"`
+	CloneZones     []string      `mapstructure:"clone_zones"`
 
 	RawNetworking []internal.NetworkInterface `mapstructure:"network_interfaces"`
 	Networking    []request.CreateServerInterface
@@ -79,7 +79,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	c.setEnv()
 
 	// defaults
-	if c.TemplatePrefix == "" {
+	if c.TemplatePrefix == "" && len(c.TemplateName) == 0{
 		c.TemplatePrefix = DefaultTemplatePrefix
 	}
 
@@ -150,6 +150,18 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if len(c.TemplatePrefix) > 40 {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'template_prefix' must be 0-40 characters"),
+		)
+	}
+
+	if len(c.TemplateName) > 40 {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("'template_name' is limited to 40 characters"),
+		)
+	}
+
+	if len(c.TemplatePrefix) > 0 && len(c.TemplateName) > 0 {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("you can either use 'template_prefix' or 'template_name' in your configuration"),
 		)
 	}
 
