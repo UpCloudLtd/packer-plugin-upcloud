@@ -71,6 +71,7 @@ type FlatConfig struct {
 	StorageUUID               *string           `mapstructure:"storage_uuid" cty:"storage_uuid"`
 	StorageName               *string           `mapstructure:"storage_name" cty:"storage_name"`
 	TemplatePrefix            *string           `mapstructure:"template_prefix" cty:"template_prefix"`
+	TemplateName              *string           `mapstructure:"template_name" cty:"template_name"`
 	StorageSize               *int              `mapstructure:"storage_size" cty:"storage_size"`
 	Timeout                   *string           `mapstructure:"state_timeout_duration" cty:"state_timeout_duration"`
 	CloneZones                []string          `mapstructure:"clone_zones" cty:"clone_zones"`
@@ -153,6 +154,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"storage_uuid":                 &hcldec.AttrSpec{Name: "storage_uuid", Type: cty.String, Required: false},
 		"storage_name":                 &hcldec.AttrSpec{Name: "storage_name", Type: cty.String, Required: false},
 		"template_prefix":              &hcldec.AttrSpec{Name: "template_prefix", Type: cty.String, Required: false},
+		"template_name":                &hcldec.AttrSpec{Name: "template_name", Type: cty.String, Required: false},
 		"storage_size":                 &hcldec.AttrSpec{Name: "storage_size", Type: cty.Number, Required: false},
 		"state_timeout_duration":       &hcldec.AttrSpec{Name: "state_timeout_duration", Type: cty.String, Required: false},
 		"clone_zones":                  &hcldec.AttrSpec{Name: "clone_zones", Type: cty.List(cty.String), Required: false},

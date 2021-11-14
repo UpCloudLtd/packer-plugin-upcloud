@@ -105,6 +105,7 @@ func (b *Builder) Run(ctx context.Context, ui packersdk.Ui, hook packersdk.Hook)
 		StateData: map[string]interface{}{
 			"generated_data":  state.Get("generated_data"),
 			"template_prefix": b.config.TemplatePrefix,
+			"template_name":   b.config.TemplateName,
 		},
 	}
 
