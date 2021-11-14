@@ -78,13 +78,13 @@ func TestBuilderAcc_networking(t *testing.T) {
 
 // pkr.hcl
 
-//go:embed test-fixtures/json/basic.json
+//go:embed test-fixtures/hcl2/basic.pkr.hcl
 var testBuildBasicHcl string
 
-//go:embed test-fixtures/json/storage-uuid.json
+//go:embed test-fixtures/hcl2/storage-uuid.pkr.hcl
 var testBuilderStorageUuidHcl string
 
-//go:embed test-fixtures/json/storage-name.json
+//go:embed test-fixtures/hcl2/storage-name.pkr.hcl
 var testBuilderStorageNameHcl string
 
 func TestBuilderAcc_default_hcl(t *testing.T) {
