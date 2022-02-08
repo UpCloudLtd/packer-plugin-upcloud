@@ -67,11 +67,11 @@ type FlatConfig struct {
 	WinRMUseSSL               *bool                  `mapstructure:"winrm_use_ssl" cty:"winrm_use_ssl" hcl:"winrm_use_ssl"`
 	WinRMInsecure             *bool                  `mapstructure:"winrm_insecure" cty:"winrm_insecure" hcl:"winrm_insecure"`
 	WinRMUseNTLM              *bool                  `mapstructure:"winrm_use_ntlm" cty:"winrm_use_ntlm" hcl:"winrm_use_ntlm"`
-	Username                  *string                `mapstructure:"username" cty:"username" hcl:"username"`
-	Password                  *string                `mapstructure:"password" cty:"password" hcl:"password"`
-	Zone                      *string                `mapstructure:"zone" cty:"zone" hcl:"zone"`
-	StorageUUID               *string                `mapstructure:"storage_uuid" cty:"storage_uuid" hcl:"storage_uuid"`
-	StorageName               *string                `mapstructure:"storage_name" cty:"storage_name" hcl:"storage_name"`
+	Username                  *string                `mapstructure:"username" required:"true" cty:"username" hcl:"username"`
+	Password                  *string                `mapstructure:"password" required:"true" cty:"password" hcl:"password"`
+	Zone                      *string                `mapstructure:"zone" required:"true" cty:"zone" hcl:"zone"`
+	StorageUUID               *string                `mapstructure:"storage_uuid" required:"true" cty:"storage_uuid" hcl:"storage_uuid"`
+	StorageName               *string                `mapstructure:"storage_name" required:"true" cty:"storage_name" hcl:"storage_name"`
 	TemplatePrefix            *string                `mapstructure:"template_prefix" cty:"template_prefix" hcl:"template_prefix"`
 	TemplateName              *string                `mapstructure:"template_name" cty:"template_name" hcl:"template_name"`
 	StorageSize               *int                   `mapstructure:"storage_size" cty:"storage_size" hcl:"storage_size"`

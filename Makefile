@@ -10,6 +10,8 @@ GOBIN=$(shell go env GOBIN)
 endif
 
 PACKER_SDC=$(GOBIN)/packer-sdc
+PACKER_SDC_RENDER_DOCS=$(PACKER_SDC) renderdocs -src docs-src/ -partials docs-partials/ -dst docs/
+
 
 default: build
 
@@ -35,14 +37,19 @@ install-packer-sdc: ## Install packer sofware development command
 	go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@$(HASHICORP_PACKER_PLUGIN_SDK_VERSION)
 
 ci-release-docs: install-packer-sdc
-	@$(PACKER_SDC) renderdocs -src docs -partials docs-partials/ -dst docs/
+	@$(PACKER_SDC_RENDER_DOCS)
 	@/bin/sh -c "[ -d docs ] && zip -r docs.zip docs/"
 
 plugin-check: install-packer-sdc build
 	$(PACKER_SDC) plugin-check $(BINARY)
 
-generate: install-packer-sdc
+generate: fmt install-packer-sdc
 	@PATH=$(PATH):$(GOBIN) go generate ./...
-	packer-sdc renderdocs -src ./docs -dst ./.docs -partials ./docs-partials
+	@rm -fr $(CURDIR)/docs # renderdocs doesn't seem to properly overwrite files
+	$(PACKER_SDC_RENDER_DOCS)
+
+fmt:
+	packer fmt example/
+	packer fmt -recursive docs-partials/
 
 .PHONY: default test test_integration lint build install
