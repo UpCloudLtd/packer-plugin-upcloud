@@ -1,4 +1,4 @@
-package upcloud
+package driver
 
 import (
 	"fmt"
@@ -268,7 +268,7 @@ func (d *driver) GetServerStorage(serverUuid string) (*upcloud.ServerStorageDevi
 }
 
 func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerRequest {
-	title := fmt.Sprintf("packer-%s-%s", DefaultHostname, GetNowString())
+	title := fmt.Sprintf("packer-%s-%s", DefaultHostname, getNowString())
 	titleDisk := fmt.Sprintf("%s-disk1", DefaultHostname)
 
 	request := request.CreateServerRequest{
@@ -296,4 +296,8 @@ func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerReq
 		},
 	}
 	return &request
+}
+
+func getNowString() string {
+	return time.Now().Format("20060102-150405")
 }

@@ -1,6 +1,40 @@
-# Change log
+# Changelog
 
-## 1.0.0
+All notable changes to this project will be documented in this file.
+See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
-* Upgrade to Packer 1.7.0
-* Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
+## [Unreleased]
+
+### Added
+-  add new template name param 
+
+### Changed
+- update README file
+- update acceptance test to embed HCL2 configs 
+
+### Fixed
+- fix network interface config
+
+## [1.2.0] - 2021-06-17
+
+### Fixed
+
+- fix template prefix usage
+
+## [1.1.0] 2021-05-30
+
+### Changed
+- bump go version to 1.6 to enable darwin/arm build
+- update dependencies
+- update intergration tests
+
+## [1.0.0] 2021-02-19
+
+### Changed
+- Upgrade to Packer 1.7.0
+- Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
+
+[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/releases/tag/v1.0.0
