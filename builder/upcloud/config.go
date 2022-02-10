@@ -1,4 +1,4 @@
-//go:generate $GOPATH/bin/packer-sdc mapstructure-to-hcl2 -type Config,NetworkInterface,IPAddress
+//go:generate packer-sdc mapstructure-to-hcl2 -type Config,NetworkInterface,IPAddress
 package upcloud
 
 import (
