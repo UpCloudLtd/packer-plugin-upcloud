@@ -66,7 +66,7 @@ type Config struct {
 
 	// The name of the storage that will be used to find the first matching storage in the list of existing templates.
 	//
-	// Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid`
+	// Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
 	StorageName string `mapstructure:"storage_name" required:"true"`
 
 	// The prefix to use for the generated template title.
