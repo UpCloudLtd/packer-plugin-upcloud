@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -22,12 +22,12 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 	serverUuid := state.Get("server_uuid").(string)
 
 	ui := state.Get("ui").(packer.Ui)
-	driver := state.Get("driver").(internal.Driver)
+	drv := state.Get("driver").(driver.Driver)
 
 	// get storage details
-	storage, err := driver.GetServerStorage(serverUuid)
+	storage, err := drv.GetServerStorage(serverUuid)
 	if err != nil {
-		return internal.StepHaltWithError(state, err)
+		return stepHaltWithError(state, err)
 	}
 
 	// clonning to zones
@@ -37,10 +37,10 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 
 	for _, zone := range s.Config.CloneZones {
 		ui.Say(fmt.Sprintf("Cloning storage %q to zone %q...", storage.UUID, zone))
-		title := fmt.Sprintf("packer-%s-cloned-disk1", internal.GetNowString())
-		clonedStorage, err := driver.CloneStorage(storage.UUID, zone, title)
+		title := fmt.Sprintf("packer-%s-cloned-disk1", getNowString())
+		clonedStorage, err := drv.CloneStorage(storage.UUID, zone, title)
 		if err != nil {
-			return internal.StepHaltWithError(state, err)
+			return stepHaltWithError(state, err)
 		}
 		storageUuids = append(storageUuids, clonedStorage.UUID)
 		cleanupStorageUuid = append(cleanupStorageUuid, clonedStorage.UUID)
@@ -53,16 +53,16 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 	// we either use template name or prefix.
 	var templateTitle string
 	if len(s.Config.TemplatePrefix) > 0 {
-		templateTitle = fmt.Sprintf("%s-%s", s.Config.TemplatePrefix, internal.GetNowString())
+		templateTitle = fmt.Sprintf("%s-%s", s.Config.TemplatePrefix, getNowString())
 	} else {
 		templateTitle = s.Config.TemplateName
 	}
 
 	for _, uuid := range storageUuids {
 		ui.Say(fmt.Sprintf("Creating template for storage %q...", uuid))
-		t, err := driver.CreateTemplate(uuid, templateTitle)
+		t, err := drv.CreateTemplate(uuid, templateTitle)
 		if err != nil {
-			return internal.StepHaltWithError(state, err)
+			return stepHaltWithError(state, err)
 		}
 
 		templates = append(templates, t)
@@ -86,7 +86,7 @@ func (s *StepCreateTemplate) Cleanup(state multistep.StateBag) {
 	storageUuids := rawStorageUuids.([]string)
 
 	ui := state.Get("ui").(packer.Ui)
-	driver := state.Get("driver").(internal.Driver)
+	driver := state.Get("driver").(driver.Driver)
 
 	for _, uuid := range storageUuids {
 		ui.Say(fmt.Sprintf("Delete storage %q...", uuid))

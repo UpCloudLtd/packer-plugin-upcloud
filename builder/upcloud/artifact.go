@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
-	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 )
 
 // packersdk.Artifact implementation
 type Artifact struct {
 	config    *Config
-	driver    internal.Driver
+	driver    driver.Driver
 	Templates []*upcloud.Storage
 
 	// StateData should store data such as GeneratedData

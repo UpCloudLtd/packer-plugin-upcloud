@@ -1,13 +1,11 @@
+//go:generate packer-sdc mapstructure-to-hcl2 -type Config,NetworkInterface,IPAddress
 package upcloud
 
 import (
 	"errors"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
-	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
 	"github.com/UpCloudLtd/upcloud-go-api/upcloud/request"
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -37,6 +35,18 @@ var (
 	}
 )
 
+// for config type convertion
+type NetworkInterface struct {
+	IPAddresses []IPAddress `mapstructure:"ip_addresses"`
+	Type        string      `mapstructure:"type"`
+	Network     string      `mapstructure:"network,omitempty"`
+}
+
+type IPAddress struct {
+	Family  string `mapstructure:"family"`
+	Address string `mapstructure:"address,omitempty"`
+}
+
 type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
@@ -55,13 +65,10 @@ type Config struct {
 	Timeout        time.Duration `mapstructure:"state_timeout_duration"`
 	CloneZones     []string      `mapstructure:"clone_zones"`
 
-	RawNetworking []internal.NetworkInterface `mapstructure:"network_interfaces"`
-	Networking    []request.CreateServerInterface
+	NetworkInterfaces []NetworkInterface `mapstructure:"network_interfaces"`
 
 	SSHPrivateKeyPath string `mapstructure:"ssh_private_key_path"`
 	SSHPublicKeyPath  string `mapstructure:"ssh_public_key_path"`
-	SSHPrivateKey     []byte
-	SSHPublicKey      []byte
 
 	ctx interpolate.Context
 }
@@ -79,7 +86,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	c.setEnv()
 
 	// defaults
-	if c.TemplatePrefix == "" && len(c.TemplateName) == 0{
+	if c.TemplatePrefix == "" && len(c.TemplateName) == 0 {
 		c.TemplatePrefix = DefaultTemplatePrefix
 	}
 
@@ -93,12 +100,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 
 	if c.Comm.SSHUsername == "" {
 		c.Comm.SSHUsername = DefaultSSHUsername
-	}
-
-	if len(c.RawNetworking) == 0 {
-		c.Networking = DefaultNetworking
-	} else {
-		c.Networking = internal.ConvertNetworkTypes(c.RawNetworking)
 	}
 
 	// validate
@@ -129,22 +130,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'storage_uuid' or 'storage_name' must be specified"),
 		)
-	}
-
-	if c.SSHPrivateKeyPath != "" {
-		c.SSHPrivateKey, err = ioutil.ReadFile(c.SSHPrivateKeyPath)
-		if err != nil {
-			errs = packer.MultiErrorAppend(
-				errs, fmt.Errorf("Failed to read private key: %s", err))
-		}
-	}
-
-	if c.SSHPublicKeyPath != "" {
-		c.SSHPublicKey, err = ioutil.ReadFile(c.SSHPublicKeyPath)
-		if err != nil {
-			errs = packer.MultiErrorAppend(
-				errs, fmt.Errorf("Failed to read public key: %s", err))
-		}
 	}
 
 	if len(c.TemplatePrefix) > 40 {

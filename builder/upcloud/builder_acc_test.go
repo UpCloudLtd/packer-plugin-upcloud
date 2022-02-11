@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/acctest"
 )
 
@@ -202,7 +202,7 @@ func teardown(testName string) func() error {
 			return err
 		}
 
-		driver := internal.NewDriver(&internal.DriverConfig{
+		drv := driver.NewDriver(&driver.DriverConfig{
 			Username: os.Getenv("UPCLOUD_API_USER"),
 			Password: os.Getenv("UPCLOUD_API_PASSWORD"),
 			Timeout:  DefaultTimeout,
@@ -210,7 +210,7 @@ func teardown(testName string) func() error {
 
 		for _, u := range uuids {
 			fmt.Printf("Cleaning up created templates: %s\n", u)
-			if err := driver.DeleteTemplate(u); err != nil {
+			if err := drv.DeleteTemplate(u); err != nil {
 				return err
 			}
 		}

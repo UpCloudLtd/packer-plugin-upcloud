@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -19,13 +19,13 @@ func (s *StepTeardownServer) Run(_ context.Context, state multistep.StateBag) mu
 	serverTitle := state.Get("server_title").(string)
 
 	ui := state.Get("ui").(packer.Ui)
-	driver := state.Get("driver").(internal.Driver)
+	driver := state.Get("driver").(driver.Driver)
 
 	ui.Say(fmt.Sprintf("Stopping server %q...", serverTitle))
 
 	err := driver.StopServer(serverUuid)
 	if err != nil {
-		return internal.StepHaltWithError(state, err)
+		return stepHaltWithError(state, err)
 	}
 
 	ui.Say(fmt.Sprintf("Server %q is now in 'stopped' state", serverTitle))

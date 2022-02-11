@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"
@@ -19,39 +19,44 @@ type StepCreateServer struct {
 // Run runs the actual step
 func (s *StepCreateServer) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
-	driver := state.Get("driver").(internal.Driver)
+	drv := state.Get("driver").(driver.Driver)
 
 	rawSshKeyPublic, ok := state.GetOk("ssh_key_public")
 	if !ok {
-		return internal.StepHaltWithError(state, fmt.Errorf("SSH public key is missing"))
+		return stepHaltWithError(state, fmt.Errorf("SSH public key is missing"))
 	}
 	sshKeyPublic := rawSshKeyPublic.(string)
 
 	ui.Say("Getting storage...")
 
-	storage, err := driver.GetStorage(s.Config.StorageUUID, s.Config.StorageName)
+	storage, err := drv.GetStorage(s.Config.StorageUUID, s.Config.StorageName)
 	if err != nil {
-		return internal.StepHaltWithError(state, err)
+		return stepHaltWithError(state, err)
 	}
 
 	ui.Say(fmt.Sprintf("Creating server based on storage %q...", storage.Title))
 
-	response, err := driver.CreateServer(&internal.ServerOpts{
+	networking := DefaultNetworking
+	if len(s.Config.NetworkInterfaces) > 0 {
+		networking = convertNetworkTypes(s.Config.NetworkInterfaces)
+
+	}
+	response, err := drv.CreateServer(&driver.ServerOpts{
 		StorageUuid:  storage.UUID,
 		StorageSize:  s.Config.StorageSize,
 		Zone:         s.Config.Zone,
 		SshPublicKey: sshKeyPublic,
-		Networking:   s.Config.Networking,
+		Networking:   networking,
 	})
 	if err != nil {
-		return internal.StepHaltWithError(state, err)
+		return stepHaltWithError(state, err)
 	}
 
 	serverUuid := response.UUID
 	serverTitle := response.Title
-	serverIp, err := internal.GetServerIp(response)
+	serverIp, err := getServerIp(response)
 	if err != nil {
-		return internal.StepHaltWithError(state, err)
+		return stepHaltWithError(state, err)
 	}
 
 	ui.Say(fmt.Sprintf("Server %q created and in 'started' state", serverTitle))
@@ -80,7 +85,7 @@ func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
 	serverTitle := state.Get("server_title").(string)
 
 	ui := state.Get("ui").(packer.Ui)
-	driver := state.Get("driver").(internal.Driver)
+	driver := state.Get("driver").(driver.Driver)
 
 	// stop server
 	ui.Say(fmt.Sprintf("Stopping server %q...", serverTitle))

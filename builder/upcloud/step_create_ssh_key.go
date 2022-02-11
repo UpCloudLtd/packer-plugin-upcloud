@@ -10,9 +10,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	internal "github.com/UpCloudLtd/packer-plugin-upcloud/internal"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
-	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
+	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -24,16 +23,22 @@ type StepCreateSSHKey struct {
 
 // Run runs the actual step
 func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
-	ui := state.Get("ui").(packersdk.Ui)
+	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(*Config)
 
-	if len(config.SSHPrivateKey) != 0 && len(config.SSHPublicKey) != 0 {
+	if config.SSHPrivateKeyPath != "" && config.SSHPublicKeyPath != "" {
+		var err error
 		ui.Say("Using provided SSH keys...")
 
-		config.Comm.SSHPrivateKey = config.SSHPrivateKey
-		config.Comm.SSHPublicKey = config.SSHPublicKey
+		if config.Comm.SSHPrivateKey, err = ioutil.ReadFile(config.SSHPrivateKeyPath); err != nil {
+			return stepHaltWithError(state, fmt.Errorf("Failed to read private key: %s", err))
+		}
 
-		state.Put("ssh_key_public", strings.Trim(string(config.SSHPublicKey), "\n"))
+		if config.Comm.SSHPublicKey, err = ioutil.ReadFile(config.SSHPublicKeyPath); err != nil {
+			return stepHaltWithError(state, fmt.Errorf("Failed to read public key: %s", err))
+		}
+
+		state.Put("ssh_key_public", strings.Trim(string(config.Comm.SSHPublicKey), "\n"))
 		return multistep.ActionContinue
 	}
 
@@ -41,7 +46,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return internal.StepHaltWithError(state, fmt.Errorf("Error generating SSH key: %s", err))
+		return stepHaltWithError(state, fmt.Errorf("Error generating SSH key: %s", err))
 	}
 
 	// ASN.1 DER encoded form
@@ -55,7 +60,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 	// Marshal the public key into SSH compatible format
 	pub, err := ssh.NewPublicKey(&priv.PublicKey)
 	if err != nil {
-		return internal.StepHaltWithError(state, fmt.Errorf("Error creating public ssh key: %s", err))
+		return stepHaltWithError(state, fmt.Errorf("Error creating public ssh key: %s", err))
 	}
 
 	// Remember some state for the future
@@ -71,7 +76,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 		ui.Say(fmt.Sprintf("Saving key for debug purposes: %s", s.DebugKeyPath))
 		err := ioutil.WriteFile(s.DebugKeyPath, config.Comm.SSHPrivateKey, 0600)
 		if err != nil {
-			return internal.StepHaltWithError(state, fmt.Errorf("Error saving debug key: %s", err))
+			return stepHaltWithError(state, fmt.Errorf("Error saving debug key: %s", err))
 		}
 	}
 
