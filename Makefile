@@ -25,7 +25,7 @@ lint:
 	golint .
 
 build:
-	go build -v -o $(BINARY)
+	go build -v
 
 install: build
 	@mkdir -p ~/.packer.d/plugins
