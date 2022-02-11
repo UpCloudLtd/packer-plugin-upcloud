@@ -1,4 +1,4 @@
-# UpCloud Packer builder
+# UpCloud Packer Plugin
 
 ![Build Status](https://github.com/UpCloudLtd/packer-plugin-upcloud/workflows/test/badge.svg)
 ![Release Status](https://github.com/UpCloudLtd/packer-plugin-upcloud/workflows/release/badge.svg)
