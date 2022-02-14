@@ -69,8 +69,7 @@ type Config struct {
 	// Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
 	StorageName string `mapstructure:"storage_name" required:"true"`
 
-	// The prefix to use for the generated template title.
-	// Defaults to an empty string, meaning the prefix will be the storage title.
+	// The prefix to use for the generated template title. Defaults to `custom-image`.
 	// You can use this option to easily differentiate between different templates.
 	TemplatePrefix string `mapstructure:"template_prefix"`
 
