@@ -1,5 +1,9 @@
 <!-- Code generated from the comments of the Config struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
+- `storage_name` (string) - The name of the storage that will be used to find the first matching storage in the list of existing templates.
+  
+  Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
+
 - `template_prefix` (string) - The prefix to use for the generated template title. Defaults to `custom-image`.
   You can use this option to easily differentiate between different templates.
 

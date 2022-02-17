@@ -25,10 +25,8 @@ The upcloud builder is used to generate storage templates on UpCloud.
 - `zone` (string) - The zone in which the server and template should be created (e.g. nl-ams1).
 
 - `storage_uuid` (string) - The UUID of the storage you want to use as a template when creating the server.
-
-- `storage_name` (string) - The name of the storage that will be used to find the first matching storage in the list of existing templates.
   
-  Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
+  Optionally use `storage_name` parameter to find matching storage
 
 <!-- End of code generated from the comments of the Config struct in builder/upcloud/config.go; -->
 
@@ -44,6 +42,10 @@ The upcloud builder is used to generate storage templates on UpCloud.
 ### Optional
 
 <!-- Code generated from the comments of the Config struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
+
+- `storage_name` (string) - The name of the storage that will be used to find the first matching storage in the list of existing templates.
+  
+  Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
 
 - `template_prefix` (string) - The prefix to use for the generated template title. Defaults to `custom-image`.
   You can use this option to easily differentiate between different templates.

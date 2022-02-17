@@ -71,7 +71,7 @@ type FlatConfig struct {
 	Password                  *string                `mapstructure:"password" required:"true" cty:"password" hcl:"password"`
 	Zone                      *string                `mapstructure:"zone" required:"true" cty:"zone" hcl:"zone"`
 	StorageUUID               *string                `mapstructure:"storage_uuid" required:"true" cty:"storage_uuid" hcl:"storage_uuid"`
-	StorageName               *string                `mapstructure:"storage_name" required:"true" cty:"storage_name" hcl:"storage_name"`
+	StorageName               *string                `mapstructure:"storage_name" cty:"storage_name" hcl:"storage_name"`
 	TemplatePrefix            *string                `mapstructure:"template_prefix" cty:"template_prefix" hcl:"template_prefix"`
 	TemplateName              *string                `mapstructure:"template_name" cty:"template_name" hcl:"template_name"`
 	StorageSize               *int                   `mapstructure:"storage_size" cty:"storage_size" hcl:"storage_size"`

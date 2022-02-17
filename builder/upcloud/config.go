@@ -62,12 +62,14 @@ type Config struct {
 	Zone string `mapstructure:"zone" required:"true"`
 
 	// The UUID of the storage you want to use as a template when creating the server.
+	//
+	// Optionally use `storage_name` parameter to find matching storage
 	StorageUUID string `mapstructure:"storage_uuid" required:"true"`
 
 	// The name of the storage that will be used to find the first matching storage in the list of existing templates.
 	//
 	// Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
-	StorageName string `mapstructure:"storage_name" required:"true"`
+	StorageName string `mapstructure:"storage_name"`
 
 	// The prefix to use for the generated template title. Defaults to `custom-image`.
 	// You can use this option to easily differentiate between different templates.
