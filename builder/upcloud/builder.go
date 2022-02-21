@@ -68,11 +68,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			Config:        &b.config,
 			GeneratedData: generatedData,
 		},
-		&communicator.StepConnect{
-			Config:    &b.config.Comm,
-			Host:      sshHostCallback,
-			SSHConfig: b.config.Comm.SSHConfigFunc(),
-		},
+		b.communicatorStep(),
 		&commonsteps.StepProvision{},
 		&commonsteps.StepCleanupTempKeys{
 			Comm: &b.config.Comm,
@@ -110,4 +106,22 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	}
 
 	return artifact, nil
+}
+
+// CommunicatorStep returns step based on communicator type
+// We currently support only SSH communicator but 'none' type
+// can also be used for e.g. testing purposes
+func (b *Builder) communicatorStep() multistep.Step {
+	switch b.config.Comm.Type {
+	case "none":
+		return &communicator.StepConnect{
+			Config: &b.config.Comm,
+		}
+	default:
+		return &communicator.StepConnect{
+			Config:    &b.config.Comm,
+			Host:      sshHostCallback,
+			SSHConfig: b.config.Comm.SSHConfigFunc(),
+		}
+	}
 }

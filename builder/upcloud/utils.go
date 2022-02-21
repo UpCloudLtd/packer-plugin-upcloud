@@ -1,6 +1,7 @@
 package upcloud
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -18,23 +19,43 @@ func stepHaltWithError(state multistep.StateBag, err error) multistep.StepAction
 	return multistep.ActionHalt
 }
 
-// parse public ip from server details
-func getServerIp(details *upcloud.ServerDetails) (string, error) {
-	for _, ipAddress := range details.IPAddresses {
-		if ipAddress.Access == upcloud.IPAddressAccessPublic && ipAddress.Family == upcloud.IPAddressFamilyIPv4 {
-			return ipAddress.Address, nil
+// Find IP address by type from list of IP addresses
+func findIPAddressByType(addrs upcloud.IPAddressSlice, infType InterfaceType) (*IPAddress, error) {
+	var ipv6 *IPAddress
+	for _, ipAddress := range addrs {
+		if ipAddress.Access == string(infType) {
+			switch ipAddress.Family {
+			case upcloud.IPAddressFamilyIPv4:
+				// prefer IPv4 over IPv6 - return first matching IPv4 interface if found
+				return &IPAddress{Address: ipAddress.Address, Family: ipAddress.Family}, nil
+			case upcloud.IPAddressFamilyIPv6:
+				// not returning IPv6 because there might be IPv4 address comming up in the slice
+				ipv6 = &IPAddress{Address: ipAddress.Address, Family: ipAddress.Family}
+			}
 		}
 	}
-	return "", fmt.Errorf("Unable to find the public IPv4 address of the server")
+	// return IPv6 if found
+	if ipv6 != nil {
+		return ipv6, nil
+	}
+	return nil, fmt.Errorf("Unable to find '%s' IP address", infType)
 }
 
 func getNowString() string {
 	return time.Now().Format("20060102-150405")
 }
 
-// sshHostCallback retrieves the public IPv4 address of the server
+// sshHostCallback returns server's IP addresss.
+// Note that IPv6 address needs to be enclosed in square brackets
 func sshHostCallback(state multistep.StateBag) (string, error) {
-	return state.Get("server_ip").(string), nil
+	addr, ok := state.Get("server_ip_address").(*IPAddress)
+	if !ok || addr == nil {
+		return "", errors.New("unable to get server_ip_address from state")
+	}
+	if addr.Family == upcloud.IPAddressFamilyIPv6 {
+		return fmt.Sprintf("[%s]", addr.Address), nil
+	}
+	return addr.Address, nil
 }
 
 func convertNetworkTypes(rawNetworking []NetworkInterface) []request.CreateServerInterface {
@@ -46,7 +67,7 @@ func convertNetworkTypes(rawNetworking []NetworkInterface) []request.CreateServe
 		}
 		networking = append(networking, request.CreateServerInterface{
 			IPAddresses: ips,
-			Type:        iface.Type,
+			Type:        string(iface.Type),
 			Network:     iface.Network,
 		})
 	}

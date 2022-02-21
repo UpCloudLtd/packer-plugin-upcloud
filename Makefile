@@ -20,7 +20,7 @@ test:
 
 test_integration: build
 	cp $(BINARY) builder/upcloud/
-	PACKER_ACC=1 go test -count 1 -v ./...  -timeout=120m
+	PACKER_ACC=1 go test -count 1 -v $(TESTARGS) ./...  -timeout=120m
 
 lint:
 	go vet .
@@ -49,6 +49,7 @@ generate: fmt install-packer-sdc
 	$(PACKER_SDC_RENDER_DOCS)
 
 fmt:
+	packer fmt builder/upcloud/test-fixtures/hcl2
 	packer fmt example/
 	packer fmt -recursive docs-partials/
 

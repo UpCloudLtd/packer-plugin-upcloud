@@ -3,6 +3,7 @@ package upcloud
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
@@ -52,23 +53,36 @@ func (s *StepCreateServer) Run(_ context.Context, state multistep.StateBag) mult
 		return stepHaltWithError(state, err)
 	}
 
-	serverUuid := response.UUID
-	serverTitle := response.Title
-	serverIp, err := getServerIp(response)
-	if err != nil {
-		return stepHaltWithError(state, err)
+	ui.Say(fmt.Sprintf("Server %q created and in 'started' state", response.Title))
+
+	addr, infType := s.Config.DefaultIPaddress()
+	if addr != nil {
+		if addr.Address == "" {
+			addr, err = findIPAddressByType(response.IPAddresses, infType)
+			if err != nil {
+				return stepHaltWithError(state, err)
+			}
+		}
+		ui.Say(fmt.Sprintf("Selecting default ip '%s' as Server IP", addr.Address))
+	} else {
+		addr, err = findIPAddressByType(response.IPAddresses, InterfaceTypePublic)
+		if err != nil {
+			return stepHaltWithError(state, err)
+		}
+		ui.Say(fmt.Sprintf("Auto-selecting ip '%s' as Server IP", addr.Address))
 	}
 
-	ui.Say(fmt.Sprintf("Server %q created and in 'started' state", serverTitle))
+	state.Put("server_ip_address", addr)
+	state.Put("server_uuid", response.UUID)
+	state.Put("server_title", response.Title)
 
-	state.Put("server_uuid", serverUuid)
-	state.Put("server_title", serverTitle)
-	state.Put("server_ip", serverIp)
-
-	s.GeneratedData.Put("ServerUUID", serverUuid)
-	s.GeneratedData.Put("ServerTitle", serverTitle)
-	s.GeneratedData.Put("ServerSize", serverIp)
-
+	s.GeneratedData.Put("ServerUUID", response.UUID)
+	s.GeneratedData.Put("ServerTitle", response.Title)
+	s.GeneratedData.Put("ServerSize", response.Plan)
+	if s.Config.BootWait > 0 {
+		ui.Say(fmt.Sprintf("Waitig boot: %s", s.Config.BootWait.String()))
+		time.Sleep(s.Config.BootWait)
+	}
 	return multistep.ActionContinue
 }
 

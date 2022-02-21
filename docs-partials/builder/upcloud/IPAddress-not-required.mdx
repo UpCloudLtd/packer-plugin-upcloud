@@ -1,7 +1,9 @@
 <!-- Code generated from the comments of the IPAddress struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
-- `family` (string) - Family
+- `default` (bool) - Default IP address. When set to `true` SSH communicator will connect to this IP after boot.
 
-- `address` (string) - Address
+- `family` (string) - IP address family (IPv4 or IPv6)
+
+- `address` (string) - IP address. Note that at the moment using floating IPs is not supported.
 
 <!-- End of code generated from the comments of the IPAddress struct in builder/upcloud/config.go; -->

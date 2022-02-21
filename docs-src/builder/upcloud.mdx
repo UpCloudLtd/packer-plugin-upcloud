@@ -58,7 +58,18 @@ Configuration reads your SSH public key from the default location `~/.ssh/id_rsa
 $ packer build -var="ssh_public_key=/some/other/path/id_rsa.pub"
 ```
 
+#### Network interfaces
 This template uses `network_interfaces` to define network interfaces to be used during the creation of the server for building the packer image.
 ```hcl
 @include 'config/builder/upcloud/interfaces.pkr.hcl'
+```
+
+#### IPv6 network interfaces
+```hcl
+@include 'config/builder/upcloud/interfaces_ipv6.pkr.hcl'
+```
+
+#### Private network interfaces
+```hcl
+@include 'config/builder/upcloud/interfaces_private.pkr.hcl'
 ```

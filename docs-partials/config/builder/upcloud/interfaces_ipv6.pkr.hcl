@@ -29,33 +29,36 @@ variable "ssh_public_key" {
 source "upcloud" "test" {
   username        = "${var.username}"
   password        = "${var.password}"
-  zone            = "nl-ams1"
-  storage_name    = "ubuntu server 20.04"
-  template_prefix = "ubuntu-server"
-
+  zone            = "fi-hel1"
+  storage_name    = "Debian GNU/Linux 11 (Bullseye)"
+  template_prefix = "debian11"
   network_interfaces {
     ip_addresses {
-      family = "IPv4"
+      family = "IPv6"
     }
     type = "public"
   }
+  communicator = "ssh"
 
-  network_interfaces {
-    ip_addresses {
-      family = "IPv4"
-    }
-    type = "utility"
-  }
+  # Use bastion host if no IPv6 connection is available
+  # ssh_bastion_username         = "<bastion_username>"
+  # ssh_bastion_host             = "<bastion_host>"
+  # ssh_bastion_private_key_file = "<bastion_private_key_file>"
 }
 
 build {
   sources = ["source.upcloud.test"]
 
   provisioner "shell" {
+    environment_vars = [
+      "DEBIAN_FRONTEND=noninteractive",
+      "APT_LISTCHANGES_FRONTEND=none",
+    ]
+
     inline = [
       "apt-get update",
       "apt-get upgrade -y",
-      "echo '${file(var.ssh_public_key)}' | tee /root/.ssh/authorized_keys"
+      "echo '${file(var.ssh_public_key)}' | tee /root/.ssh/authorized_keys",
     ]
   }
 }
