@@ -1,0 +1,30 @@
+<!-- Code generated from the comments of the Config struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
+
+- `storage_name` (string) - The name of the storage that will be used to find the first matching storage in the list of existing templates.
+  
+  Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
+
+- `template_prefix` (string) - The prefix to use for the generated template title. Defaults to `custom-image`.
+  You can use this option to easily differentiate between different templates.
+
+- `template_name` (string) - Similarly to `template_prefix`, but this will allow you to set the full template name and not just the prefix.
+  Defaults to an empty string, meaning the name will be the storage title.
+  You can use this option to easily differentiate between different templates.
+  It cannot be used in conjunction with the prefix setting.
+
+- `storage_size` (int) - The storage size in gigabytes. Defaults to `25`.
+  Changing this value is useful if you aim to build a template for larger server configurations where the preconfigured server disk is larger than 25 GB.
+  The operating system disk can also be later extended if needed. Note that Windows templates require large storage size, than default 25 Gb.
+
+- `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `5m`.
+
+- `clone_zones` ([]string) - The array of extra zones (locations) where created templates should be cloned.
+  Note that default `state_timeout_duration` is not enough for cloning, better to increase a value depending on storage size.
+
+- `network_interfaces` ([]NetworkInterface) - The array of network interfaces to request during the creation of the server for building the packer image.
+
+- `ssh_private_key_path` (string) - Path to SSH Private Key that will be used for provisioning and stored in the template.
+
+- `ssh_public_key_path` (string) - Path to SSH Public Key that will be used for provisioning.
+
+<!-- End of code generated from the comments of the Config struct in builder/upcloud/config.go; -->

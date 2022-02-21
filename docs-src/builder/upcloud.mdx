@@ -1,0 +1,64 @@
+---
+description: >
+  This is a builder plugin for Packer which can be used to generate storage templates on UpCloud. 
+  It utilises the UpCloud Go API to interface with the UpCloud API.
+page_title: UpCloud - Builders
+---
+
+
+# UpCloud
+
+Type: `upcloud`
+
+The upcloud builder is used to generate storage templates on UpCloud.
+
+<!-- Builder Configuration Fields -->
+
+### Required
+
+@include 'builder/upcloud/Config-required.mdx'
+
+<!--
+  Optional Configuration Fields
+
+  Configuration options that are not required or have reasonable defaults
+  should be listed under the optionals section. Defaults values should be
+  noted in the description of the field
+-->
+
+### Optional
+
+@include 'builder/upcloud/Config-not-required.mdx'
+
+#### Network Interfaces object (NetworkInterface)
+
+@include 'builder/upcloud/NetworkInterface-not-required.mdx'
+
+#### IP Address object (IPAddress)
+
+@include 'builder/upcloud/IPAddress-not-required.mdx'
+
+
+<!--
+  A basic example on the usage of the builder. Multiple examples
+  can be provided to highlight various build configurations.
+
+-->
+### Example Usage
+
+Here is a sample template, which you can also find in the [example](../../example/) directory.  
+It reads your UpCloud API credentials from the environment variables, creates an Ubuntu 20.04 LTS server in the `nl-ams1` region and authorizes root user to loggin with your public SSH key.
+
+```hcl
+@include '../example/build.pkr.hcl'
+```
+
+Configuration reads your SSH public key from the default location `~/.ssh/id_rsa.pub`. You can overwrite variables using command line argumen `-var`:
+```sh
+$ packer build -var="ssh_public_key=/some/other/path/id_rsa.pub"
+```
+
+This template uses `network_interfaces` to define network interfaces to be used during the creation of the server for building the packer image.
+```hcl
+@include 'config/builder/upcloud/interfaces.pkr.hcl'
+```

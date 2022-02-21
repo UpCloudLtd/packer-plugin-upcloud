@@ -1,4 +1,5 @@
 //go:generate packer-sdc mapstructure-to-hcl2 -type Config,NetworkInterface,IPAddress
+//go:generate packer-sdc struct-markdown
 package upcloud
 
 import (
@@ -51,24 +52,55 @@ type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
 
-	// Required configuration values
-	Username    string `mapstructure:"username"`
-	Password    string `mapstructure:"password"`
-	Zone        string `mapstructure:"zone"`
-	StorageUUID string `mapstructure:"storage_uuid"`
+	// The username to use when interfacing with the UpCloud API.
+	Username string `mapstructure:"username" required:"true"`
+
+	// The password to use when interfacing with the UpCloud API.
+	Password string `mapstructure:"password" required:"true"`
+
+	// The zone in which the server and template should be created (e.g. nl-ams1).
+	Zone string `mapstructure:"zone" required:"true"`
+
+	// The UUID of the storage you want to use as a template when creating the server.
+	//
+	// Optionally use `storage_name` parameter to find matching storage
+	StorageUUID string `mapstructure:"storage_uuid" required:"true"`
+
+	// The name of the storage that will be used to find the first matching storage in the list of existing templates.
+	//
+	// Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
 	StorageName string `mapstructure:"storage_name"`
 
-	// Optional configuration values
-	TemplatePrefix string        `mapstructure:"template_prefix"`
-	TemplateName   string        `mapstructure:"template_name"`
-	StorageSize    int           `mapstructure:"storage_size"`
-	Timeout        time.Duration `mapstructure:"state_timeout_duration"`
-	CloneZones     []string      `mapstructure:"clone_zones"`
+	// The prefix to use for the generated template title. Defaults to `custom-image`.
+	// You can use this option to easily differentiate between different templates.
+	TemplatePrefix string `mapstructure:"template_prefix"`
 
+	// Similarly to `template_prefix`, but this will allow you to set the full template name and not just the prefix.
+	// Defaults to an empty string, meaning the name will be the storage title.
+	// You can use this option to easily differentiate between different templates.
+	// It cannot be used in conjunction with the prefix setting.
+	TemplateName string `mapstructure:"template_name"`
+
+	// The storage size in gigabytes. Defaults to `25`.
+	// Changing this value is useful if you aim to build a template for larger server configurations where the preconfigured server disk is larger than 25 GB.
+	// The operating system disk can also be later extended if needed. Note that Windows templates require large storage size, than default 25 Gb.
+	StorageSize int `mapstructure:"storage_size"`
+
+	// The amount of time to wait for resource state changes. Defaults to `5m`.
+	Timeout time.Duration `mapstructure:"state_timeout_duration"`
+
+	// The array of extra zones (locations) where created templates should be cloned.
+	// Note that default `state_timeout_duration` is not enough for cloning, better to increase a value depending on storage size.
+	CloneZones []string `mapstructure:"clone_zones"`
+
+	// The array of network interfaces to request during the creation of the server for building the packer image.
 	NetworkInterfaces []NetworkInterface `mapstructure:"network_interfaces"`
 
+	// Path to SSH Private Key that will be used for provisioning and stored in the template.
 	SSHPrivateKeyPath string `mapstructure:"ssh_private_key_path"`
-	SSHPublicKeyPath  string `mapstructure:"ssh_public_key_path"`
+
+	// Path to SSH Public Key that will be used for provisioning.
+	SSHPublicKeyPath string `mapstructure:"ssh_public_key_path"`
 
 	ctx interpolate.Context
 }
