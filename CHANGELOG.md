@@ -6,11 +6,16 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
--  add new template name param 
+- add new template name param 
+- new `default` IP address flag to select used interface/IP during build
+- new `wait_boot` flag adds ability to wait N time for server to boot up and start all services
+- add `none` communicator support
+- support for IPv6 interfaces
 
 ### Changed
 - update README file
 - update acceptance test to embed HCL2 configs 
+- drop public IPv4 interface requirement
 
 ### Fixed
 - fix network interface config
