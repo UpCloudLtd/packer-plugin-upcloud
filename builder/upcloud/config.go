@@ -16,11 +16,17 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
 )
 
+type InterfaceType string
+
 const (
-	DefaultTemplatePrefix = "custom-image"
-	DefaultSSHUsername    = "root"
-	DefaultStorageSize    = 25
-	DefaultTimeout        = 5 * time.Minute
+	DefaultTemplatePrefix               = "custom-image"
+	DefaultSSHUsername                  = "root"
+	DefaultCommunicator                 = "ssh"
+	DefaultStorageSize                  = 25
+	DefaultTimeout                      = 5 * time.Minute
+	InterfaceTypePublic   InterfaceType = upcloud.IPAddressAccessPublic
+	InterfaceTypeUtility  InterfaceType = upcloud.IPAddressAccessUtility
+	InterfaceTypePrivate  InterfaceType = upcloud.IPAddressAccessPrivate
 )
 
 var (
@@ -38,13 +44,24 @@ var (
 
 // for config type convertion
 type NetworkInterface struct {
+	// List of IP Addresses
 	IPAddresses []IPAddress `mapstructure:"ip_addresses"`
-	Type        string      `mapstructure:"type"`
-	Network     string      `mapstructure:"network,omitempty"`
+
+	// Network type (e.g. public, utility, private)
+	Type InterfaceType `mapstructure:"type"`
+
+	// Network UUID when connecting private network
+	Network string `mapstructure:"network,omitempty"`
 }
 
 type IPAddress struct {
-	Family  string `mapstructure:"family"`
+	// Default IP address. When set to `true` SSH communicator will connect to this IP after boot.
+	Default bool `mapstructure:"default"`
+
+	// IP address family (IPv4 or IPv6)
+	Family string `mapstructure:"family"`
+
+	// IP address. Note that at the moment using floating IPs is not supported.
 	Address string `mapstructure:"address,omitempty"`
 }
 
@@ -89,6 +106,9 @@ type Config struct {
 	// The amount of time to wait for resource state changes. Defaults to `5m`.
 	Timeout time.Duration `mapstructure:"state_timeout_duration"`
 
+	// The amount of time to wait after booting the server. Defaults to '0s'
+	BootWait time.Duration `mapstructure:"boot_wait"`
+
 	// The array of extra zones (locations) where created templates should be cloned.
 	// Note that default `state_timeout_duration` is not enough for cloning, better to increase a value depending on storage size.
 	CloneZones []string `mapstructure:"clone_zones"`
@@ -103,6 +123,18 @@ type Config struct {
 	SSHPublicKeyPath string `mapstructure:"ssh_public_key_path"`
 
 	ctx interpolate.Context
+}
+
+// DefaultIPaddress returns default IP address and its type (public,private,utility)
+func (c *Config) DefaultIPaddress() (*IPAddress, InterfaceType) {
+	for _, iface := range c.NetworkInterfaces {
+		for _, addr := range iface.IPAddresses {
+			if addr.Default {
+				return &addr, iface.Type
+			}
+		}
+	}
+	return nil, ""
 }
 
 func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
@@ -130,7 +162,11 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		c.Timeout = DefaultTimeout
 	}
 
-	if c.Comm.SSHUsername == "" {
+	if c.Comm.Type == "" {
+		c.Comm.Type = DefaultCommunicator
+	}
+
+	if c.Comm.Type == "ssh" && c.Comm.SSHUsername == "" {
 		c.Comm.SSHUsername = DefaultSSHUsername
 	}
 

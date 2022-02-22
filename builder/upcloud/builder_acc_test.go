@@ -87,6 +87,9 @@ var testBuilderStorageUuidHcl string
 //go:embed test-fixtures/hcl2/storage-name.pkr.hcl
 var testBuilderStorageNameHcl string
 
+//go:embed test-fixtures/hcl2/network_interfaces.pkr.hcl
+var testBuilderNetworkInterfacesHcl string
+
 func TestBuilderAcc_default_hcl(t *testing.T) {
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
@@ -115,6 +118,28 @@ func TestBuilderAcc_storageName_hcl(t *testing.T) {
 		Name:     t.Name(),
 		Template: testBuilderStorageNameHcl,
 		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
+func TestBuilderAcc_network_interfaces(t *testing.T) {
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderNetworkInterfacesHcl,
+		Check: func(buildCommand *exec.Cmd, logfile string) error {
+			re := regexp.MustCompile(`upcloud.network_interfaces: Selecting default ip '10.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}' as Server IP`)
+			log, err := readLog(logfile)
+			if err != nil {
+				return err
+			}
+			fmt.Println(log)
+			if !re.MatchString(log) {
+				return fmt.Errorf("Unable find default utility network IP from the log %s", logfile)
+			}
+			return nil
+		},
 		Teardown: teardown(t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)

@@ -18,6 +18,8 @@
 
 - `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `5m`.
 
+- `boot_wait` (duration string | ex: "1h5m2s") - The amount of time to wait after booting the server. Defaults to '0s'
+
 - `clone_zones` ([]string) - The array of extra zones (locations) where created templates should be cloned.
   Note that default `state_timeout_duration` is not enough for cloning, better to increase a value depending on storage size.
 

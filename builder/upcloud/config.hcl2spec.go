@@ -76,6 +76,7 @@ type FlatConfig struct {
 	TemplateName              *string                `mapstructure:"template_name" cty:"template_name" hcl:"template_name"`
 	StorageSize               *int                   `mapstructure:"storage_size" cty:"storage_size" hcl:"storage_size"`
 	Timeout                   *string                `mapstructure:"state_timeout_duration" cty:"state_timeout_duration" hcl:"state_timeout_duration"`
+	BootWait                  *string                `mapstructure:"boot_wait" cty:"boot_wait" hcl:"boot_wait"`
 	CloneZones                []string               `mapstructure:"clone_zones" cty:"clone_zones" hcl:"clone_zones"`
 	NetworkInterfaces         []FlatNetworkInterface `mapstructure:"network_interfaces" cty:"network_interfaces" hcl:"network_interfaces"`
 	SSHPrivateKeyPath         *string                `mapstructure:"ssh_private_key_path" cty:"ssh_private_key_path" hcl:"ssh_private_key_path"`
@@ -160,6 +161,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"template_name":                &hcldec.AttrSpec{Name: "template_name", Type: cty.String, Required: false},
 		"storage_size":                 &hcldec.AttrSpec{Name: "storage_size", Type: cty.Number, Required: false},
 		"state_timeout_duration":       &hcldec.AttrSpec{Name: "state_timeout_duration", Type: cty.String, Required: false},
+		"boot_wait":                    &hcldec.AttrSpec{Name: "boot_wait", Type: cty.String, Required: false},
 		"clone_zones":                  &hcldec.AttrSpec{Name: "clone_zones", Type: cty.List(cty.String), Required: false},
 		"network_interfaces":           &hcldec.BlockListSpec{TypeName: "network_interfaces", Nested: hcldec.ObjectSpec((*FlatNetworkInterface)(nil).HCL2Spec())},
 		"ssh_private_key_path":         &hcldec.AttrSpec{Name: "ssh_private_key_path", Type: cty.String, Required: false},
@@ -171,6 +173,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 // FlatIPAddress is an auto-generated flat version of IPAddress.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatIPAddress struct {
+	Default *bool   `mapstructure:"default" cty:"default" hcl:"default"`
 	Family  *string `mapstructure:"family" cty:"family" hcl:"family"`
 	Address *string `mapstructure:"address,omitempty" cty:"address" hcl:"address"`
 }
@@ -187,6 +190,7 @@ func (*IPAddress) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spe
 // The decoded values from this spec will then be applied to a FlatIPAddress.
 func (*FlatIPAddress) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
+		"default": &hcldec.AttrSpec{Name: "default", Type: cty.Bool, Required: false},
 		"family":  &hcldec.AttrSpec{Name: "family", Type: cty.String, Required: false},
 		"address": &hcldec.AttrSpec{Name: "address", Type: cty.String, Required: false},
 	}
@@ -197,7 +201,7 @@ func (*FlatIPAddress) HCL2Spec() map[string]hcldec.Spec {
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatNetworkInterface struct {
 	IPAddresses []FlatIPAddress `mapstructure:"ip_addresses" cty:"ip_addresses" hcl:"ip_addresses"`
-	Type        *string         `mapstructure:"type" cty:"type" hcl:"type"`
+	Type        *InterfaceType  `mapstructure:"type" cty:"type" hcl:"type"`
 	Network     *string         `mapstructure:"network,omitempty" cty:"network" hcl:"network"`
 }
 

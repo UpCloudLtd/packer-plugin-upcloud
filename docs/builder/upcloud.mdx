@@ -61,6 +61,8 @@ The upcloud builder is used to generate storage templates on UpCloud.
 
 - `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `5m`.
 
+- `boot_wait` (duration string | ex: "1h5m2s") - The amount of time to wait after booting the server. Defaults to '0s'
+
 - `clone_zones` ([]string) - The array of extra zones (locations) where created templates should be cloned.
   Note that default `state_timeout_duration` is not enough for cloning, better to increase a value depending on storage size.
 
@@ -77,11 +79,11 @@ The upcloud builder is used to generate storage templates on UpCloud.
 
 <!-- Code generated from the comments of the NetworkInterface struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
-- `ip_addresses` ([]IPAddress) - IP Addresses
+- `ip_addresses` ([]IPAddress) - List of IP Addresses
 
-- `type` (string) - Type
+- `type` (InterfaceType) - Network type (e.g. public, utility, private)
 
-- `network` (string) - Network
+- `network` (string) - Network UUID when connecting private network
 
 <!-- End of code generated from the comments of the NetworkInterface struct in builder/upcloud/config.go; -->
 
@@ -90,9 +92,11 @@ The upcloud builder is used to generate storage templates on UpCloud.
 
 <!-- Code generated from the comments of the IPAddress struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
-- `family` (string) - Family
+- `default` (bool) - Default IP address. When set to `true` SSH communicator will connect to this IP after boot.
 
-- `address` (string) - Address
+- `family` (string) - IP address family (IPv4 or IPv6)
+
+- `address` (string) - IP address. Note that at the moment using floating IPs is not supported.
 
 <!-- End of code generated from the comments of the IPAddress struct in builder/upcloud/config.go; -->
 
@@ -164,6 +168,7 @@ Configuration reads your SSH public key from the default location `~/.ssh/id_rsa
 $ packer build -var="ssh_public_key=/some/other/path/id_rsa.pub"
 ```
 
+#### Network interfaces
 This template uses `network_interfaces` to define network interfaces to be used during the creation of the server for building the packer image.
 ```hcl
 packer {
@@ -210,15 +215,6 @@ source "upcloud" "test" {
 
   network_interfaces {
     ip_addresses {
-      address = "10.0.0.2"
-      family  = "IPv4"
-    }
-    network = "<network_uuid>"
-    type    = "private"
-  }
-
-  network_interfaces {
-    ip_addresses {
       family = "IPv4"
     }
     type = "utility"
@@ -233,6 +229,148 @@ build {
       "apt-get update",
       "apt-get upgrade -y",
       "echo '${file(var.ssh_public_key)}' | tee /root/.ssh/authorized_keys"
+    ]
+  }
+}
+
+```
+
+#### IPv6 network interfaces
+```hcl
+packer {
+  required_plugins {
+    upcloud = {
+      version = ">=v1.0.0"
+      source  = "github.com/UpCloudLtd/upcloud"
+    }
+  }
+}
+
+variable "username" {
+  type        = string
+  description = "UpCloud API username"
+  default     = "${env("UPCLOUD_API_USER")}"
+}
+
+variable "password" {
+  type        = string
+  description = "UpCloud API password"
+  default     = "${env("UPCLOUD_API_PASSWORD")}"
+  sensitive   = true
+}
+
+variable "ssh_public_key" {
+  type        = string
+  description = "Path to your SSH public key file"
+  default     = "~/.ssh/id_rsa.pub"
+}
+
+source "upcloud" "test" {
+  username        = "${var.username}"
+  password        = "${var.password}"
+  zone            = "fi-hel1"
+  storage_name    = "Debian GNU/Linux 11 (Bullseye)"
+  template_prefix = "debian11"
+  network_interfaces {
+    ip_addresses {
+      family = "IPv6"
+    }
+    type = "public"
+  }
+  communicator = "ssh"
+
+  # Use bastion host if no IPv6 connection is available
+  # ssh_bastion_username         = "<bastion_username>"
+  # ssh_bastion_host             = "<bastion_host>"
+  # ssh_bastion_private_key_file = "<bastion_private_key_file>"
+}
+
+build {
+  sources = ["source.upcloud.test"]
+
+  provisioner "shell" {
+    environment_vars = [
+      "DEBIAN_FRONTEND=noninteractive",
+      "APT_LISTCHANGES_FRONTEND=none",
+    ]
+
+    inline = [
+      "apt-get update",
+      "apt-get upgrade -y",
+      "echo '${file(var.ssh_public_key)}' | tee /root/.ssh/authorized_keys",
+    ]
+  }
+}
+
+```
+
+#### Private network interfaces
+```hcl
+packer {
+  required_plugins {
+    upcloud = {
+      version = ">=v1.0.0"
+      source  = "github.com/UpCloudLtd/upcloud"
+    }
+  }
+}
+
+variable "username" {
+  type        = string
+  description = "UpCloud API username"
+  default     = "${env("UPCLOUD_API_USER")}"
+}
+
+variable "password" {
+  type        = string
+  description = "UpCloud API password"
+  default     = "${env("UPCLOUD_API_PASSWORD")}"
+  sensitive   = true
+}
+
+variable "ssh_public_key" {
+  type        = string
+  description = "Path to your SSH public key file"
+  default     = "~/.ssh/id_rsa.pub"
+}
+
+source "upcloud" "test" {
+  username        = "${var.username}"
+  password        = "${var.password}"
+  zone            = "fi-hel1"
+  storage_name    = "Debian GNU/Linux 11 (Bullseye)"
+  template_prefix = "debian11"
+
+  network_interfaces {
+    ip_addresses {
+      default = true
+      address = "10.0.0.20"
+      family  = "IPv4"
+    }
+    network = "<network_uuid>"
+    type    = "private"
+  }
+  communicator = "ssh"
+
+  # Use bastion host to get access to private network if need
+  # ssh_bastion_username         = "<bastion_username>"
+  # ssh_bastion_host             = "<bastion_host>"
+  # ssh_bastion_private_key_file = "<bastion_private_key_file>"
+}
+
+build {
+  sources = ["source.upcloud.test"]
+
+  provisioner "shell" {
+    environment_vars = [
+      "DEBIAN_FRONTEND=noninteractive",
+      "APT_LISTCHANGES_FRONTEND=none",
+    ]
+
+    inline = [
+      "apt-get update",
+      "apt-get upgrade -y",
+      "echo '${file(var.ssh_public_key)}' | tee /root/.ssh/authorized_keys",
     ]
   }
 }
