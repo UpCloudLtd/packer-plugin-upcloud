@@ -5,11 +5,13 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.3.0] - 2022-02-22
+
 ### Added
 - add new template name param 
-- new `default` IP address flag to select used interface/IP during build
-- new `wait_boot` flag adds ability to wait N time for server to boot up and start all services
-- add `none` communicator support
+- new default IP address flag to select used interface/IP during build
+- new wait_boot flag adds ability to wait N time for server to boot up and start all services
+- add "none" communicator support
 - support for IPv6 interfaces
 
 ### Changed
@@ -39,7 +41,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 - Upgrade to Packer 1.7.0
 - Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
 
-[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/releases/tag/v1.0.0
