@@ -37,7 +37,7 @@ install-packer-sdc: ## Install packer sofware development command
 	go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@$(HASHICORP_PACKER_PLUGIN_SDK_VERSION)
 
 ci-release-docs: install-packer-sdc generate
-	@/bin/sh -c "[ -d docs ] && zip -r docs.zip docs/"
+	@/bin/sh -c "[ -d docs ] && zip -x docs/README.mdx -r docs.zip docs/"
 
 plugin-check: install-packer-sdc build
 	$(PACKER_SDC) plugin-check $(BINARY)
