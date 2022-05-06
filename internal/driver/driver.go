@@ -2,6 +2,7 @@ package driver
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -21,11 +22,19 @@ type (
 		CreateServer(*ServerOpts) (*upcloud.ServerDetails, error)
 		DeleteServer(string) error
 		StopServer(string) error
-		GetStorage(string, string) (*upcloud.Storage, error)
+		// TODO: rename method or split into two separate method GetStorageByUUID and GetTemplateByName
+		GetStorage(storageUUID, templateName string) (*upcloud.Storage, error)
+		RenameStorage(storageUUID, name string) (*upcloud.Storage, error)
 		GetServerStorage(string) (*upcloud.ServerStorageDevice, error)
-		CloneStorage(string, string, string) (*upcloud.Storage, error)
-		CreateTemplate(string, string) (*upcloud.Storage, error)
+		CloneStorage(storageUUID, zone, title string) (*upcloud.Storage, error)
+		GetTemplateByName(name, zone string) (*upcloud.Storage, error)
+		CreateTemplate(storageUUID, templateTitle string) (*upcloud.Storage, error)
+		CreateTemplateStorage(title, zone string, size int) (*upcloud.Storage, error)
+		ImportStorage(storageUUID, contentType string, f io.Reader) (*upcloud.StorageImportDetails, error)
+		WaitStorageOnline(storageUUID string) (*upcloud.Storage, error)
 		DeleteTemplate(string) error
+		DeleteStorage(storageUUID string) error
+		GetAvailableZones() []string
 	}
 
 	driver struct {
@@ -122,11 +131,11 @@ func (d *driver) CreateTemplate(serverStorageUuid, templateTitle string) (*upclo
 	if err != nil {
 		return nil, fmt.Errorf("Error creating image: %s", err)
 	}
-	return d.waitStorageOnline(response.UUID)
+	return d.WaitStorageOnline(response.UUID)
 }
 
-func (d *driver) waitStorageOnline(storageUuid string) (*upcloud.Storage, error) {
-	template, err := d.svc.WaitForStorageState(&request.WaitForStorageStateRequest{
+func (d *driver) WaitStorageOnline(storageUuid string) (*upcloud.Storage, error) {
+	details, err := d.svc.WaitForStorageState(&request.WaitForStorageStateRequest{
 		UUID:         storageUuid,
 		DesiredState: upcloud.StorageStateOnline,
 		Timeout:      d.config.Timeout,
@@ -134,7 +143,25 @@ func (d *driver) waitStorageOnline(storageUuid string) (*upcloud.Storage, error)
 	if err != nil {
 		return nil, fmt.Errorf("Error while waiting for storage to change state to 'online': %s", err)
 	}
-	return &template.Storage, nil
+	return &details.Storage, nil
+}
+
+func (d *driver) GetTemplateByName(name, zone string) (*upcloud.Storage, error) {
+	response, err := d.svc.GetStorages(&request.GetStoragesRequest{
+		Type: upcloud.StorageTypeTemplate,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range response.Storages {
+		if strings.ToLower(s.Title) == strings.ToLower(name) && (zone != "" && zone == s.Zone) {
+			return &s, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Failed to find storage by name %q", name)
 }
 
 // fetch storage by uuid or name
@@ -158,9 +185,48 @@ func (d *driver) GetStorage(storageUuid, storageName string) (*upcloud.Storage, 
 	return nil, fmt.Errorf("Error retrieving storage")
 }
 
+func (d *driver) RenameStorage(storageUUID, name string) (*upcloud.Storage, error) {
+	details, err := d.svc.ModifyStorage(&request.ModifyStorageRequest{
+		UUID:  storageUUID,
+		Title: name,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return d.WaitStorageOnline(details.Storage.UUID)
+}
+
+func (d *driver) CreateTemplateStorage(title, zone string, size int) (*upcloud.Storage, error) {
+	storage, err := d.svc.CreateStorage(&request.CreateStorageRequest{
+		Size:  size,
+		Tier:  upcloud.StorageTierMaxIOPS,
+		Title: title,
+		Zone:  zone,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return d.WaitStorageOnline(storage.UUID)
+}
+
+func (d *driver) ImportStorage(storageUUID, contentType string, f io.Reader) (*upcloud.StorageImportDetails, error) {
+	return d.svc.CreateStorageImport(&request.CreateStorageImportRequest{
+		StorageUUID:    storageUUID,
+		ContentType:    contentType,
+		Source:         "direct_upload",
+		SourceLocation: f,
+	})
+}
+
 func (d *driver) DeleteTemplate(templateUuid string) error {
+	return d.DeleteStorage(templateUuid)
+}
+
+func (d *driver) DeleteStorage(storageUUID string) error {
 	return d.svc.DeleteStorage(&request.DeleteStorageRequest{
-		UUID: templateUuid,
+		UUID: storageUUID,
 	})
 }
 
@@ -173,7 +239,7 @@ func (d *driver) CloneStorage(storageUuid string, zone string, title string) (*u
 	if err != nil {
 		return nil, err
 	}
-	return d.waitStorageOnline(response.UUID)
+	return d.WaitStorageOnline(response.UUID)
 }
 
 func (d *driver) getStorageByUuid(storageUuid string) (*upcloud.Storage, error) {
@@ -199,6 +265,7 @@ func (d *driver) getStorageByName(storageName string) (*upcloud.Storage, error) 
 	var found bool
 	var storage upcloud.Storage
 	for _, s := range response.Storages {
+		// TODO: should we compare are these strings equal instead ?
 		if strings.Contains(strings.ToLower(s.Title), strings.ToLower(storageName)) {
 			found = true
 			storage = s
@@ -296,6 +363,16 @@ func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerReq
 		},
 	}
 	return &request
+}
+
+func (d *driver) GetAvailableZones() []string {
+	zones := make([]string, 0)
+	if z, err := d.svc.GetZones(); err == nil {
+		for _, zone := range z.Zones {
+			zones = append(zones, zone.ID)
+		}
+	}
+	return zones
 }
 
 func getNowString() string {
