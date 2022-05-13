@@ -6,12 +6,12 @@ page_title: UpCloud - Post-processors
 ---
 
 
-# UpCloud Image Import Post-Processor
+# UpCloud Import Post-Processor
 
 Type: `upcloud-import`  
 Artifact BuilderId: `packer.post-processor.upcloud-import`
 
-The upcloud image importer can be used to import raw disk images as private templates to UpCloud.
+The UpCloud importer can be used to import raw disk images as private templates to UpCloud.
 
 ### Required
 Username and password configuration arguments can be omitted if environment variables `UPCLOUD_API_USER` and `UPCLOUD_API_PASSWORD` are set.
@@ -34,7 +34,7 @@ Username and password configuration arguments can be omitted if environment vari
 ```hcl
 source "qemu" "example" {
   format           = "raw"
-  # .. rest of the paramters ..
+  # .. rest of the parameters ..
 }
 
 build {
