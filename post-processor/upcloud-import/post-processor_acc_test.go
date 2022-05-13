@@ -28,9 +28,14 @@ func (a *testArtifact) Destroy() error                { return nil }
 
 func TestPostProcessorAcc_raw(t *testing.T) {
 	username := os.Getenv("UPCLOUD_API_USER")
-	require.NotEmpty(t, username, "UPCLOUD_API_USER must be set for acceptance tests")
+	if username == "" {
+		t.Skip("UPCLOUD_API_USER must be set for acceptance tests")
+	}
+
 	password := os.Getenv("UPCLOUD_API_PASSWORD")
-	require.NotEmpty(t, password, "UPCLOUD_API_PASSWORD must be set for acceptance tests")
+	if password == "" {
+		t.Skip("UPCLOUD_API_PASSWORD must be set for acceptance tests")
+	}
 
 	testName := fmt.Sprintf("%s-acc-test-%s", BuilderID, time.Now().Format(timestampSuffixLayout))
 	imageFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*.raw", testName))
