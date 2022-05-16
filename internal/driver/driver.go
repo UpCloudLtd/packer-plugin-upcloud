@@ -212,11 +212,17 @@ func (d *driver) CreateTemplateStorage(title, zone string, size int) (*upcloud.S
 }
 
 func (d *driver) ImportStorage(storageUUID, contentType string, f io.Reader) (*upcloud.StorageImportDetails, error) {
-	return d.svc.CreateStorageImport(&request.CreateStorageImportRequest{
+	if _, err := d.svc.CreateStorageImport(&request.CreateStorageImportRequest{
 		StorageUUID:    storageUUID,
 		ContentType:    contentType,
 		Source:         "direct_upload",
 		SourceLocation: f,
+	}); err != nil {
+		return nil, err
+	}
+	return d.svc.WaitForStorageImportCompletion(&request.WaitForStorageImportCompletionRequest{
+		StorageUUID: storageUUID,
+		Timeout:     d.config.Timeout,
 	})
 }
 
