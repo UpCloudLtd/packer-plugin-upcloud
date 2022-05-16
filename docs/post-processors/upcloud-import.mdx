@@ -44,7 +44,7 @@ Username and password configuration arguments can be omitted if environment vari
 
 ### Example Usage
 
-## Import raw disk image from filesystem
+Import raw disk image from filesystem using `compress` post-processor to compress image before upload
 ```hcl
 variable "username" {
   type        = string
@@ -74,20 +74,22 @@ build {
   sources = ["file.import-example"]
 
   post-processors {
+    post-processor "compress" {
+      output = "tmp/${basename(var.image_path)}.gz"
+    }
     post-processor "upcloud-import" {
-      template_name       = "import-demo"
-      replace_existing    = true
-      username            = "${var.username}"
-      password            = "${var.password}"
-      zones               = ["pl-waw1", "fi-hel2"]
-      keep_input_artifact = true
+      template_name    = "import-demo"
+      replace_existing = true
+      username         = "${var.username}"
+      password         = "${var.password}"
+      zones            = ["pl-waw1", "fi-hel2"]
     }
   }
 }
 
 ```
 
-## Import image created by QEMU builder
+Import image created by QEMU builder
 ```hcl
 source "qemu" "example" {
   format           = "raw"

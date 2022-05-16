@@ -25,12 +25,12 @@ Username and password configuration arguments can be omitted if environment vari
 
 ### Example Usage
 
-## Import raw disk image from filesystem
+Import raw disk image from filesystem using `compress` post-processor to compress image before upload
 ```hcl
 @include '../example/import.pkr.hcl'
 ```
 
-## Import image created by QEMU builder
+Import image created by QEMU builder
 ```hcl
 source "qemu" "example" {
   format           = "raw"

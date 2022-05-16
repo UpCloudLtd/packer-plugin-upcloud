@@ -30,11 +30,11 @@ build {
       output = "tmp/${basename(var.image_path)}.gz"
     }
     post-processor "upcloud-import" {
-      template_name       = "import-demo"
-      replace_existing    = true
-      username            = "${var.username}"
-      password            = "${var.password}"
-      zones               = ["pl-waw1", "fi-hel2"]
+      template_name    = "import-demo"
+      replace_existing = true
+      username         = "${var.username}"
+      password         = "${var.password}"
+      zones            = ["pl-waw1", "fi-hel2"]
     }
   }
 }
