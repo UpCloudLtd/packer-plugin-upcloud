@@ -26,13 +26,15 @@ build {
   sources = ["file.import-example"]
 
   post-processors {
+    post-processor "compress" {
+      output = "tmp/${basename(var.image_path)}.gz"
+    }
     post-processor "upcloud-import" {
       template_name       = "import-demo"
       replace_existing    = true
       username            = "${var.username}"
       password            = "${var.password}"
       zones               = ["pl-waw1", "fi-hel2"]
-      keep_input_artifact = true
     }
   }
 }
