@@ -38,9 +38,9 @@ func (s *stepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 	wg.Add(len(storages))
 	for _, storage := range storages {
 		ui.Say(fmt.Sprintf("Creating template based on storage '%s' (%s) [%s]", storage.Title, storage.UUID, storage.Zone))
-		go func(storage *upcloud.Storage) {
+		go func(sto *upcloud.Storage) {
 			defer wg.Done()
-			template, err := s.createTemplateBasedOnStorage(ui, storage)
+			template, err := s.createTemplateBasedOnStorage(ui, sto)
 			if err != nil {
 				halt = true
 				return
@@ -74,11 +74,12 @@ func (s *stepCreateTemplate) Cleanup(state multistep.StateBag) {
 }
 
 func (s *stepCreateTemplate) createTemplateBasedOnStorage(ui packer.Ui, storage *upcloud.Storage) (*upcloud.Storage, error) {
+	var existingTemplate *upcloud.Storage
+	var err error
 	t1 := time.Now()
 	name := s.postProcessor.config.TemplateName
-	var existingTemplate *upcloud.Storage
 	if s.postProcessor.config.ReplaceExisting {
-		existingTemplate, err := s.postProcessor.driver.GetTemplateByName(s.postProcessor.config.TemplateName, storage.Zone)
+		existingTemplate, err = s.postProcessor.driver.GetTemplateByName(s.postProcessor.config.TemplateName, storage.Zone)
 		if err == nil && existingTemplate.UUID != "" {
 			name = fmt.Sprintf("%s-%s-tmp", name, time.Now().Format(timestampSuffixLayout))
 			ui.Say(fmt.Sprintf("Replacing previously created (%s) template '%s' [%s]",

@@ -2,10 +2,7 @@ package upcloudimport
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"io"
 	"os"
 	"time"
 
@@ -32,16 +29,6 @@ func (s *stepUploadImage) Run(ctx context.Context, state multistep.StateBag) mul
 	}
 	defer fd.Close()
 
-	cs := sha256.New()
-	if _, err := io.Copy(cs, fd); err != nil {
-		return haltOnError(ui, state, err)
-	}
-
-	// reset Reader after io.Copy
-	if _, err := fd.Seek(0, 0); err != nil {
-		return haltOnError(ui, state, err)
-	}
-
 	t1 := time.Now()
 	importDetails, err := s.postProcessor.driver.ImportStorage(storages[0].UUID, s.image.ContentType, fd)
 	if err != nil {
@@ -56,9 +43,8 @@ func (s *stepUploadImage) Run(ctx context.Context, state multistep.StateBag) mul
 	}
 
 	// do checksum check after storage is online so that cleanup works if there is a problem
-	csString := hex.EncodeToString(cs.Sum(nil)[:])
-	if importDetails.SHA256Sum != csString {
-		return haltOnError(ui, state, fmt.Errorf("uploaded image checksum mismatch want '%s' got '%s'", csString, importDetails.SHA256Sum))
+	if err := s.image.CheckSHA256(importDetails.SHA256Sum); err != nil {
+		return haltOnError(ui, state, err)
 	}
 
 	state.Put(stateStorages, storages)
