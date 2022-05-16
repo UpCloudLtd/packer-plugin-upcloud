@@ -27,6 +27,9 @@ func (a *testArtifact) State(name string) interface{} { return nil }
 func (a *testArtifact) Destroy() error                { return nil }
 
 func TestPostProcessorAcc_raw(t *testing.T) {
+	if os.Getenv("PACKER_ACC") != "1" {
+		t.Skip("skip acceptance test")
+	}
 	username := os.Getenv("UPCLOUD_API_USER")
 	if username == "" {
 		t.Skip("UPCLOUD_API_USER must be set for acceptance tests")

@@ -5,6 +5,12 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- new `upcloud-import` post-processor
+
+### Changed
+- new upcloud-go-api version v4.5.2
+
 ## [1.3.1] - 2022-02-24
 
 ### Changed

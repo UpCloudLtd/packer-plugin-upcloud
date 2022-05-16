@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	cloud.google.com/go/storage v1.18.2 // indirect
-	github.com/UpCloudLtd/upcloud-go-api v0.0.0-20210930073303-cc664e35078d
+	github.com/UpCloudLtd/upcloud-go-api/v4 v4.5.2
 	github.com/armon/go-metrics v0.3.10 // indirect
 	github.com/aws/aws-sdk-go v1.42.4 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect

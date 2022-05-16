@@ -68,8 +68,8 @@ github.com/Masterminds/sprig v2.22.0+incompatible/go.mod h1:y6hNFY5UBTIWBxnzTeuN
 github.com/Microsoft/go-winio v0.4.15-0.20190919025122-fc70bd9a86b5/go.mod h1:tTuCMEN+UleMWgg9dVx4Hu52b1bJo+59jBh3ajtinzw=
 github.com/Microsoft/hcsshim v0.8.9/go.mod h1:5692vkUqntj1idxauYlpoINNKeqCiG6Sg38RRsjT5y8=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/UpCloudLtd/upcloud-go-api v0.0.0-20210930073303-cc664e35078d h1:6BwkQbF6Xqg4xNeWTROsyeBAIqwRRYY4aqP4nI6ZO1A=
-github.com/UpCloudLtd/upcloud-go-api v0.0.0-20210930073303-cc664e35078d/go.mod h1:yx8f2CdUKkjXJt76aNDdemyOI7egZkEBsnWH3EARWWo=
+github.com/UpCloudLtd/upcloud-go-api/v4 v4.5.2 h1:+9yT6O1wqlExR55vdmaCr2PBvyzKyAKXWrhiHMDRUhU=
+github.com/UpCloudLtd/upcloud-go-api/v4 v4.5.2/go.mod h1:yGgbryc2wCR6fzfRCMnH6ZrjWPfZjKCWaJDnp4IameY=
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
