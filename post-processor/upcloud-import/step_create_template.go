@@ -100,7 +100,11 @@ func (s *stepCreateTemplate) createTemplateBasedOnStorage(ui packer.Ui, storage 
 			return nil, err
 		}
 		ui.Say(fmt.Sprintf("Renamimg temporary template '%s' to %s [%s]", template.Title, s.postProcessor.config.TemplateName, template.Zone))
-		s.postProcessor.driver.RenameStorage(template.UUID, s.postProcessor.config.TemplateName)
+		template, err = s.postProcessor.driver.RenameStorage(template.UUID, s.postProcessor.config.TemplateName)
+		if err != nil {
+			ui.Error(err.Error())
+			return nil, err
+		}
 	}
 
 	ui.Say(fmt.Sprintf("Template '%s' created in %s [%s]", name, time.Since(t1), storage.Zone))
