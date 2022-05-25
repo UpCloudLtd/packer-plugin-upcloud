@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"

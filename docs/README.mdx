@@ -53,6 +53,10 @@ on [installing a plugin](https://www.packer.io/docs/extending/plugins/#installin
 
 - [upcloud](/docs/builders/upcloud.mdx) - The upcloud builder is used to generate storage templates on UpCloud.
 
+### Post-processors
+
+- [upcloud-import](/docs/post-processors/upcloud-import.mdx) - The upcloud import post-processors is used to import disk images to UpCloud.
+
 ## JSON Templates
 From Packer version 1.7.0, template HCL2 becomes officially the preferred way to write Packer configuration. While the `json` format is still supported, but certain new features, such as `packer init` works only in newer HCL2 format.
 If you are using `json` config templates, please consider upgrading them using the packer built-in command:

@@ -1,0 +1,50 @@
+---
+description: >
+  This is a post-processor for Packer which can be used to import raw disk images as private templates to UpCloud.
+  It utilises the UpCloud Go API to interface with the UpCloud API.
+page_title: UpCloud - Post-processors
+---
+
+
+# UpCloud Import Post-Processor
+
+Type: `upcloud-import`  
+Artifact BuilderId: `packer.post-processor.upcloud-import`
+
+The UpCloud importer can be used to import raw disk images as private templates to UpCloud.
+
+### Required
+Username and password configuration arguments can be omitted if environment variables `UPCLOUD_API_USER` and `UPCLOUD_API_PASSWORD` are set.
+
+@include 'post-processor/upcloud-import/Config-required.mdx'
+
+### Optional
+
+@include 'post-processor/upcloud-import/Config-not-required.mdx'
+
+
+### Example Usage
+
+Import raw disk image from filesystem using `compress` post-processor to compress image before upload
+```hcl
+@include '../example/import.pkr.hcl'
+```
+
+Import image created by QEMU builder
+```hcl
+source "qemu" "example" {
+  format           = "raw"
+  # .. rest of the parameters ..
+}
+
+build {
+  sources = ["source.qemu.example"]
+  post-processors {
+    post-processor "upcloud-import" {
+      template_name    = "${local.template_name}"
+      replace_existing = true
+      zones            = ["pl-waw1"]
+    }
+  }
+}
+```
