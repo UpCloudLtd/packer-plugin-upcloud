@@ -5,6 +5,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.4.0] - 2022-05-30
+
 ### Added
 - new `upcloud-import` post-processor
 
@@ -54,7 +56,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 - Upgrade to Packer 1.7.0
 - Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
 
-[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.1.0...v1.2.0
