@@ -10,13 +10,13 @@ packer {
 variable "username" {
   type        = string
   description = "UpCloud API username"
-  default     = "${env("UPCLOUD_API_USER")}"
+  default     = "${env("UPCLOUD_USERNAME")}"
 }
 
 variable "password" {
   type        = string
   description = "UpCloud API password"
-  default     = "${env("UPCLOUD_API_PASSWORD")}"
+  default     = "${env("UPCLOUD_PASSWORD")}"
   sensitive   = true
 }
 

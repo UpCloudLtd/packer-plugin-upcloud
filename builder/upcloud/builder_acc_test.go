@@ -146,11 +146,11 @@ func TestBuilderAcc_network_interfaces(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("UPCLOUD_API_USER"); v == "" {
-		t.Skip("UPCLOUD_API_USER must be set for acceptance tests")
+	if v := driver.UsernameFromEnv(); v == "" {
+		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigUsernameLegacy, driver.EnvConfigUsername)
 	}
-	if v := os.Getenv("UPCLOUD_API_PASSWORD"); v == "" {
-		t.Skip("UPCLOUD_API_PASSWORD must be set for acceptance tests")
+	if v := driver.PasswordFromEnv(); v == "" {
+		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigPasswordLegacy, driver.EnvConfigPassword)
 	}
 }
 
@@ -228,8 +228,8 @@ func teardown(testName string) func() error {
 		}
 
 		drv := driver.NewDriver(&driver.DriverConfig{
-			Username: os.Getenv("UPCLOUD_API_USER"),
-			Password: os.Getenv("UPCLOUD_API_PASSWORD"),
+			Username: driver.UsernameFromEnv(),
+			Password: driver.PasswordFromEnv(),
 			Timeout:  DefaultTimeout,
 		})
 

@@ -3,6 +3,7 @@ package driver
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -13,8 +14,12 @@ import (
 )
 
 const (
-	DefaultPlan     = "1xCPU-2GB"
-	DefaultHostname = "custom"
+	DefaultPlan             string = "1xCPU-2GB"
+	DefaultHostname         string = "custom"
+	EnvConfigUsername       string = "UPCLOUD_USERNAME"
+	EnvConfigPassword       string = "UPCLOUD_PASSWORD"
+	EnvConfigUsernameLegacy string = "UPCLOUD_API_USER"
+	EnvConfigPasswordLegacy string = "UPCLOUD_API_PASSWORD"
 )
 
 type (
@@ -383,4 +388,20 @@ func (d *driver) GetAvailableZones() []string {
 
 func getNowString() string {
 	return time.Now().Format("20060102-150405")
+}
+
+func UsernameFromEnv() string {
+	username := os.Getenv(EnvConfigUsernameLegacy)
+	if username == "" {
+		username = os.Getenv(EnvConfigUsername)
+	}
+	return username
+}
+
+func PasswordFromEnv() string {
+	passwd := os.Getenv(EnvConfigPasswordLegacy)
+	if passwd == "" {
+		passwd = os.Getenv(EnvConfigPassword)
+	}
+	return passwd
 }
