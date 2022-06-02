@@ -4,9 +4,9 @@ package upcloudimport
 
 import (
 	"errors"
-	"os"
 	"time"
 
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
@@ -94,9 +94,9 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 
 func (c *Config) fromEnv() {
 	if c.Username == "" {
-		c.Username = os.Getenv("UPCLOUD_API_USER")
+		c.Username = driver.UsernameFromEnv()
 	}
 	if c.Password == "" {
-		c.Password = os.Getenv("UPCLOUD_API_PASSWORD")
+		c.Password = driver.PasswordFromEnv()
 	}
 }

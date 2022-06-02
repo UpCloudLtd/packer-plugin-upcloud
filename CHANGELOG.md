@@ -5,6 +5,12 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- enviroment variables `UPCLOUD_USERNAME` and `UPCLOUD_PASSWORD` for authentication
+
+### Deprecated
+- environment variables `UPCLOUD_API_USER` and `UPCLOUD_API_PASSWORD`
+
 ## [1.4.0] - 2022-05-30
 
 ### Added

@@ -4,9 +4,9 @@ package upcloud
 
 import (
 	"errors"
-	"os"
 	"time"
 
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
 	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud/request"
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -227,13 +227,11 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 
 // get params from environment
 func (c *Config) setEnv() {
-	username := os.Getenv("UPCLOUD_API_USER")
-	if username != "" && c.Username == "" {
-		c.Username = username
+	if c.Username == "" {
+		c.Username = driver.UsernameFromEnv()
 	}
 
-	password := os.Getenv("UPCLOUD_API_PASSWORD")
-	if password != "" && c.Password == "" {
-		c.Password = password
+	if c.Password == "" {
+		c.Password = driver.PasswordFromEnv()
 	}
 }

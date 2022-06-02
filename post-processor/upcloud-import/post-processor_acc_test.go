@@ -30,14 +30,14 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	if os.Getenv("PACKER_ACC") != "1" {
 		t.Skip("skip acceptance test")
 	}
-	username := os.Getenv("UPCLOUD_API_USER")
+	username := driver.UsernameFromEnv()
 	if username == "" {
-		t.Skip("UPCLOUD_API_USER must be set for acceptance tests")
+		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigUsernameLegacy, driver.EnvConfigUsername)
 	}
 
-	password := os.Getenv("UPCLOUD_API_PASSWORD")
+	password := driver.PasswordFromEnv()
 	if password == "" {
-		t.Skip("UPCLOUD_API_PASSWORD must be set for acceptance tests")
+		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigPasswordLegacy, driver.EnvConfigPassword)
 	}
 
 	testName := fmt.Sprintf("%s-acc-test-%s", BuilderID, time.Now().Format(timestampSuffixLayout))

@@ -52,4 +52,9 @@ fmt:
 	packer fmt example/
 	packer fmt -recursive docs-partials/
 
+clean:
+	find . -name "packer_log_*" -delete
+	find . -name "TestBuilderAcc_*" -delete
+	find . -name "packer-plugin-upcloud" -delete
+
 .PHONY: default test test_integration lint build install
