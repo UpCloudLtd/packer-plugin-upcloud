@@ -74,7 +74,7 @@ func TestArtifact_Metadata(t *testing.T) {
 			"source_template_uuid":  "source-uuid",
 		},
 	}
-	got := a.State(image.ArtifactStateURI).(*image.Image)
+	got := a.State(image.ArtifactStateURI).([]*image.Image)
 	want := &image.Image{
 		ImageID:        "some-uuid",
 		ProviderName:   "upcloud",
@@ -82,14 +82,11 @@ func TestArtifact_Metadata(t *testing.T) {
 		Labels: map[string]string{
 			"source":      "source-title",
 			"source_id":   "source-uuid",
-			"fi-hel1":     "some-uuid",
-			"fi-hel2":     "some-other-uuid",
-			"zones":       "fi-hel1,fi-hel2",
 			"name":        "some-title",
 			"name_prefix": "prefix",
 			"size":        "10",
 		},
 		SourceImageID: "source-uuid",
 	}
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, got[0])
 }
