@@ -43,12 +43,12 @@ func (a *Artifact) String() string {
 
 func (a *Artifact) State(name string) interface{} {
 	if name == image.ArtifactStateURI {
-		img, err := a.buildHCPPackerRegistryMetadata()
+		images, err := a.buildHCPPackerRegistryMetadata()
 		if err != nil {
 			log.Printf("[DEBUG] error encountered when creating a registry image %v", err)
 			return nil
 		}
-		return img
+		return images
 	}
 	return a.StateData[name]
 }
@@ -63,32 +63,34 @@ func (a *Artifact) Destroy() error {
 	return nil
 }
 
-func (a *Artifact) buildHCPPackerRegistryMetadata() (*image.Image, error) {
-	img, err := image.FromArtifact(a,
-		image.WithID(a.Templates[0].UUID),
-		image.WithRegion(a.config.Zone),
-		image.WithProvider("upcloud"),
-	)
-	if err != nil {
-		return img, err
+func (a *Artifact) buildHCPPackerRegistryMetadata() ([]*image.Image, error) {
+	var sourceTemplateUUID, sourceTemplateTitle string
+	if v, ok := a.StateData["source_template_uuid"]; ok {
+		sourceTemplateUUID = v.(string)
 	}
 
-	if v, ok := a.StateData["source_template_uuid"].(string); ok {
-		img.SourceImageID = v
-		img.Labels["source_id"] = v
+	if v, ok := a.StateData["source_template_title"]; ok {
+		sourceTemplateTitle = v.(string)
 	}
-	// Comma separated list of zones which can be used to per zone template UUIDs
-	zones := []string{a.config.Zone}
-	zones = append(zones, a.config.CloneZones...)
-	img.Labels["zones"] = strings.Join(zones, ",")
-	for _, t := range a.Templates {
-		img.Labels[t.Zone] = t.UUID
+
+	images := make([]*image.Image, 0)
+	for _, template := range a.Templates {
+		img, err := image.FromArtifact(a,
+			image.WithID(template.UUID),
+			image.WithRegion(template.Zone),
+			image.WithProvider("upcloud"),
+		)
+		if err != nil {
+			return images, err
+		}
+
+		img.SourceImageID = sourceTemplateUUID
+		img.Labels["source_id"] = sourceTemplateUUID
+		img.Labels["source"] = sourceTemplateTitle
+		img.Labels["name"] = template.Title
+		img.Labels["name_prefix"] = a.config.TemplatePrefix
+		img.Labels["size"] = fmt.Sprint(template.Size)
+		images = append(images, img)
 	}
-	if v, ok := a.StateData["source_template_title"].(string); ok {
-		img.Labels["source"] = v
-	}
-	img.Labels["name"] = a.Templates[0].Title
-	img.Labels["name_prefix"] = a.config.TemplatePrefix
-	img.Labels["size"] = fmt.Sprint(a.Templates[0].Size)
-	return img, nil
+	return images, nil
 }
