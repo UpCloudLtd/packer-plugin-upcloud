@@ -30,7 +30,7 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 		return stepHaltWithError(state, err)
 	}
 
-	// clonning to zones
+	// cloning to zones
 	cleanupStorageUuid := []string{}
 	storageUuids := []string{}
 	storageUuids = append(storageUuids, storage.UUID)
@@ -45,7 +45,7 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 		storageUuids = append(storageUuids, clonedStorage.UUID)
 		cleanupStorageUuid = append(cleanupStorageUuid, clonedStorage.UUID)
 	}
-	ui.Say("Clonning completed...")
+	ui.Say("Cloning completed...")
 
 	// creating template
 	templates := []*upcloud.Storage{}
