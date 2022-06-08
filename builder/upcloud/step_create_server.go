@@ -72,6 +72,8 @@ func (s *StepCreateServer) Run(_ context.Context, state multistep.StateBag) mult
 		ui.Say(fmt.Sprintf("Auto-selecting ip '%s' as Server IP", addr.Address))
 	}
 
+	state.Put("source_template_uuid", storage.UUID)
+	state.Put("source_template_title", storage.Title)
 	state.Put("server_ip_address", addr)
 	state.Put("server_uuid", response.UUID)
 	state.Put("server_title", response.Title)

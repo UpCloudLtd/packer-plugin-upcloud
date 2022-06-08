@@ -3,10 +3,10 @@ module github.com/UpCloudLtd/packer-plugin-upcloud
 go 1.17
 
 require (
-	github.com/UpCloudLtd/upcloud-go-api/v4 v4.5.2
+	github.com/UpCloudLtd/upcloud-go-api/v4 v4.6.0
 	github.com/hashicorp/hcl/v2 v2.12.0
 	github.com/hashicorp/packer-plugin-sdk v0.2.12
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.2
 	github.com/zclconf/go-cty v1.10.0
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 )
@@ -105,5 +105,5 @@ require (
 	google.golang.org/grpc v1.42.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

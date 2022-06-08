@@ -2,10 +2,12 @@ package upcloud
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
+	"github.com/hashicorp/packer-plugin-sdk/packer/registry/image"
 )
 
 // packersdk.Artifact implementation
@@ -40,6 +42,14 @@ func (a *Artifact) String() string {
 }
 
 func (a *Artifact) State(name string) interface{} {
+	if name == image.ArtifactStateURI {
+		images, err := a.buildHCPPackerRegistryMetadata()
+		if err != nil {
+			log.Printf("[DEBUG] error encountered when creating a registry image %v", err)
+			return nil
+		}
+		return images
+	}
 	return a.StateData[name]
 }
 
@@ -51,4 +61,36 @@ func (a *Artifact) Destroy() error {
 		}
 	}
 	return nil
+}
+
+func (a *Artifact) buildHCPPackerRegistryMetadata() ([]*image.Image, error) {
+	var sourceTemplateUUID, sourceTemplateTitle string
+	if v, ok := a.StateData["source_template_uuid"]; ok {
+		sourceTemplateUUID = v.(string)
+	}
+
+	if v, ok := a.StateData["source_template_title"]; ok {
+		sourceTemplateTitle = v.(string)
+	}
+
+	images := make([]*image.Image, 0)
+	for _, template := range a.Templates {
+		img, err := image.FromArtifact(a,
+			image.WithID(template.UUID),
+			image.WithRegion(template.Zone),
+			image.WithProvider("upcloud"),
+		)
+		if err != nil {
+			return images, err
+		}
+
+		img.SourceImageID = sourceTemplateUUID
+		img.Labels["source_id"] = sourceTemplateUUID
+		img.Labels["source"] = sourceTemplateTitle
+		img.Labels["name"] = template.Title
+		img.Labels["name_prefix"] = a.config.TemplatePrefix
+		img.Labels["size"] = fmt.Sprint(template.Size)
+		images = append(images, img)
+	}
+	return images, nil
 }

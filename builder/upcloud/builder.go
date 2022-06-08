@@ -99,9 +99,11 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 		config:    &b.config,
 		driver:    b.driver,
 		StateData: map[string]interface{}{
-			"generated_data":  state.Get("generated_data"),
-			"template_prefix": b.config.TemplatePrefix,
-			"template_name":   b.config.TemplateName,
+			"generated_data":        state.Get("generated_data"),
+			"template_prefix":       b.config.TemplatePrefix,
+			"template_name":         b.config.TemplateName,
+			"source_template_uuid":  state.Get("source_template_uuid"),
+			"source_template_title": state.Get("source_template_title"),
 		},
 	}
 

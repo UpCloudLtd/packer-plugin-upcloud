@@ -6,6 +6,7 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 ## [Unreleased]
 
 ### Added
+- HCP Packer image metadata support
 - enviroment variables `UPCLOUD_USERNAME` and `UPCLOUD_PASSWORD` for authentication
 
 ### Deprecated
