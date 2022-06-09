@@ -65,6 +65,8 @@ type (
 
 func NewDriver(c *DriverConfig) Driver {
 	client := client.New(c.Username, c.Password)
+	// A Timeout of zero means no timeout.
+	client.SetTimeout(0)
 	svc := service.New(client)
 	return &driver{
 		svc:    svc,
