@@ -5,6 +5,9 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+- update `packer-plugin-sdk` to [v0.3.0](https://github.com/hashicorp/packer-plugin-sdk/blob/main/CHANGELOG.md#030-june-09-2022)
+
 ## [1.5.1] - 2022-06-10
 
 ### Fixed
