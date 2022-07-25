@@ -32,11 +32,11 @@ jobs:
       run: make lint
     
     - name: Test PR
-      if: github.ref != 'refs/heads/master'
+      if: github.ref != 'refs/heads/main'
       run: make test
 
-    - name: Test Master
-      if: github.ref == 'refs/heads/master'
+    - name: Test main
+      if: github.ref == 'refs/heads/main'
       env:
           UPCLOUD_API_USER: ${{ secrets.UPCLOUD_API_USER }}
           UPCLOUD_API_PASSWORD: ${{ secrets.UPCLOUD_API_PASSWORD }}
