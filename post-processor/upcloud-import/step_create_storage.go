@@ -30,7 +30,7 @@ func (s *stepCreateStorage) Run(ctx context.Context, state multistep.StateBag) m
 		size = storageMinSizeGB
 	}
 	ui.Say(fmt.Sprintf("Creating storage device (%dGB) for '%s' image", size, s.image.File()))
-	storage, err := s.postProcessor.driver.CreateTemplateStorage(
+	storage, err := s.postProcessor.driver.CreateTemplateStorage(ctx,
 		fmt.Sprintf("%s-%s", BuilderID, time.Now().Format(timestampSuffixLayout)), s.postProcessor.config.Zones[0], size)
 
 	if err != nil {
@@ -43,8 +43,10 @@ func (s *stepCreateStorage) Run(ctx context.Context, state multistep.StateBag) m
 }
 
 func (s *stepCreateStorage) Cleanup(state multistep.StateBag) {
+	ctx, cancel := contextWithDefaultTimeout()
+	defer cancel()
 	ui := state.Get(stateUI).(packer.Ui)
-	if err := cleanupDevices(ui, s.postProcessor.driver, state); err != nil {
+	if err := cleanupDevices(ctx, ui, s.postProcessor.driver, state); err != nil {
 		ui.Error(err.Error())
 	}
 }

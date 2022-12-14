@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"
@@ -18,14 +18,14 @@ type StepCreateTemplate struct {
 }
 
 // Run runs the actual step
-func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	serverUuid := state.Get("server_uuid").(string)
 
 	ui := state.Get("ui").(packer.Ui)
 	drv := state.Get("driver").(driver.Driver)
 
 	// get storage details
-	storage, err := drv.GetServerStorage(serverUuid)
+	storage, err := drv.GetServerStorage(ctx, serverUuid)
 	if err != nil {
 		return stepHaltWithError(state, err)
 	}
@@ -38,7 +38,7 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 	for _, zone := range s.Config.CloneZones {
 		ui.Say(fmt.Sprintf("Cloning storage %q to zone %q...", storage.UUID, zone))
 		title := fmt.Sprintf("packer-%s-cloned-disk1", getNowString())
-		clonedStorage, err := drv.CloneStorage(storage.UUID, zone, title)
+		clonedStorage, err := drv.CloneStorage(ctx, storage.UUID, zone, title)
 		if err != nil {
 			return stepHaltWithError(state, err)
 		}
@@ -60,7 +60,7 @@ func (s *StepCreateTemplate) Run(_ context.Context, state multistep.StateBag) mu
 
 	for _, uuid := range storageUuids {
 		ui.Say(fmt.Sprintf("Creating template for storage %q...", uuid))
-		t, err := drv.CreateTemplate(uuid, templateTitle)
+		t, err := drv.CreateTemplate(ctx, uuid, templateTitle)
 		if err != nil {
 			return stepHaltWithError(state, err)
 		}
@@ -82,7 +82,8 @@ func (s *StepCreateTemplate) Cleanup(state multistep.StateBag) {
 	if !ok {
 		return
 	}
-
+	ctx, cancel := contextWithDefaultTimeout()
+	defer cancel()
 	storageUuids := rawStorageUuids.([]string)
 
 	ui := state.Get("ui").(packer.Ui)
@@ -91,7 +92,7 @@ func (s *StepCreateTemplate) Cleanup(state multistep.StateBag) {
 	for _, uuid := range storageUuids {
 		ui.Say(fmt.Sprintf("Delete storage %q...", uuid))
 
-		err := driver.DeleteTemplate(uuid)
+		err := driver.DeleteTemplate(ctx, uuid)
 		if err != nil {
 			ui.Error(err.Error())
 		}

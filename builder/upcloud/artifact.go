@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
 	"github.com/hashicorp/packer-plugin-sdk/packer/registry/image"
 )
 
@@ -54,8 +54,10 @@ func (a *Artifact) State(name string) interface{} {
 }
 
 func (a *Artifact) Destroy() error {
+	ctx, cancel := contextWithDefaultTimeout()
+	defer cancel()
 	for _, t := range a.Templates {
-		err := a.driver.DeleteTemplate(t.UUID)
+		err := a.driver.DeleteTemplate(ctx, t.UUID)
 		if err != nil {
 			return err
 		}

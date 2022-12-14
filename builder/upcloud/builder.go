@@ -3,9 +3,10 @@ package upcloud
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
@@ -14,7 +15,10 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"
 )
 
-const BuilderId = "upcloud.builder"
+const (
+	BuilderId                    = "upcloud.builder"
+	defaultTimeout time.Duration = 1 * time.Hour
+)
 
 type Builder struct {
 	config Config
@@ -42,6 +46,8 @@ func (b *Builder) Prepare(raws ...interface{}) (generatedVars []string, warnings
 }
 
 func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (packer.Artifact, error) {
+	// NOTE: context deadline is not set by default.
+
 	// Setup the state bag and initial state for the steps
 	b.driver = driver.NewDriver(&driver.DriverConfig{
 		Username:    b.config.Username,

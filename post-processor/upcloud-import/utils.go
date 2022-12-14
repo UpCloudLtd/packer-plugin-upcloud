@@ -1,21 +1,22 @@
 package upcloudimport
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
-func cleanupDevices(ui packer.Ui, driver driver.Driver, state multistep.StateBag) error {
+func cleanupDevices(ctx context.Context, ui packer.Ui, driver driver.Driver, state multistep.StateBag) error {
 	storages, err := getStorages(state)
 	if err != nil {
 		return err
 	}
 	for _, s := range storages {
-		if err = deleteStorageIfExists(ui, driver, s); err != nil {
+		if err = deleteStorageIfExists(ctx, ui, driver, s); err != nil {
 			return err
 		}
 	}
@@ -23,13 +24,13 @@ func cleanupDevices(ui packer.Ui, driver driver.Driver, state multistep.StateBag
 	return nil
 }
 
-func cleanupTemplates(ui packer.Ui, driver driver.Driver, state multistep.StateBag) error {
+func cleanupTemplates(ctx context.Context, ui packer.Ui, driver driver.Driver, state multistep.StateBag) error {
 	storages, err := getTemplates(state)
 	if err != nil {
 		return err
 	}
 	for _, s := range storages {
-		if err = deleteStorageIfExists(ui, driver, s); err != nil {
+		if err = deleteStorageIfExists(ctx, ui, driver, s); err != nil {
 			return err
 		}
 	}
@@ -37,10 +38,10 @@ func cleanupTemplates(ui packer.Ui, driver driver.Driver, state multistep.StateB
 	return nil
 }
 
-func deleteStorageIfExists(ui packer.Ui, driver driver.Driver, storage *upcloud.Storage) error {
-	if _, err := driver.GetStorage(storage.UUID, ""); err == nil {
+func deleteStorageIfExists(ctx context.Context, ui packer.Ui, driver driver.Driver, storage *upcloud.Storage) error {
+	if _, err := driver.GetStorage(ctx, storage.UUID, ""); err == nil {
 		ui.Say(fmt.Sprintf("Cleanup storage '%s' (%s)", storage.Title, storage.UUID))
-		if err := driver.DeleteStorage(storage.UUID); err != nil {
+		if err := driver.DeleteStorage(ctx, storage.UUID); err != nil {
 			ui.Error(err.Error())
 			return err
 		}
@@ -67,4 +68,8 @@ func getTemplates(state multistep.StateBag) ([]*upcloud.Storage, error) {
 func haltOnError(ui packer.Ui, state multistep.StateBag, err error) multistep.StepAction {
 	ui.Error(err.Error())
 	return multistep.ActionHalt
+}
+
+func contextWithDefaultTimeout() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), defaultTimeout)
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
 )
 
-var defaultTimeout time.Duration = 60 * time.Minute
+const defaultTimeout time.Duration = 60 * time.Minute
 
 type Config struct {
 
