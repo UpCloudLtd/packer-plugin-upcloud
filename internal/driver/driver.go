@@ -2,6 +2,7 @@ package driver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,12 +16,13 @@ import (
 )
 
 const (
-	DefaultPlan             string = "1xCPU-2GB"
-	DefaultHostname         string = "custom"
-	EnvConfigUsername       string = "UPCLOUD_USERNAME"
-	EnvConfigPassword       string = "UPCLOUD_PASSWORD"
-	EnvConfigUsernameLegacy string = "UPCLOUD_API_USER"
-	EnvConfigPasswordLegacy string = "UPCLOUD_API_PASSWORD"
+	DefaultPlan                      string = "1xCPU-2GB"
+	DefaultHostname                  string = "custom"
+	EnvConfigUsername                string = "UPCLOUD_USERNAME"
+	EnvConfigPassword                string = "UPCLOUD_PASSWORD"
+	EnvConfigUsernameLegacy          string = "UPCLOUD_API_USER"
+	EnvConfigPasswordLegacy          string = "UPCLOUD_API_PASSWORD"
+	upcloudErrorCodeMetadataDisabled string = "METADATA_DISABLED_ON_CLOUD-INIT"
 )
 
 type (
@@ -78,7 +80,15 @@ func (d *driver) CreateServer(ctx context.Context, opts *ServerOpts) (*upcloud.S
 	request := d.prepareCreateRequest(opts)
 	response, err := d.svc.CreateServer(ctx, request)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating server: %s", err)
+		var upcloudErr *upcloud.Error
+		if errors.As(err, &upcloudErr) && upcloudErr.ErrorCode == upcloudErrorCodeMetadataDisabled {
+			request.Metadata = upcloud.True
+			if response, err = d.svc.CreateServer(ctx, request); err != nil {
+				return nil, fmt.Errorf("Error creating metadata enabled server: %s", err)
+			}
+		} else {
+			return nil, fmt.Errorf("Error creating server: %s", err)
+		}
 	}
 
 	// Wait for server to start
