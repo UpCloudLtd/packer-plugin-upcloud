@@ -27,9 +27,6 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Code Style
-        run: make lint
-
       - name: Test PR
         if: github.ref != 'refs/heads/main'
         run: make test

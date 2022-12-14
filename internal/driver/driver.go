@@ -172,7 +172,7 @@ func (d *driver) GetTemplateByName(ctx context.Context, name, zone string) (*upc
 	}
 
 	for _, s := range response.Storages {
-		if strings.ToLower(s.Title) == strings.ToLower(name) && (zone != "" && zone == s.Zone) {
+		if strings.EqualFold(s.Title, name) && (zone != "" && zone == s.Zone) {
 			return &s, nil
 		}
 	}
