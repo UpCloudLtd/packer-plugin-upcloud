@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -42,7 +41,7 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	}
 
 	testName := fmt.Sprintf("%s-acc-test-%s", BuilderID, time.Now().Format(timestampSuffixLayout))
-	imageFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*.raw", testName))
+	imageFile, err := os.CreateTemp(os.TempDir(), fmt.Sprintf("%s-*.raw", testName))
 	require.NoError(t, err)
 	defer os.Remove(imageFile.Name())
 
