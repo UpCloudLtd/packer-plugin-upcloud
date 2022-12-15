@@ -1,9 +1,9 @@
 module github.com/UpCloudLtd/packer-plugin-upcloud
 
-go 1.17
+go 1.18
 
 require (
-	github.com/UpCloudLtd/upcloud-go-api/v4 v4.6.0
+	github.com/UpCloudLtd/upcloud-go-api/v5 v5.1.0
 	github.com/hashicorp/hcl/v2 v2.12.0
 	github.com/hashicorp/packer-plugin-sdk v0.3.0
 	github.com/stretchr/testify v1.7.2
@@ -22,7 +22,6 @@ require (
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.42.4 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
-	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect

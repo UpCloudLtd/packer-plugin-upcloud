@@ -49,7 +49,9 @@ func (i *image) CheckSHA256(sha256Sum string) error {
 	cs := sha256.New()
 	if i.ContentType == contentTypeGzip {
 		gsrc, err := gzip.NewReader(src)
-		defer gsrc.Close()
+		defer func() {
+			_ = gsrc.Close()
+		}()
 		if err != nil {
 			return err
 		}

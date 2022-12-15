@@ -1,7 +1,6 @@
 package upcloudimport
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -12,7 +11,7 @@ import (
 
 func TestImage(t *testing.T) {
 	c := time.Now().Format(time.ANSIC)
-	file, err := ioutil.TempFile(os.TempDir(), "packer-test-import-image-*.raw")
+	file, err := os.CreateTemp(os.TempDir(), "packer-test-import-image-*.raw")
 	require.NoError(t, err)
 	defer os.Remove(file.Name())
 	if _, err = file.WriteString(c); err != nil {

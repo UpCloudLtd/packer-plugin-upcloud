@@ -4,7 +4,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -161,7 +161,7 @@ func readLog(logfile string) (string, error) {
 	}
 	defer logs.Close()
 
-	logsBytes, err := ioutil.ReadAll(logs)
+	logsBytes, err := io.ReadAll(logs)
 	if err != nil {
 		return "", fmt.Errorf("Unable to read %s", logfile)
 	}
@@ -214,9 +214,9 @@ func getUuidsFromLog(log string) ([]string, error) {
 
 func teardown(testName string) func() error {
 	logfile := fmt.Sprintf("packer_log_%s.txt", testName)
-
 	return func() error {
-
+		ctx, cancel := contextWithDefaultTimeout()
+		defer cancel()
 		log, err := readLog(logfile)
 		if err != nil {
 			return err
@@ -235,7 +235,7 @@ func teardown(testName string) func() error {
 
 		for _, u := range uuids {
 			fmt.Printf("Cleaning up created templates: %s\n", u)
-			if err := drv.DeleteTemplate(u); err != nil {
+			if err := drv.DeleteTemplate(ctx, u); err != nil {
 				return err
 			}
 		}

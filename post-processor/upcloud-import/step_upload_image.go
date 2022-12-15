@@ -30,7 +30,7 @@ func (s *stepUploadImage) Run(ctx context.Context, state multistep.StateBag) mul
 	defer fd.Close()
 
 	t1 := time.Now()
-	importDetails, err := s.postProcessor.driver.ImportStorage(storages[0].UUID, s.image.ContentType, fd)
+	importDetails, err := s.postProcessor.driver.ImportStorage(ctx, storages[0].UUID, s.image.ContentType, fd)
 	if err != nil {
 		return haltOnError(ui, state, err)
 	}
@@ -38,7 +38,7 @@ func (s *stepUploadImage) Run(ctx context.Context, state multistep.StateBag) mul
 	ui.Say(fmt.Sprintf("Image '%s' uploaded to storage '%s' (%s) in %s", s.image.File(), storages[0].Title, storages[0].UUID, time.Since(t1)))
 	ui.Say(fmt.Sprintf("Waiting storage '%s' to become online", storages[0].Title))
 
-	if _, err := s.postProcessor.driver.WaitStorageOnline(storages[0].UUID); err != nil {
+	if _, err := s.postProcessor.driver.WaitStorageOnline(ctx, storages[0].UUID); err != nil {
 		return haltOnError(ui, state, err)
 	}
 
@@ -53,8 +53,10 @@ func (s *stepUploadImage) Run(ctx context.Context, state multistep.StateBag) mul
 }
 
 func (s *stepUploadImage) Cleanup(state multistep.StateBag) {
+	ctx, cancel := contextWithDefaultTimeout()
+	defer cancel()
 	ui := state.Get(stateUI).(packer.Ui)
-	if err := cleanupDevices(ui, s.postProcessor.driver, state); err != nil {
+	if err := cleanupDevices(ctx, ui, s.postProcessor.driver, state); err != nil {
 		ui.Error(err.Error())
 	}
 }

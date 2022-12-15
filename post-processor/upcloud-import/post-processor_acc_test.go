@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -30,6 +29,7 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	if os.Getenv("PACKER_ACC") != "1" {
 		t.Skip("skip acceptance test")
 	}
+	ctx := context.Background()
 	username := driver.UsernameFromEnv()
 	if username == "" {
 		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigUsernameLegacy, driver.EnvConfigUsername)
@@ -41,7 +41,7 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	}
 
 	testName := fmt.Sprintf("%s-acc-test-%s", BuilderID, time.Now().Format(timestampSuffixLayout))
-	imageFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("%s-*.raw", testName))
+	imageFile, err := os.CreateTemp(os.TempDir(), fmt.Sprintf("%s-*.raw", testName))
 	require.NoError(t, err)
 	defer os.Remove(imageFile.Name())
 
@@ -68,11 +68,11 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 		Password: password,
 		Timeout:  time.Minute * 30,
 	})
-	t1, err := driver.GetTemplateByName(testName, "pl-waw1")
+	t1, err := driver.GetTemplateByName(ctx, testName, "pl-waw1")
 	require.NoError(t, err)
-	assert.NoError(t, driver.DeleteStorage(t1.UUID))
+	assert.NoError(t, driver.DeleteStorage(ctx, t1.UUID))
 
-	t1, err = driver.GetTemplateByName(testName, "fi-hel2")
+	t1, err = driver.GetTemplateByName(ctx, testName, "fi-hel2")
 	require.NoError(t, err)
-	assert.NoError(t, driver.DeleteStorage(t1.UUID))
+	assert.NoError(t, driver.DeleteStorage(ctx, t1.UUID))
 }

@@ -6,5 +6,6 @@ vendor
 docs.zip
 crash.log
 *hcl.txt
+tmp
 /go.work
 /go.work.sum

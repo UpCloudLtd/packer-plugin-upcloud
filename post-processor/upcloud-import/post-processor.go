@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
@@ -115,15 +115,17 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, a packer.
 }
 
 func (p *PostProcessor) validate() error {
+	ctx, cancel := contextWithDefaultTimeout()
+	defer cancel()
 	if !p.config.ReplaceExisting {
 		for _, zone := range p.config.Zones {
-			s, err := p.driver.GetTemplateByName(p.config.TemplateName, zone)
+			s, err := p.driver.GetTemplateByName(ctx, p.config.TemplateName, zone)
 			if err == nil && s.UUID != "" {
 				return fmt.Errorf("template with the name '%s' already exists at %s zone. Change the name or set replace_existing to true", s.Title, zone)
 			}
 		}
 	}
-	availableZones := p.driver.GetAvailableZones()
+	availableZones := p.driver.GetAvailableZones(ctx)
 	if len(availableZones) == 0 {
 		return errors.New("unable to get available zones")
 	}

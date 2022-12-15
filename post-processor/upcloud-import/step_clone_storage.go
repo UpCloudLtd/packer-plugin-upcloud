@@ -35,7 +35,7 @@ func (s *stepCloneStorage) Run(ctx context.Context, state multistep.StateBag) mu
 		go func(zone string) {
 			defer wg.Done()
 			ui.Say(fmt.Sprintf("Cloning storage '%s' from %s to %s", storages[0].Title, storages[0].Zone, zone))
-			t, err := s.postProcessor.driver.CloneStorage(storages[0].UUID, zone, storages[0].Title)
+			t, err := s.postProcessor.driver.CloneStorage(ctx, storages[0].UUID, zone, storages[0].Title)
 			if err != nil {
 				ui.Error(err.Error())
 				halt = true
@@ -53,8 +53,10 @@ func (s *stepCloneStorage) Run(ctx context.Context, state multistep.StateBag) mu
 }
 
 func (s *stepCloneStorage) Cleanup(state multistep.StateBag) {
+	ctx, cancel := contextWithDefaultTimeout()
+	defer cancel()
 	ui := state.Get(stateUI).(packer.Ui)
-	if err := cleanupDevices(ui, s.postProcessor.driver, state); err != nil {
+	if err := cleanupDevices(ctx, ui, s.postProcessor.driver, state); err != nil {
 		ui.Error(err.Error())
 	}
 }

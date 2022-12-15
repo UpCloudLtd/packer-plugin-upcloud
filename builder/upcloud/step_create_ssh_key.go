@@ -7,7 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
@@ -30,11 +30,11 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 		var err error
 		ui.Say("Using provided SSH keys...")
 
-		if config.Comm.SSHPrivateKey, err = ioutil.ReadFile(config.SSHPrivateKeyPath); err != nil {
+		if config.Comm.SSHPrivateKey, err = os.ReadFile(config.SSHPrivateKeyPath); err != nil {
 			return stepHaltWithError(state, fmt.Errorf("Failed to read private key: %s", err))
 		}
 
-		if config.Comm.SSHPublicKey, err = ioutil.ReadFile(config.SSHPublicKeyPath); err != nil {
+		if config.Comm.SSHPublicKey, err = os.ReadFile(config.SSHPublicKeyPath); err != nil {
 			return stepHaltWithError(state, fmt.Errorf("Failed to read public key: %s", err))
 		}
 
@@ -74,7 +74,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 	// If we're in debug mode, output the private key to the working directory.
 	if s.Debug {
 		ui.Say(fmt.Sprintf("Saving key for debug purposes: %s", s.DebugKeyPath))
-		err := ioutil.WriteFile(s.DebugKeyPath, config.Comm.SSHPrivateKey, 0600)
+		err := os.WriteFile(s.DebugKeyPath, config.Comm.SSHPrivateKey, 0600)
 		if err != nil {
 			return stepHaltWithError(state, fmt.Errorf("Error saving debug key: %s", err))
 		}

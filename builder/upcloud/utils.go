@@ -1,12 +1,13 @@
 package upcloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
-	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud/request"
+	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud/request"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -72,4 +73,8 @@ func convertNetworkTypes(rawNetworking []NetworkInterface) []request.CreateServe
 		})
 	}
 	return networking
+}
+
+func contextWithDefaultTimeout() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), defaultTimeout)
 }

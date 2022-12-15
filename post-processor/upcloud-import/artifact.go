@@ -1,12 +1,16 @@
 package upcloudimport
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v4/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
 )
+
+const artifactDestroyTimeout time.Duration = time.Minute * 30
 
 type Artifact struct {
 	postProcessor *PostProcessor
@@ -36,8 +40,10 @@ func (a *Artifact) State(name string) interface{} {
 }
 
 func (a *Artifact) Destroy() error {
+	ctx, cancel := context.WithTimeout(context.Background(), artifactDestroyTimeout)
+	defer cancel()
 	for _, t := range a.templates {
-		err := a.driver.DeleteTemplate(t.UUID)
+		err := a.driver.DeleteTemplate(ctx, t.UUID)
 		if err != nil {
 			return err
 		}

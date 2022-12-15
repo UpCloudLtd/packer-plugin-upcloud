@@ -18,7 +18,7 @@ type StepCreateServer struct {
 }
 
 // Run runs the actual step
-func (s *StepCreateServer) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+func (s *StepCreateServer) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 	drv := state.Get("driver").(driver.Driver)
 
@@ -30,7 +30,7 @@ func (s *StepCreateServer) Run(_ context.Context, state multistep.StateBag) mult
 
 	ui.Say("Getting storage...")
 
-	storage, err := drv.GetStorage(s.Config.StorageUUID, s.Config.StorageName)
+	storage, err := drv.GetStorage(ctx, s.Config.StorageUUID, s.Config.StorageName)
 	if err != nil {
 		return stepHaltWithError(state, err)
 	}
@@ -42,7 +42,7 @@ func (s *StepCreateServer) Run(_ context.Context, state multistep.StateBag) mult
 		networking = convertNetworkTypes(s.Config.NetworkInterfaces)
 
 	}
-	response, err := drv.CreateServer(&driver.ServerOpts{
+	response, err := drv.CreateServer(ctx, &driver.ServerOpts{
 		StorageUuid:  storage.UUID,
 		StorageSize:  s.Config.StorageSize,
 		Zone:         s.Config.Zone,
@@ -90,6 +90,8 @@ func (s *StepCreateServer) Run(_ context.Context, state multistep.StateBag) mult
 
 // Cleanup stops and destroys the server if server details are found in the state
 func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
+	ctx, cancel := contextWithDefaultTimeout()
+	defer cancel()
 	// Extract server uuid, return if no uuid has been stored
 	rawServerUuid, ok := state.GetOk("server_uuid")
 
@@ -106,7 +108,7 @@ func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
 	// stop server
 	ui.Say(fmt.Sprintf("Stopping server %q...", serverTitle))
 
-	err := driver.StopServer(serverUuid)
+	err := driver.StopServer(ctx, serverUuid)
 	if err != nil {
 		ui.Error(err.Error())
 		return
@@ -115,7 +117,7 @@ func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
 	// delete server
 	ui.Say(fmt.Sprintf("Deleting server %q...", serverTitle))
 
-	err = driver.DeleteServer(serverUuid)
+	err = driver.DeleteServer(ctx, serverUuid)
 	if err != nil {
 		ui.Error(err.Error())
 		return
