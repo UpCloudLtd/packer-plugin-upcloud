@@ -1,12 +1,3 @@
----
-description: >
-  This is a builder plugin for Packer which can be used to generate storage templates on UpCloud. 
-  It utilises the UpCloud Go API to interface with the UpCloud API.
-page_title: UpCloud - Builders
----
-
-
-# UpCloud
 
 Type: `upcloud`
 

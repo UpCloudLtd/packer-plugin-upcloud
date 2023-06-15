@@ -1,12 +1,3 @@
----
-description: >
-  This is a post-processor for Packer which can be used to import raw disk images as private templates to UpCloud.
-  It utilises the UpCloud Go API to interface with the UpCloud API.
-page_title: UpCloud - Post-processors
----
-
-
-# UpCloud Import Post-Processor
 
 Type: `upcloud-import`  
 Artifact BuilderId: `packer.post-processor.upcloud-import`

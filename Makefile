@@ -57,4 +57,10 @@ clean:
 	find . -name "TestBuilderAcc_*" -delete
 	find . -name "packer-plugin-upcloud" -delete
 
-.PHONY: default test test_integration lint build install
+build-docs: install-packer-sdc
+	@if [ -d ".docs" ]; then rm -r ".docs"; fi
+	@packer-sdc renderdocs -src "docs" -partials docs-partials/ -dst ".docs/"
+	@./.web-docs/scripts/compile-to-webdocs.sh "." ".docs" ".web-docs" "BrandonRomano"
+	@rm -r ".docs"
+
+.PHONY: default test test_integration lint build install build-docs
