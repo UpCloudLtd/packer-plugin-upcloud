@@ -1,20 +1,10 @@
-# UpCloud Packer Plugin
-
 This is a plugin for Packer which can be used to generate storage templates on UpCloud. 
 It utilises the [UpCloud Go API](https://github.com/UpCloudLtd/upcloud-go-api) to interface with the UpCloud API.
 
-## Installation
+### Installation
 
-### Using pre-built releases
+To install this plugin, copy and paste this code into your Packer configuration, then run [`packer init`](https://www.packer.io/docs/commands/init).
 
-#### Using the `packer init` command
-
-Starting from version 1.7, Packer supports a new `packer init` command allowing
-automatic installation of Packer plugins. Read the
-[Packer documentation](https://www.packer.io/docs/commands/init) for more information.
-
-To install this plugin, copy and paste this code into your Packer configuration .
-Then, run [`packer init`](https://www.packer.io/docs/commands/init).
 
 ```hcl
 packer {
@@ -28,36 +18,25 @@ packer {
 
 ```
 
-#### Manual installation
+Alternatively, you can use `packer plugins install` to manage installation of this plugin.
 
-You can find pre-built binary releases of the plugin [here](https://github.com/hashicorp/packer-plugin-upcloud/releases).
-Once you have downloaded the latest archive corresponding to your target OS,
-uncompress it to retrieve the plugin binary file corresponding to your platform.
-To install the plugin, please follow the Packer documentation on
-[installing a plugin](https://www.packer.io/docs/extending/plugins/#installing-plugins).
+```sh
+$ packer plugins install github.com/UpCloudLtd/upcloud
+```
 
 
-#### From Source
+### Components
 
-If you prefer to build the plugin from its source code, clone the GitHub
-repository locally and run the command `go build` from the root
-directory. Upon successful compilation, a `packer-plugin-upcloud` plugin
-binary file can be found in the root directory.
-To install the compiled plugin, please follow the official Packer documentation
-on [installing a plugin](https://www.packer.io/docs/extending/plugins/#installing-plugins).
+#### Builders
 
 
-## Plugin Contents
+- [upcloud](/packer/integrations/upcloudltd/latest/components/builder/upcloud) - The upcloud builder is used to generate storage templates on UpCloud.
 
-### Builders
+#### Post-processors
 
-- [upcloud](/docs/builders/upcloud.mdx) - The upcloud builder is used to generate storage templates on UpCloud.
+- [upcloud-import](/packer/integrations/upcloudltd/latest/components/post-processor/import) - The upcloud import post-processors is used to import disk images to UpCloud.
 
-### Post-processors
-
-- [upcloud-import](/docs/post-processors/upcloud-import.mdx) - The upcloud import post-processors is used to import disk images to UpCloud.
-
-## JSON Templates
+### JSON Templates
 From Packer version 1.7.0, template HCL2 becomes officially the preferred way to write Packer configuration. While the `json` format is still supported, but certain new features, such as `packer init` works only in newer HCL2 format.
 If you are using `json` config templates, please consider upgrading them using the packer built-in command:
 
