@@ -3,7 +3,7 @@
 integration {
   name = "UpCloud"
   description = "TODO"
-  identifier = "packer/BrandonRomano/upcloud"
+  identifier = "packer/UpCloudLtd/upcloud"
   component {
     type = "builder"
     name = "UpCloud"
