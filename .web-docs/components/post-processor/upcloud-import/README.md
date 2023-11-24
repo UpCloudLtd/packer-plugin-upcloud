@@ -4,7 +4,7 @@ Artifact BuilderId: `packer.post-processor.upcloud-import`
 
 The UpCloud importer can be used to import raw disk images as private templates to UpCloud.
 
-## Required
+### Required
 Username and password configuration arguments can be omitted if environment variables `UPCLOUD_USERNAME` and `UPCLOUD_PASSWORD` are set.
 
 <!-- Code generated from the comments of the Config struct in post-processor/upcloud-import/config.go; DO NOT EDIT MANUALLY -->
@@ -21,7 +21,7 @@ Username and password configuration arguments can be omitted if environment vari
 <!-- End of code generated from the comments of the Config struct in post-processor/upcloud-import/config.go; -->
 
 
-## Optional
+### Optional
 
 <!-- Code generated from the comments of the Config struct in post-processor/upcloud-import/config.go; DO NOT EDIT MANUALLY -->
 
@@ -33,7 +33,7 @@ Username and password configuration arguments can be omitted if environment vari
 
 
 
-## Example Usage
+### Example Usage
 
 Import raw disk image from filesystem using `compress` post-processor to compress image before upload
 ```hcl

@@ -5,7 +5,7 @@ The upcloud builder is used to generate storage templates on UpCloud.
 
 <!-- Builder Configuration Fields -->
 
-## Required
+### Required
 
 <!-- Code generated from the comments of the Config struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
@@ -30,7 +30,7 @@ The upcloud builder is used to generate storage templates on UpCloud.
   noted in the description of the field
 -->
 
-## Optional
+### Optional
 
 <!-- Code generated from the comments of the Config struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
@@ -66,7 +66,7 @@ The upcloud builder is used to generate storage templates on UpCloud.
 <!-- End of code generated from the comments of the Config struct in builder/upcloud/config.go; -->
 
 
-## Network Interfaces object (NetworkInterface)
+#### Network Interfaces object (NetworkInterface)
 
 <!-- Code generated from the comments of the NetworkInterface struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
@@ -79,7 +79,7 @@ The upcloud builder is used to generate storage templates on UpCloud.
 <!-- End of code generated from the comments of the NetworkInterface struct in builder/upcloud/config.go; -->
 
 
-## IP Address object (IPAddress)
+#### IP Address object (IPAddress)
 
 <!-- Code generated from the comments of the IPAddress struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
@@ -98,7 +98,7 @@ The upcloud builder is used to generate storage templates on UpCloud.
   can be provided to highlight various build configurations.
 
 -->
-## Example Usage
+### Example Usage
 
 Here is a sample template, which you can also find in the [example](https://github.com/UpCloudLtd/packer-plugin-upcloud/tree/main/example) directory.
 It reads your UpCloud API credentials from the environment variables, creates an Ubuntu 20.04 LTS server in the `nl-ams1` region and authorizes root user to loggin with your public SSH key.
@@ -159,7 +159,7 @@ Configuration reads your SSH public key from the default location `~/.ssh/id_rsa
 $ packer build -var="ssh_public_key=/some/other/path/id_rsa.pub"
 ```
 
-## Network interfaces
+#### Network interfaces
 This template uses `network_interfaces` to define network interfaces to be used during the creation of the server for building the packer image.
 ```hcl
 packer {
@@ -226,7 +226,7 @@ build {
 
 ```
 
-## IPv6 network interfaces
+#### IPv6 network interfaces
 ```hcl
 packer {
   required_plugins {
@@ -295,7 +295,7 @@ build {
 
 ```
 
-## Private network interfaces
+#### Private network interfaces
 ```hcl
 packer {
   required_plugins {
