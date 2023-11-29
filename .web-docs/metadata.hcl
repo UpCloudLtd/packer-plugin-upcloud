@@ -2,7 +2,7 @@
 # https://github.com/hashicorp/integration-template#metadata-configuration
 integration {
   name = "UpCloud"
-  description = "TODO"
+  description = "A builder plugin for Packer which can be used to generate storage templates on UpCloud."
   identifier = "packer/UpCloudLtd/upcloud"
   component {
     type = "builder"
