@@ -22,10 +22,6 @@ test_integration: build
 	cp $(BINARY) builder/upcloud/
 	PACKER_ACC=1 go test -count 1 -v $(TESTARGS) ./...  -timeout=120m
 
-lint:
-	go vet .
-	golint .
-
 build:
 	go build -v
 
@@ -39,7 +35,7 @@ install-packer-sdc: ## Install packer sofware development command
 plugin-check: install-packer-sdc build
 	$(PACKER_SDC) plugin-check $(BINARY)
 
-generate: fmt install-packer-sdc
+docs: fmt install-packer-sdc
 	@PATH=$(PATH):$(GOBIN) go generate ./...
 	@if [ -d ".docs" ]; then rm -r ".docs"; fi
 	$(PACKER_SDC_RENDER_DOCS)
@@ -56,4 +52,4 @@ clean:
 	find . -name "TestBuilderAcc_*" -delete
 	find . -name "packer-plugin-upcloud" -delete
 
-.PHONY: default test test_integration lint build install build-docs
+.PHONY: default test test_integration lint build install docs

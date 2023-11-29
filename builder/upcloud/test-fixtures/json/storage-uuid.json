@@ -2,7 +2,7 @@
     "builders": [{
         "type": "upcloud",
         "zone": "nl-ams1",
-        "storage_uuid": "01000000-0000-4000-8000-000050010400",
+        "storage_uuid": "01000000-0000-4000-8000-000150020100",
         "ssh_username": "root",
         "template_prefix": "test-builder",
         "storage_size": "20"
