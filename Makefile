@@ -10,7 +10,7 @@ GOBIN=$(shell go env GOBIN)
 endif
 
 PACKER_SDC=$(GOBIN)/packer-sdc
-PACKER_SDC_RENDER_DOCS=$(PACKER_SDC) renderdocs -src docs-src/ -partials docs-partials/ -dst docs/
+PACKER_SDC_RENDER_DOCS=$(PACKER_SDC) renderdocs -src docs-src/ -partials docs-partials/ -dst .docs/
 
 
 default: build
@@ -22,10 +22,6 @@ test_integration: build
 	cp $(BINARY) builder/upcloud/
 	PACKER_ACC=1 go test -count 1 -v $(TESTARGS) ./...  -timeout=120m
 
-lint:
-	go vet .
-	golint .
-
 build:
 	go build -v
 
@@ -36,16 +32,15 @@ install: build
 install-packer-sdc: ## Install packer sofware development command
 	go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@$(HASHICORP_PACKER_PLUGIN_SDK_VERSION)
 
-ci-release-docs: install-packer-sdc generate
-	@/bin/sh -c "[ -d docs ] && zip -x docs/README.mdx -r docs.zip docs/"
-
 plugin-check: install-packer-sdc build
 	$(PACKER_SDC) plugin-check $(BINARY)
 
-generate: fmt install-packer-sdc
+docs: fmt install-packer-sdc
 	@PATH=$(PATH):$(GOBIN) go generate ./...
-	@rm -fr $(CURDIR)/docs # renderdocs doesn't seem to properly overwrite files
+	@if [ -d ".docs" ]; then rm -r ".docs"; fi
 	$(PACKER_SDC_RENDER_DOCS)
+	@./.web-docs/scripts/compile-to-webdocs.sh "." ".docs" ".web-docs" "UpCloudLtd"
+	@rm -r ".docs"
 
 fmt:
 	packer fmt builder/upcloud/test-fixtures/hcl2
@@ -57,4 +52,4 @@ clean:
 	find . -name "TestBuilderAcc_*" -delete
 	find . -name "packer-plugin-upcloud" -delete
 
-.PHONY: default test test_integration lint build install
+.PHONY: default test test_integration lint build install docs
