@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
-	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud/client"
-	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud/request"
-	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud/service"
+	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud/client"
+	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud/request"
+	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud/service"
 )
 
 const (
@@ -80,8 +80,8 @@ func (d *driver) CreateServer(ctx context.Context, opts *ServerOpts) (*upcloud.S
 	request := d.prepareCreateRequest(opts)
 	response, err := d.svc.CreateServer(ctx, request)
 	if err != nil {
-		var upcloudErr *upcloud.Error
-		if errors.As(err, &upcloudErr) && upcloudErr.ErrorCode == upcloudErrorCodeMetadataDisabled {
+		var upcloudErr *upcloud.Problem
+		if errors.As(err, &upcloudErr) && upcloudErr.ErrorCode() == upcloudErrorCodeMetadataDisabled {
 			request.Metadata = upcloud.True
 			if response, err = d.svc.CreateServer(ctx, request); err != nil {
 				return nil, fmt.Errorf("Error creating metadata enabled server: %s", err)

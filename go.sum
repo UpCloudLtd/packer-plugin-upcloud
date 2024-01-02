@@ -18,8 +18,8 @@ github.com/ChrisTrenkamp/goxpath v0.0.0-20170922090931-c385f95c6022/go.mod h1:nu
 github.com/ChrisTrenkamp/goxpath v0.0.0-20210404020558-97928f7e12b6 h1:w0E0fgc1YafGEh5cROhlROMWXiNoZqApk2PDN0M1+Ns=
 github.com/ChrisTrenkamp/goxpath v0.0.0-20210404020558-97928f7e12b6/go.mod h1:nuWgzSkT5PnyOd+272uUmV0dnAnAn42Mk7PiQC5VzN4=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
-github.com/UpCloudLtd/upcloud-go-api/v5 v5.1.0 h1:8xsPsKvz88DbP8MPk8q18ZIBoiTzcbGEfmy0ZVsTbrY=
-github.com/UpCloudLtd/upcloud-go-api/v5 v5.1.0/go.mod h1:AujcayelvOLjiwbulTrC0wzbykpsrcNcc1HuZ3Tloek=
+github.com/UpCloudLtd/upcloud-go-api/v6 v6.11.0 h1:8KvsimMoPPBx8IVebtHJHavrJPoJfNL5jsyW4TAC5m4=
+github.com/UpCloudLtd/upcloud-go-api/v6 v6.11.0/go.mod h1:I8rWmBBl+OhiY3AGzKbrobiE5TsLCLNYkCQxE4eJcTg=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v5/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud"
 )
 
 const artifactDestroyTimeout time.Duration = time.Minute * 30
