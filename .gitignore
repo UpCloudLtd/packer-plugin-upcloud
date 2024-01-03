@@ -3,7 +3,6 @@ examples/crash.log
 dist
 packer-plugin-upcloud
 vendor
-docs.zip
 crash.log
 *hcl.txt
 tmp

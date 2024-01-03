@@ -3,7 +3,6 @@ env:
 before:
   hooks:
     - go test ./...
-    - make ci-release-docs
     - make plugin-check
 builds:
   - 
@@ -60,8 +59,6 @@ signs:
       - "${artifact}"
 release:
   draft: true
-  extra_files:
-    - glob: ./docs.zip
 
 changelog:
   skip: true
