@@ -4,6 +4,7 @@ integration {
   name = "UpCloud"
   description = "A builder plugin for Packer which can be used to generate storage templates on UpCloud."
   identifier = "packer/UpCloudLtd/upcloud"
+  flags = ["hcp-ready"]
   component {
     type = "builder"
     name = "UpCloud"
