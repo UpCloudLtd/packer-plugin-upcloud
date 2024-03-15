@@ -1,6 +1,7 @@
 BINARY=packer-plugin-upcloud
-HASHICORP_PACKER_PLUGIN_SDK_VERSION?=$(shell go list -m github.com/hashicorp/packer-plugin-sdk | cut -d " " -f2)
-COUNT?=1
+dev:
+	@go build -ldflags="-X '${PLUGIN_FQN}/version.VersionPrerelease=dev'" -o '${BINARY}'
+	packer plugins install --path ${BINARY} "$(shell echo "${PLUGIN_FQN}" | sed 's/packer-plugin-//')"
 TEST?=$(shell go list ./...)
 
 ifeq (,$(shell go env GOBIN))
