@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud"
-	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud/request"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 )
 

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"

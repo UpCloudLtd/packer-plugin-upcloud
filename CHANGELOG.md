@@ -12,6 +12,7 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 - Update `packer-plugin-sdk` to [v0.6.1](https://github.com/hashicorp/packer-plugin-sdk/releases/tag/v0.6.1)
+- Update `upcloud-go-api` to [v8.18.0](https://github.com/UpCloudLtd/upcloud-go-api/releases/tag/v8.18.0)
 
 ## [1.5.3] - 2024-01-02
 

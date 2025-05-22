@@ -3,7 +3,7 @@ module github.com/UpCloudLtd/packer-plugin-upcloud
 go 1.24
 
 require (
-	github.com/UpCloudLtd/upcloud-go-api/v6 v6.11.0
+	github.com/UpCloudLtd/upcloud-go-api/v8 v8.18.0
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/packer-plugin-sdk v0.6.1
 	github.com/stretchr/testify v1.10.0
@@ -78,6 +78,7 @@ require (
 	github.com/packer-community/winrmcp v0.0.0-20180921211025-c76d91c1e7db // indirect
 	github.com/pkg/sftp v1.13.4 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect

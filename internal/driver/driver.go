@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud"
-	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud/client"
-	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud/request"
-	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud/service"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/client"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/service"
 )
 
 const (
@@ -151,10 +151,12 @@ func (d *driver) CreateTemplate(ctx context.Context, serverStorageUuid, template
 }
 
 func (d *driver) WaitStorageOnline(ctx context.Context, storageUuid string) (*upcloud.Storage, error) {
-	details, err := d.svc.WaitForStorageState(ctx, &request.WaitForStorageStateRequest{
+	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
+	defer cancel()
+
+	details, err := d.svc.WaitForStorageState(timeoutCtx, &request.WaitForStorageStateRequest{
 		UUID:         storageUuid,
 		DesiredState: upcloud.StorageStateOnline,
-		Timeout:      d.config.Timeout,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error while waiting for storage to change state to 'online': %s", err)
@@ -236,9 +238,12 @@ func (d *driver) ImportStorage(ctx context.Context, storageUUID, contentType str
 	}); err != nil {
 		return nil, err
 	}
-	return d.svc.WaitForStorageImportCompletion(ctx, &request.WaitForStorageImportCompletionRequest{
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
+	defer cancel()
+
+	return d.svc.WaitForStorageImportCompletion(timeoutCtx, &request.WaitForStorageImportCompletionRequest{
 		StorageUUID: storageUUID,
-		Timeout:     d.config.Timeout,
 	})
 }
 
@@ -302,24 +307,28 @@ func (d *driver) getStorageByName(ctx context.Context, storageName string) (*upc
 }
 
 func (d *driver) waitDesiredState(ctx context.Context, serverUuid string, state string) error {
+	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
+	defer cancel()
+
 	request := &request.WaitForServerStateRequest{
 		UUID:         serverUuid,
 		DesiredState: state,
-		Timeout:      d.config.Timeout,
 	}
-	if _, err := d.svc.WaitForServerState(ctx, request); err != nil {
+	if _, err := d.svc.WaitForServerState(timeoutCtx, request); err != nil {
 		return fmt.Errorf("Error while waiting for server to change state to %q: %s", state, err)
 	}
 	return nil
 }
 
 func (d *driver) waitUndesiredState(ctx context.Context, serverUuid string, state string) error {
+	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
+	defer cancel()
+
 	request := &request.WaitForServerStateRequest{
 		UUID:           serverUuid,
 		UndesiredState: state,
-		Timeout:        d.config.Timeout,
 	}
-	if _, err := d.svc.WaitForServerState(ctx, request); err != nil {
+	if _, err := d.svc.WaitForServerState(timeoutCtx, request); err != nil {
 		return fmt.Errorf("Error while waiting for server to change state from %q: %s", state, err)
 	}
 	return nil
