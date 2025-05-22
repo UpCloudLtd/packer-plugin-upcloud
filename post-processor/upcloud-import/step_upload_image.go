@@ -27,7 +27,11 @@ func (s *stepUploadImage) Run(ctx context.Context, state multistep.StateBag) mul
 	if err != nil {
 		return haltOnError(ui, state, err)
 	}
-	defer fd.Close()
+	defer func() {
+		if closeErr := fd.Close(); closeErr != nil {
+			ui.Error(fmt.Sprintf("Error closing file: %s", closeErr))
+		}
+	}()
 
 	t1 := time.Now()
 	importDetails, err := s.postProcessor.driver.ImportStorage(ctx, storages[0].UUID, s.image.ContentType, fd)

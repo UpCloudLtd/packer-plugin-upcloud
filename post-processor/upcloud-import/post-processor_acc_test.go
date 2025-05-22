@@ -43,7 +43,11 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	testName := fmt.Sprintf("%s-acc-test-%s", BuilderID, time.Now().Format(timestampSuffixLayout))
 	imageFile, err := os.CreateTemp(os.TempDir(), fmt.Sprintf("%s-*.raw", testName))
 	require.NoError(t, err)
-	defer os.Remove(imageFile.Name())
+	defer func() {
+		if err := os.Remove(imageFile.Name()); err != nil {
+			t.Logf("Failed to remove temporary file: %v", err)
+		}
+	}()
 
 	var p PostProcessor
 	err = p.Configure([]interface{}{map[string]interface{}{

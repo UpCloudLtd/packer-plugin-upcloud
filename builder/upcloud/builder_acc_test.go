@@ -159,7 +159,9 @@ func readLog(logfile string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Unable find %s", logfile)
 	}
-	defer logs.Close()
+	defer func() {
+		_ = logs.Close() // Best effort close, ignore error
+	}()
 
 	logsBytes, err := io.ReadAll(logs)
 	if err != nil {

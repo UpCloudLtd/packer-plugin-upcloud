@@ -31,11 +31,11 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 		ui.Say("Using provided SSH keys...")
 
 		if config.Comm.SSHPrivateKey, err = os.ReadFile(config.SSHPrivateKeyPath); err != nil {
-			return stepHaltWithError(state, fmt.Errorf("Failed to read private key: %s", err))
+			return stepHaltWithError(state, fmt.Errorf("failed to read private key: %s", err))
 		}
 
 		if config.Comm.SSHPublicKey, err = os.ReadFile(config.SSHPublicKeyPath); err != nil {
-			return stepHaltWithError(state, fmt.Errorf("Failed to read public key: %s", err))
+			return stepHaltWithError(state, fmt.Errorf("failed to read public key: %s", err))
 		}
 
 		state.Put("ssh_key_public", strings.Trim(string(config.Comm.SSHPublicKey), "\n"))
@@ -46,7 +46,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return stepHaltWithError(state, fmt.Errorf("Error generating SSH key: %s", err))
+		return stepHaltWithError(state, fmt.Errorf("error generating SSH key: %s", err))
 	}
 
 	// ASN.1 DER encoded form
@@ -60,7 +60,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 	// Marshal the public key into SSH compatible format
 	pub, err := ssh.NewPublicKey(&priv.PublicKey)
 	if err != nil {
-		return stepHaltWithError(state, fmt.Errorf("Error creating public ssh key: %s", err))
+		return stepHaltWithError(state, fmt.Errorf("error creating public ssh key: %s", err))
 	}
 
 	// Remember some state for the future
@@ -76,7 +76,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 		ui.Say(fmt.Sprintf("Saving key for debug purposes: %s", s.DebugKeyPath))
 		err := os.WriteFile(s.DebugKeyPath, config.Comm.SSHPrivateKey, 0600)
 		if err != nil {
-			return stepHaltWithError(state, fmt.Errorf("Error saving debug key: %s", err))
+			return stepHaltWithError(state, fmt.Errorf("error saving debug key: %s", err))
 		}
 	}
 

@@ -44,7 +44,11 @@ func (i *image) CheckSHA256(sha256Sum string) error {
 	if err != nil {
 		return fmt.Errorf("unable to check '%s' checksum: %v", i.Path, err)
 	}
-	defer src.Close()
+	defer func() {
+		if closeErr := src.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
+	}()
 
 	cs := sha256.New()
 	if i.ContentType == contentTypeGzip {

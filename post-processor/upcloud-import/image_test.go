@@ -13,12 +13,20 @@ func TestImage(t *testing.T) {
 	c := time.Now().Format(time.ANSIC)
 	file, err := os.CreateTemp(os.TempDir(), "packer-test-import-image-*.raw")
 	require.NoError(t, err)
-	defer os.Remove(file.Name())
+	defer func() {
+		if err := os.Remove(file.Name()); err != nil {
+			t.Logf("Failed to remove temporary file: %v", err)
+		}
+	}()
 	if _, err = file.WriteString(c); err != nil {
-		file.Close()
+		if closeErr := file.Close(); closeErr != nil {
+			t.Logf("Failed to close file: %v", closeErr)
+		}
 		t.Fatalf("write to temp file %s failed", file.Name())
 	}
-	file.Close()
+	if err := file.Close(); err != nil {
+		t.Fatalf("Failed to close file: %v", err)
+	}
 	t.Logf("created new temp file %s", file.Name())
 
 	im, err := newImage(file.Name())
