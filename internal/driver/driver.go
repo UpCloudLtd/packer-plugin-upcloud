@@ -37,7 +37,7 @@ type (
 		CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error)
 		GetTemplateByName(ctx context.Context, name, zone string) (*upcloud.Storage, error)
 		CreateTemplate(ctx context.Context, storageUUID, templateTitle string) (*upcloud.Storage, error)
-		CreateTemplateStorage(ctx context.Context, title, zone string, size int) (*upcloud.Storage, error)
+		CreateTemplateStorage(ctx context.Context, title, zone string, size int, tier string) (*upcloud.Storage, error)
 		ImportStorage(ctx context.Context, storageUUID, contentType string, f io.Reader) (*upcloud.StorageImportDetails, error)
 		WaitStorageOnline(ctx context.Context, storageUUID string) (*upcloud.Storage, error)
 		DeleteTemplate(context.Context, string) error
@@ -63,6 +63,7 @@ type (
 		Zone         string
 		SshPublicKey string
 		Networking   []request.CreateServerInterface
+		StorageTier  string
 	}
 )
 
@@ -216,10 +217,10 @@ func (d *driver) RenameStorage(ctx context.Context, storageUUID, name string) (*
 	return d.WaitStorageOnline(ctx, details.Storage.UUID)
 }
 
-func (d *driver) CreateTemplateStorage(ctx context.Context, title, zone string, size int) (*upcloud.Storage, error) {
+func (d *driver) CreateTemplateStorage(ctx context.Context, title, zone string, size int, tier string) (*upcloud.Storage, error) {
 	storage, err := d.svc.CreateStorage(ctx, &request.CreateStorageRequest{
 		Size:  size,
-		Tier:  upcloud.StorageTierMaxIOPS,
+		Tier:  tier,
 		Title: title,
 		Zone:  zone,
 	})
@@ -381,7 +382,7 @@ func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerReq
 				Storage: opts.StorageUuid,
 				Title:   titleDisk,
 				Size:    opts.StorageSize,
-				Tier:    upcloud.StorageTierMaxIOPS,
+				Tier:    opts.StorageTier,
 			},
 		},
 		Networking: &request.CreateServerNetworking{

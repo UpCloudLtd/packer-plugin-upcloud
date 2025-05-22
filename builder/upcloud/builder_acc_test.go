@@ -31,6 +31,9 @@ var testBuilderStorageName string
 //go:embed test-fixtures/json/networking.json
 var testBuilderNetworking string
 
+//go:embed test-fixtures/json/basic_standard_tier.json
+var testBuilderBasicStandardTier string
+
 func TestBuilderAcc_default(t *testing.T) {
 	testAccPreCheck(t)
 
@@ -59,6 +62,17 @@ func TestBuilderAcc_storageName(t *testing.T) {
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuilderStorageName,
+		Check:    checkTestResult(),
+		Teardown: teardown(t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
+func TestBuilderAcc_standardTier(t *testing.T) {
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderBasicStandardTier,
 		Check:    checkTestResult(),
 		Teardown: teardown(t.Name()),
 	}

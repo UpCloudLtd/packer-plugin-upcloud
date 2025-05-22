@@ -5,6 +5,10 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- Enable storage tier customisation through `storage_tier` parameter
+
 ### Fixed
 
 - Update Go version to 1.24 and fix security vulnerabilities
