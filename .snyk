@@ -1,0 +1,6 @@
+version: v1.25.0
+ignore:
+  'snyk:lic:golang:github.com:hashicorp:packer-plugin-sdk:MPL-2.0':
+    - '*':
+        reason: upstream inclusion
+patch: {}
