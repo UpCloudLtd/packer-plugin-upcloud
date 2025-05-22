@@ -5,6 +5,14 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- Update Go version to 1.24 and fix security vulnerabilities
+
+### Changed
+
+- Update `packer-plugin-sdk` to [v0.6.1](https://github.com/hashicorp/packer-plugin-sdk/releases/tag/v0.6.1)
+
 ## [1.5.3] - 2024-01-02
 
 ### Fixed
