@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/UpCloudLtd/upcloud-go-api/v6/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packer/registry/image"
 	"github.com/stretchr/testify/assert"
