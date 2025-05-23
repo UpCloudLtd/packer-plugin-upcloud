@@ -33,6 +33,9 @@ type Config struct {
 	// Replace existing template if one exists with the same name. Defaults to `false`.
 	ReplaceExisting bool `mapstructure:"replace_existing"`
 
+	// The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
+	StorageTier string `mapstructure:"storage_tier"`
+
 	// The amount of time to wait for resource state changes. Defaults to `60m`.
 	Timeout time.Duration `mapstructure:"state_timeout_duration"`
 
@@ -87,6 +90,11 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 
 	if c.Timeout < 1 {
 		c.Timeout = defaultTimeout
+	}
+
+	// Set the default storage tier to maxiops if not specified
+	if c.StorageTier == "" {
+		c.StorageTier = "maxiops"
 	}
 
 	return &c, nil

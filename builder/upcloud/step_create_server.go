@@ -48,6 +48,7 @@ func (s *StepCreateServer) Run(ctx context.Context, state multistep.StateBag) mu
 		Zone:         s.Config.Zone,
 		SshPublicKey: sshKeyPublic,
 		Networking:   networking,
+		StorageTier:  s.Config.StorageTier,
 	})
 	if err != nil {
 		return stepHaltWithError(state, err)

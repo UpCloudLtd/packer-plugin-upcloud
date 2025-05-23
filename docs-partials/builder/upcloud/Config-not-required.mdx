@@ -16,6 +16,9 @@
   Changing this value is useful if you aim to build a template for larger server configurations where the preconfigured server disk is larger than 25 GB.
   The operating system disk can also be later extended if needed. Note that Windows templates require large storage size, than default 25 Gb.
 
+- `storage_tier` (string) - The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
+  For most production workloads, MaxIOPS is recommended for best performance.
+
 - `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `5m`.
 
 - `boot_wait` (duration string | ex: "1h5m2s") - The amount of time to wait after booting the server. Defaults to '0s'

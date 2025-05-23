@@ -75,6 +75,7 @@ type FlatConfig struct {
 	TemplatePrefix            *string                `mapstructure:"template_prefix" cty:"template_prefix" hcl:"template_prefix"`
 	TemplateName              *string                `mapstructure:"template_name" cty:"template_name" hcl:"template_name"`
 	StorageSize               *int                   `mapstructure:"storage_size" cty:"storage_size" hcl:"storage_size"`
+	StorageTier               *string                `mapstructure:"storage_tier" cty:"storage_tier" hcl:"storage_tier"`
 	Timeout                   *string                `mapstructure:"state_timeout_duration" cty:"state_timeout_duration" hcl:"state_timeout_duration"`
 	BootWait                  *string                `mapstructure:"boot_wait" cty:"boot_wait" hcl:"boot_wait"`
 	CloneZones                []string               `mapstructure:"clone_zones" cty:"clone_zones" hcl:"clone_zones"`
@@ -160,6 +161,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"template_prefix":              &hcldec.AttrSpec{Name: "template_prefix", Type: cty.String, Required: false},
 		"template_name":                &hcldec.AttrSpec{Name: "template_name", Type: cty.String, Required: false},
 		"storage_size":                 &hcldec.AttrSpec{Name: "storage_size", Type: cty.Number, Required: false},
+		"storage_tier":                 &hcldec.AttrSpec{Name: "storage_tier", Type: cty.String, Required: false},
 		"state_timeout_duration":       &hcldec.AttrSpec{Name: "state_timeout_duration", Type: cty.String, Required: false},
 		"boot_wait":                    &hcldec.AttrSpec{Name: "boot_wait", Type: cty.String, Required: false},
 		"clone_zones":                  &hcldec.AttrSpec{Name: "clone_zones", Type: cty.List(cty.String), Required: false},

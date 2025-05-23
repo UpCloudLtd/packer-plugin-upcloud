@@ -32,6 +32,8 @@ source "upcloud" "test" {
   zone            = "nl-ams1"
   storage_name    = "ubuntu server 20.04"
   template_prefix = "ubuntu-server"
+  # uncomment to use standard tier storage
+  # storage_tier = "standard
 }
 
 build {

@@ -24,6 +24,7 @@ const (
 	DefaultCommunicator                 = "ssh"
 	DefaultStorageSize                  = 25
 	DefaultTimeout                      = 5 * time.Minute
+	DefaultStorageTier                  = upcloud.StorageTierMaxIOPS
 	InterfaceTypePublic   InterfaceType = upcloud.IPAddressAccessPublic
 	InterfaceTypeUtility  InterfaceType = upcloud.IPAddressAccessUtility
 	InterfaceTypePrivate  InterfaceType = upcloud.IPAddressAccessPrivate
@@ -103,6 +104,10 @@ type Config struct {
 	// The operating system disk can also be later extended if needed. Note that Windows templates require large storage size, than default 25 Gb.
 	StorageSize int `mapstructure:"storage_size"`
 
+	// The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
+	// For most production workloads, MaxIOPS is recommended for best performance.
+	StorageTier string `mapstructure:"storage_tier"`
+
 	// The amount of time to wait for resource state changes. Defaults to `5m`.
 	Timeout time.Duration `mapstructure:"state_timeout_duration"`
 
@@ -156,6 +161,10 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 
 	if c.StorageSize == 0 {
 		c.StorageSize = DefaultStorageSize
+	}
+
+	if c.StorageTier == "" {
+		c.StorageTier = DefaultStorageTier
 	}
 
 	if c.Timeout == 0 {

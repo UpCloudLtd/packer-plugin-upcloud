@@ -35,6 +35,7 @@ build {
       username         = "${var.username}"
       password         = "${var.password}"
       zones            = ["pl-waw1", "fi-hel2"]
+      storage_tier     = "maxiops"
     }
   }
 }
