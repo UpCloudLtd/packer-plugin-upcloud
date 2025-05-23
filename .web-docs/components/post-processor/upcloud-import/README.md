@@ -27,6 +27,8 @@ Username and password configuration arguments can be omitted if environment vari
 
 - `replace_existing` (bool) - Replace existing template if one exists with the same name. Defaults to `false`.
 
+- `storage_tier` (string) - The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
+
 - `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `60m`.
 
 <!-- End of code generated from the comments of the Config struct in post-processor/upcloud-import/config.go; -->
@@ -74,6 +76,7 @@ build {
       username         = "${var.username}"
       password         = "${var.password}"
       zones            = ["pl-waw1", "fi-hel2"]
+      storage_tier     = "maxiops"
     }
   }
 }

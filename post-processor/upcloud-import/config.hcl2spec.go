@@ -15,6 +15,7 @@ type FlatConfig struct {
 	Zones               []string          `mapstructure:"zones" required:"true" cty:"zones" hcl:"zones"`
 	TemplateName        *string           `mapstructure:"template_name" required:"true" cty:"template_name" hcl:"template_name"`
 	ReplaceExisting     *bool             `mapstructure:"replace_existing" cty:"replace_existing" hcl:"replace_existing"`
+	StorageTier         *string           `mapstructure:"storage_tier" cty:"storage_tier" hcl:"storage_tier"`
 	Timeout             *string           `mapstructure:"state_timeout_duration" cty:"state_timeout_duration" hcl:"state_timeout_duration"`
 	PackerBuildName     *string           `mapstructure:"packer_build_name" cty:"packer_build_name" hcl:"packer_build_name"`
 	PackerBuilderType   *string           `mapstructure:"packer_builder_type" cty:"packer_builder_type" hcl:"packer_builder_type"`
@@ -43,6 +44,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"zones":                      &hcldec.AttrSpec{Name: "zones", Type: cty.List(cty.String), Required: false},
 		"template_name":              &hcldec.AttrSpec{Name: "template_name", Type: cty.String, Required: false},
 		"replace_existing":           &hcldec.AttrSpec{Name: "replace_existing", Type: cty.Bool, Required: false},
+		"storage_tier":               &hcldec.AttrSpec{Name: "storage_tier", Type: cty.String, Required: false},
 		"state_timeout_duration":     &hcldec.AttrSpec{Name: "state_timeout_duration", Type: cty.String, Required: false},
 		"packer_build_name":          &hcldec.AttrSpec{Name: "packer_build_name", Type: cty.String, Required: false},
 		"packer_builder_type":        &hcldec.AttrSpec{Name: "packer_builder_type", Type: cty.String, Required: false},
