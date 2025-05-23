@@ -7,9 +7,9 @@ This is a builder plugin for Packer which can be used to generate storage templa
 
 ## Documentation
 
-Documentation is available in [docs](docs/) directory.
+See [plugin documentation](https://developer.hashicorp.com/packer/integrations/UpCloudLtd/upcloud/).
 
-Check the [example](example/) directory for working example.
+Check also the [examples](example/).
 
 ## License
 
