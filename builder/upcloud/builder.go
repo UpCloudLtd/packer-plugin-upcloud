@@ -2,17 +2,19 @@ package upcloud
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 )
 
 const (
@@ -28,7 +30,7 @@ type Builder struct {
 
 func (b *Builder) ConfigSpec() hcldec.ObjectSpec { return b.config.FlatMapstructure().HCL2Spec() }
 
-func (b *Builder) Prepare(raws ...interface{}) (generatedVars []string, warnings []string, err error) {
+func (b *Builder) Prepare(raws ...interface{}) (generatedVars, warnings []string, err error) {
 	warnings, errs := b.config.Prepare(raws...)
 	if errs != nil {
 		return nil, warnings, errs
@@ -92,16 +94,24 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 
 	// If there was an error, return that
 	if err, ok := state.GetOk("error"); ok {
-		return nil, err.(error)
+		if errVal, ok := err.(error); ok {
+			return nil, errVal
+		}
+		return nil, fmt.Errorf("unknown error type: %T", err)
 	}
 
 	templates, ok := state.GetOk("templates")
 	if !ok {
-		return nil, fmt.Errorf("No template found in state, the build was probably cancelled")
+		return nil, errors.New("No template found in state, the build was probably cancelled")
+	}
+
+	templatesVal, ok := templates.([]*upcloud.Storage)
+	if !ok {
+		return nil, fmt.Errorf("templates is not of expected type []*upcloud.Storage, got %T", templates)
 	}
 
 	artifact := &Artifact{
-		Templates: templates.([]*upcloud.Storage),
+		Templates: templatesVal,
 		config:    &b.config,
 		driver:    b.driver,
 		StateData: map[string]interface{}{
@@ -118,7 +128,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 
 // CommunicatorStep returns step based on communicator type
 // We currently support only SSH communicator but 'none' type
-// can also be used for e.g. testing purposes
+// can also be used for e.g. testing purposes.
 func (b *Builder) communicatorStep() multistep.Step {
 	switch b.config.Comm.Type {
 	case "none":

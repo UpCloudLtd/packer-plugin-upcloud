@@ -1,17 +1,18 @@
-package upcloudimport
+package upcloudimport //nolint:testpackage // not all fields can be exported
 
 import (
-	"context"
-	_ "embed"
 	"fmt"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+
+	_ "embed"
 )
 
 type testArtifact struct {
@@ -26,10 +27,11 @@ func (a *testArtifact) State(name string) interface{} { return nil }
 func (a *testArtifact) Destroy() error                { return nil }
 
 func TestPostProcessorAcc_raw(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("PACKER_ACC") != "1" {
 		t.Skip("skip acceptance test")
 	}
-	ctx := context.Background()
+	ctx := t.Context()
 	username := driver.UsernameFromEnv()
 	if username == "" {
 		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigUsernameLegacy, driver.EnvConfigUsername)
@@ -43,7 +45,11 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	testName := fmt.Sprintf("%s-acc-test-%s", BuilderID, time.Now().Format(timestampSuffixLayout))
 	imageFile, err := os.CreateTemp(os.TempDir(), fmt.Sprintf("%s-*.raw", testName))
 	require.NoError(t, err)
-	defer os.Remove(imageFile.Name())
+	defer func() {
+		if err := os.Remove(imageFile.Name()); err != nil {
+			t.Logf("Warning: failed to remove temp file: %v", err)
+		}
+	}()
 
 	var p PostProcessor
 	err = p.Configure([]interface{}{map[string]interface{}{
@@ -56,7 +62,7 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	require.NoError(t, err)
 
 	a, _, _, err := p.PostProcess(
-		context.Background(),
+		t.Context(),
 		packer.TestUi(t),
 		&testArtifact{files: []string{imageFile.Name()}})
 

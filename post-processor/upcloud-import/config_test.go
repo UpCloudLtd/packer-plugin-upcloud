@@ -1,15 +1,18 @@
-package upcloudimport
+package upcloudimport_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	upcloudimport "github.com/UpCloudLtd/packer-plugin-upcloud/post-processor/upcloud-import"
 )
 
 func TestNewConfig(t *testing.T) {
-	_, err := NewConfig()
+	t.Parallel()
+	_, err := upcloudimport.NewConfig()
 	assert.Error(t, err)
-	c, err := NewConfig([]interface{}{map[string]interface{}{
+	c, err := upcloudimport.NewConfig([]interface{}{map[string]interface{}{
 		"username":      "test",
 		"password":      "passwd",
 		"template_name": "my-template",
@@ -22,6 +25,6 @@ func TestNewConfig(t *testing.T) {
 	assert.Equal(t, "test", c.Username)
 	assert.Equal(t, "passwd", c.Password)
 	assert.Equal(t, "my-template", c.TemplateName)
-	assert.Equal(t, false, c.ReplaceExisting)
-	assert.Equal(t, defaultTimeout, c.Timeout)
+	assert.False(t, c.ReplaceExisting)
+	assert.Equal(t, upcloudimport.DefaultTimeout, c.Timeout)
 }

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hashicorp/packer-plugin-sdk/plugin"
+
 	"github.com/UpCloudLtd/packer-plugin-upcloud/builder/upcloud"
 	upcloudimport "github.com/UpCloudLtd/packer-plugin-upcloud/post-processor/upcloud-import"
 	"github.com/UpCloudLtd/packer-plugin-upcloud/version"
-
-	"github.com/hashicorp/packer-plugin-sdk/plugin"
 )
 
 func main() {

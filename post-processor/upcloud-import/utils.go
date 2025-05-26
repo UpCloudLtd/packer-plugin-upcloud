@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 )
 
 func cleanupDevices(ctx context.Context, ui packer.Ui, driver driver.Driver, state multistep.StateBag) error {
@@ -66,10 +67,13 @@ func getTemplates(state multistep.StateBag) ([]*upcloud.Storage, error) {
 }
 
 func haltOnError(ui packer.Ui, state multistep.StateBag, err error) multistep.StepAction {
-	ui.Error(err.Error())
+	if ui != nil {
+		ui.Error(err.Error())
+	}
+	state.Put("error", err)
 	return multistep.ActionHalt
 }
 
 func contextWithDefaultTimeout() (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), defaultTimeout)
+	return context.WithTimeout(context.Background(), DefaultTimeout)
 }

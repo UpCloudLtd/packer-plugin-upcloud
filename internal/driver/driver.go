@@ -27,22 +27,22 @@ const (
 
 type (
 	Driver interface {
-		CreateServer(context.Context, *ServerOpts) (*upcloud.ServerDetails, error)
-		DeleteServer(context.Context, string) error
-		StopServer(context.Context, string) error
+		CreateServer(ctx context.Context, opts *ServerOpts) (*upcloud.ServerDetails, error)
+		DeleteServer(ctx context.Context, serverUUID string) error
+		StopServer(ctx context.Context, serverUUID string) error
 		// TODO: rename method or split into two separate method GetStorageByUUID and GetTemplateByName
 		GetStorage(ctx context.Context, storageUUID, templateName string) (*upcloud.Storage, error)
 		RenameStorage(ctx context.Context, storageUUID, name string) (*upcloud.Storage, error)
-		GetServerStorage(context.Context, string) (*upcloud.ServerStorageDevice, error)
+		GetServerStorage(ctx context.Context, serverUUID string) (*upcloud.ServerStorageDevice, error)
 		CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error)
 		GetTemplateByName(ctx context.Context, name, zone string) (*upcloud.Storage, error)
 		CreateTemplate(ctx context.Context, storageUUID, templateTitle string) (*upcloud.Storage, error)
 		CreateTemplateStorage(ctx context.Context, title, zone string, size int, tier string) (*upcloud.Storage, error)
 		ImportStorage(ctx context.Context, storageUUID, contentType string, f io.Reader) (*upcloud.StorageImportDetails, error)
 		WaitStorageOnline(ctx context.Context, storageUUID string) (*upcloud.Storage, error)
-		DeleteTemplate(context.Context, string) error
+		DeleteTemplate(ctx context.Context, templateUUID string) error
 		DeleteStorage(ctx context.Context, storageUUID string) error
-		GetAvailableZones(context.Context) []string
+		GetAvailableZones(ctx context.Context) []string
 	}
 
 	driver struct {
@@ -85,10 +85,10 @@ func (d *driver) CreateServer(ctx context.Context, opts *ServerOpts) (*upcloud.S
 		if errors.As(err, &upcloudErr) && upcloudErr.ErrorCode() == upcloudErrorCodeMetadataDisabled {
 			request.Metadata = upcloud.True
 			if response, err = d.svc.CreateServer(ctx, request); err != nil {
-				return nil, fmt.Errorf("Error creating metadata enabled server: %s", err)
+				return nil, fmt.Errorf("error creating metadata enabled server: %w", err)
 			}
 		} else {
-			return nil, fmt.Errorf("Error creating server: %s", err)
+			return nil, fmt.Errorf("error creating server: %w", err)
 		}
 	}
 
@@ -128,7 +128,7 @@ func (d *driver) StopServer(ctx context.Context, serverUuid string) error {
 		UUID: serverUuid,
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to stop server: %s", err)
+		return fmt.Errorf("failed to stop server: %w", err)
 	}
 
 	// Wait for server to stop
@@ -146,7 +146,7 @@ func (d *driver) CreateTemplate(ctx context.Context, serverStorageUuid, template
 		Title: templateTitle,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error creating image: %s", err)
+		return nil, fmt.Errorf("error creating image: %w", err)
 	}
 	return d.WaitStorageOnline(ctx, response.UUID)
 }
@@ -160,7 +160,7 @@ func (d *driver) WaitStorageOnline(ctx context.Context, storageUuid string) (*up
 		DesiredState: upcloud.StorageStateOnline,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error while waiting for storage to change state to 'online': %s", err)
+		return nil, fmt.Errorf("error while waiting for storage to change state to 'online': %w", err)
 	}
 	return &details.Storage, nil
 }
@@ -169,7 +169,6 @@ func (d *driver) GetTemplateByName(ctx context.Context, name, zone string) (*upc
 	response, err := d.svc.GetStorages(ctx, &request.GetStoragesRequest{
 		Type: upcloud.StorageTypeTemplate,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -180,15 +179,15 @@ func (d *driver) GetTemplateByName(ctx context.Context, name, zone string) (*upc
 		}
 	}
 
-	return nil, fmt.Errorf("Failed to find storage by name %q", name)
+	return nil, fmt.Errorf("failed to find storage by name %q", name)
 }
 
-// fetch storage by uuid or name
+// fetch storage by uuid or name.
 func (d *driver) GetStorage(ctx context.Context, storageUuid, storageName string) (*upcloud.Storage, error) {
 	if storageUuid != "" {
 		storage, err := d.getStorageByUuid(ctx, storageUuid)
 		if err != nil {
-			return nil, fmt.Errorf("Error retrieving storage by uuid %q: %s", storageUuid, err)
+			return nil, fmt.Errorf("error retrieving storage by uuid %q: %w", storageUuid, err)
 		}
 		return storage, nil
 	}
@@ -196,12 +195,11 @@ func (d *driver) GetStorage(ctx context.Context, storageUuid, storageName string
 	if storageName != "" {
 		storage, err := d.getStorageByName(ctx, storageName)
 		if err != nil {
-			return nil, fmt.Errorf("Error retrieving storage by name %q: %s", storageName, err)
+			return nil, fmt.Errorf("error retrieving storage by name %q: %w", storageName, err)
 		}
 		return storage, nil
-
 	}
-	return nil, fmt.Errorf("Error retrieving storage")
+	return nil, errors.New("error retrieving storage")
 }
 
 func (d *driver) RenameStorage(ctx context.Context, storageUUID, name string) (*upcloud.Storage, error) {
@@ -209,12 +207,11 @@ func (d *driver) RenameStorage(ctx context.Context, storageUUID, name string) (*
 		UUID:  storageUUID,
 		Title: name,
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
-	return d.WaitStorageOnline(ctx, details.Storage.UUID)
+	return d.WaitStorageOnline(ctx, details.UUID)
 }
 
 func (d *driver) CreateTemplateStorage(ctx context.Context, title, zone string, size int, tier string) (*upcloud.Storage, error) {
@@ -258,7 +255,7 @@ func (d *driver) DeleteStorage(ctx context.Context, storageUUID string) error {
 	})
 }
 
-func (d *driver) CloneStorage(ctx context.Context, storageUuid string, zone string, title string) (*upcloud.Storage, error) {
+func (d *driver) CloneStorage(ctx context.Context, storageUuid, zone, title string) (*upcloud.Storage, error) {
 	response, err := d.svc.CloneStorage(ctx, &request.CloneStorageRequest{
 		UUID:  storageUuid,
 		Zone:  zone,
@@ -274,9 +271,8 @@ func (d *driver) getStorageByUuid(ctx context.Context, storageUuid string) (*upc
 	response, err := d.svc.GetStorageDetails(ctx, &request.GetStorageDetailsRequest{
 		UUID: storageUuid,
 	})
-
 	if err != nil {
-		return nil, fmt.Errorf("Error fetching storages: %s", err)
+		return nil, fmt.Errorf("error fetching storages: %w", err)
 	}
 	return &response.Storage, nil
 }
@@ -285,9 +281,8 @@ func (d *driver) getStorageByName(ctx context.Context, storageName string) (*upc
 	response, err := d.svc.GetStorages(ctx, &request.GetStoragesRequest{
 		Type: upcloud.StorageTypeTemplate,
 	})
-
 	if err != nil {
-		return nil, fmt.Errorf("Error fetching storages: %s", err)
+		return nil, fmt.Errorf("error fetching storages: %w", err)
 	}
 
 	var found bool
@@ -302,12 +297,12 @@ func (d *driver) getStorageByName(ctx context.Context, storageName string) (*upc
 	}
 
 	if !found {
-		return nil, fmt.Errorf("Failed to find storage by name %q", storageName)
+		return nil, fmt.Errorf("failed to find storage by name %q", storageName)
 	}
 	return &storage, nil
 }
 
-func (d *driver) waitDesiredState(ctx context.Context, serverUuid string, state string) error {
+func (d *driver) waitDesiredState(ctx context.Context, serverUuid, state string) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
 	defer cancel()
 
@@ -316,12 +311,12 @@ func (d *driver) waitDesiredState(ctx context.Context, serverUuid string, state 
 		DesiredState: state,
 	}
 	if _, err := d.svc.WaitForServerState(timeoutCtx, request); err != nil {
-		return fmt.Errorf("Error while waiting for server to change state to %q: %s", state, err)
+		return fmt.Errorf("error while waiting for server to change state to %q: %w", state, err)
 	}
 	return nil
 }
 
-func (d *driver) waitUndesiredState(ctx context.Context, serverUuid string, state string) error {
+func (d *driver) waitUndesiredState(ctx context.Context, serverUuid, state string) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
 	defer cancel()
 
@@ -330,7 +325,7 @@ func (d *driver) waitUndesiredState(ctx context.Context, serverUuid string, stat
 		UndesiredState: state,
 	}
 	if _, err := d.svc.WaitForServerState(timeoutCtx, request); err != nil {
-		return fmt.Errorf("Error while waiting for server to change state from %q: %s", state, err)
+		return fmt.Errorf("error while waiting for server to change state from %q: %w", state, err)
 	}
 	return nil
 }
@@ -340,7 +335,7 @@ func (d *driver) getServerDetails(ctx context.Context, serverUuid string) (*upcl
 		UUID: serverUuid,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get details for server: %s", err)
+		return nil, fmt.Errorf("failed to get details for server: %w", err)
 	}
 	return response, nil
 }
@@ -361,7 +356,7 @@ func (d *driver) GetServerStorage(ctx context.Context, serverUuid string) (*upcl
 		}
 	}
 	if !found {
-		return nil, fmt.Errorf("Failed to find storage type disk for server %q", serverUuid)
+		return nil, fmt.Errorf("failed to find storage type disk for server %q", serverUuid)
 	}
 	return &storage, nil
 }

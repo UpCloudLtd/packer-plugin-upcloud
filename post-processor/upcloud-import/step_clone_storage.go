@@ -2,6 +2,7 @@ package upcloudimport
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -17,7 +18,11 @@ func (s *stepCloneStorage) Run(ctx context.Context, state multistep.StateBag) mu
 	if len(s.postProcessor.config.Zones) < 2 {
 		return multistep.ActionContinue
 	}
-	ui := state.Get(stateUI).(packer.Ui)
+	uiRaw := state.Get(stateUI)
+	ui, ok := uiRaw.(packer.Ui)
+	if !ok {
+		return haltOnError(nil, state, errors.New("UI is not of expected type"))
+	}
 	storages, err := getStorages(state)
 	if err != nil {
 		return haltOnError(ui, state, err)
@@ -55,7 +60,11 @@ func (s *stepCloneStorage) Run(ctx context.Context, state multistep.StateBag) mu
 func (s *stepCloneStorage) Cleanup(state multistep.StateBag) {
 	ctx, cancel := contextWithDefaultTimeout()
 	defer cancel()
-	ui := state.Get(stateUI).(packer.Ui)
+	uiRaw := state.Get(stateUI)
+	ui, ok := uiRaw.(packer.Ui)
+	if !ok {
+		return
+	}
 	if err := cleanupDevices(ctx, ui, s.postProcessor.driver, state); err != nil {
 		ui.Error(err.Error())
 	}

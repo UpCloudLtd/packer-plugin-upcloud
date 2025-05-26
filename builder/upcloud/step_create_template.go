@@ -2,27 +2,39 @@ package upcloud
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 )
 
-// StepCreateTemplate represents the step that creates a storage template from the newly created server
+// StepCreateTemplate represents the step that creates a storage template from the newly created server.
 type StepCreateTemplate struct {
 	Config        *Config
 	GeneratedData *packerbuilderdata.GeneratedData
 }
 
-// Run runs the actual step
+// Run runs the actual step.
 func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	serverUuid := state.Get("server_uuid").(string)
+	serverUuidRaw := state.Get("server_uuid")
+	serverUuid, ok := serverUuidRaw.(string)
+	if !ok {
+		return stepHaltWithError(state, errors.New("server_uuid is not of expected type"))
+	}
 
-	ui := state.Get("ui").(packer.Ui)
-	drv := state.Get("driver").(driver.Driver)
+	ui, ok := state.Get("ui").(packer.Ui)
+	if !ok {
+		return stepHaltWithError(state, errors.New("UI is not of expected type"))
+	}
+	drv, ok := state.Get("driver").(driver.Driver)
+	if !ok {
+		return stepHaltWithError(state, errors.New("driver is not of expected type"))
+	}
 
 	// get storage details
 	storage, err := drv.GetServerStorage(ctx, serverUuid)
@@ -75,7 +87,7 @@ func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 	return multistep.ActionContinue
 }
 
-// Cleanup cleans up after the step
+// Cleanup cleans up after the step.
 func (s *StepCreateTemplate) Cleanup(state multistep.StateBag) {
 	rawStorageUuids, ok := state.GetOk("cleanup_storage_uuids")
 
@@ -84,10 +96,21 @@ func (s *StepCreateTemplate) Cleanup(state multistep.StateBag) {
 	}
 	ctx, cancel := contextWithDefaultTimeout()
 	defer cancel()
-	storageUuids := rawStorageUuids.([]string)
+	storageUuids, ok := rawStorageUuids.([]string)
+	if !ok {
+		return
+	}
 
-	ui := state.Get("ui").(packer.Ui)
-	driver := state.Get("driver").(driver.Driver)
+	uiRaw := state.Get("ui")
+	ui, ok := uiRaw.(packer.Ui)
+	if !ok {
+		return
+	}
+	driverRaw := state.Get("driver")
+	driver, ok := driverRaw.(driver.Driver)
+	if !ok {
+		return
+	}
 
 	for _, uuid := range storageUuids {
 		ui.Say(fmt.Sprintf("Delete storage %q...", uuid))

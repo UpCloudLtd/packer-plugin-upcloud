@@ -6,14 +6,14 @@ import (
 	"errors"
 	"time"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 )
 
 type InterfaceType string
@@ -30,20 +30,7 @@ const (
 	InterfaceTypePrivate  InterfaceType = upcloud.IPAddressAccessPrivate
 )
 
-var (
-	DefaultNetworking = []request.CreateServerInterface{
-		{
-			IPAddresses: []request.CreateServerIPAddress{
-				{
-					Family: upcloud.IPAddressFamilyIPv4,
-				},
-			},
-			Type: upcloud.IPAddressAccessPublic,
-		},
-	}
-)
-
-// for config type convertion
+// for config type conversion.
 type NetworkInterface struct {
 	// List of IP Addresses
 	IPAddresses []IPAddress `mapstructure:"ip_addresses"`
@@ -130,7 +117,7 @@ type Config struct {
 	ctx interpolate.Context
 }
 
-// DefaultIPaddress returns default IP address and its type (public,private,utility)
+// DefaultIPaddress returns default IP address and its type (public,private,utility).
 func (c *Config) DefaultIPaddress() (*IPAddress, InterfaceType) {
 	for _, iface := range c.NetworkInterfaces {
 		for _, addr := range iface.IPAddresses {
@@ -147,7 +134,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		Interpolate:        true,
 		InterpolateContext: &c.ctx,
 	}, raws...)
-
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +220,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	return nil, nil
 }
 
-// get params from environment
+// get params from environment.
 func (c *Config) setEnv() {
 	if c.Username == "" {
 		c.Username = driver.UsernameFromEnv()

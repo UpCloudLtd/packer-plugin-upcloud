@@ -2,13 +2,15 @@ package upcloudimport
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
+
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 )
 
 const (
@@ -21,7 +23,11 @@ type stepCreateTemplate struct {
 }
 
 func (s *stepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	ui := state.Get(stateUI).(packer.Ui)
+	uiRaw := state.Get(stateUI)
+	ui, ok := uiRaw.(packer.Ui)
+	if !ok {
+		return haltOnError(nil, state, errors.New("UI is not of expected type"))
+	}
 
 	storages, err := getStorages(state)
 	if err != nil {
@@ -69,7 +75,11 @@ func (s *stepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 func (s *stepCreateTemplate) Cleanup(state multistep.StateBag) {
 	ctx, cancel := contextWithDefaultTimeout()
 	defer cancel()
-	ui := state.Get(stateUI).(packer.Ui)
+	uiRaw := state.Get(stateUI)
+	ui, ok := uiRaw.(packer.Ui)
+	if !ok {
+		return
+	}
 	if err := cleanupDevices(ctx, ui, s.postProcessor.driver, state); err != nil {
 		ui.Error(err.Error())
 	}

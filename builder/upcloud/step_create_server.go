@@ -2,31 +2,42 @@ package upcloud
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packerbuilderdata"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 )
 
-// StepCreateServer represents the step that creates a server
+// StepCreateServer represents the step that creates a server.
 type StepCreateServer struct {
 	Config        *Config
 	GeneratedData *packerbuilderdata.GeneratedData
 }
 
-// Run runs the actual step
+// Run runs the actual step.
 func (s *StepCreateServer) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	ui := state.Get("ui").(packer.Ui)
-	drv := state.Get("driver").(driver.Driver)
+	ui, ok := state.Get("ui").(packer.Ui)
+	if !ok {
+		return stepHaltWithError(state, errors.New("UI is not of expected type"))
+	}
+	drv, ok := state.Get("driver").(driver.Driver)
+	if !ok {
+		return stepHaltWithError(state, errors.New("driver is not of expected type"))
+	}
 
 	rawSshKeyPublic, ok := state.GetOk("ssh_key_public")
 	if !ok {
-		return stepHaltWithError(state, fmt.Errorf("SSH public key is missing"))
+		return stepHaltWithError(state, errors.New("SSH public key is missing"))
 	}
-	sshKeyPublic := rawSshKeyPublic.(string)
+	sshKeyPublic, ok := rawSshKeyPublic.(string)
+	if !ok {
+		return stepHaltWithError(state, errors.New("SSH public key is not of expected type"))
+	}
 
 	ui.Say("Getting storage...")
 
@@ -37,10 +48,9 @@ func (s *StepCreateServer) Run(ctx context.Context, state multistep.StateBag) mu
 
 	ui.Say(fmt.Sprintf("Creating server based on storage %q...", storage.Title))
 
-	networking := DefaultNetworking
+	networking := defaultNetworking()
 	if len(s.Config.NetworkInterfaces) > 0 {
 		networking = convertNetworkTypes(s.Config.NetworkInterfaces)
-
 	}
 	response, err := drv.CreateServer(ctx, &driver.ServerOpts{
 		StorageUuid:  storage.UUID,
@@ -89,7 +99,7 @@ func (s *StepCreateServer) Run(ctx context.Context, state multistep.StateBag) mu
 	return multistep.ActionContinue
 }
 
-// Cleanup stops and destroys the server if server details are found in the state
+// Cleanup stops and destroys the server if server details are found in the state.
 func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
 	ctx, cancel := contextWithDefaultTimeout()
 	defer cancel()
@@ -100,11 +110,26 @@ func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
 		return
 	}
 
-	serverUuid := rawServerUuid.(string)
-	serverTitle := state.Get("server_title").(string)
+	serverUuid, ok := rawServerUuid.(string)
+	if !ok {
+		return
+	}
+	serverTitleRaw := state.Get("server_title")
+	serverTitle, ok := serverTitleRaw.(string)
+	if !ok {
+		return
+	}
 
-	ui := state.Get("ui").(packer.Ui)
-	driver := state.Get("driver").(driver.Driver)
+	uiRaw := state.Get("ui")
+	ui, ok := uiRaw.(packer.Ui)
+	if !ok {
+		return
+	}
+	driverRaw := state.Get("driver")
+	driver, ok := driverRaw.(driver.Driver)
+	if !ok {
+		return
+	}
 
 	// stop server
 	ui.Say(fmt.Sprintf("Stopping server %q...", serverTitle))

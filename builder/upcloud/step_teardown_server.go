@@ -2,24 +2,40 @@ package upcloud
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 )
 
-// StepTeardownServer represents the step that stops the server before creating the image
+// StepTeardownServer represents the step that stops the server before creating the image.
 type StepTeardownServer struct{}
 
-// Run runs the actual step
+// Run runs the actual step.
 func (s *StepTeardownServer) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	// Extract server details
-	serverUuid := state.Get("server_uuid").(string)
-	serverTitle := state.Get("server_title").(string)
+	serverUuidRaw := state.Get("server_uuid")
+	serverUuid, ok := serverUuidRaw.(string)
+	if !ok {
+		return stepHaltWithError(state, errors.New("server_uuid is not of expected type"))
+	}
+	serverTitleRaw := state.Get("server_title")
+	serverTitle, ok := serverTitleRaw.(string)
+	if !ok {
+		return stepHaltWithError(state, errors.New("server_title is not of expected type"))
+	}
 
-	ui := state.Get("ui").(packer.Ui)
-	driver := state.Get("driver").(driver.Driver)
+	ui, ok := state.Get("ui").(packer.Ui)
+	if !ok {
+		return stepHaltWithError(state, errors.New("UI is not of expected type"))
+	}
+	driver, ok := state.Get("driver").(driver.Driver)
+	if !ok {
+		return stepHaltWithError(state, errors.New("driver is not of expected type"))
+	}
 
 	ui.Say(fmt.Sprintf("Stopping server %q...", serverTitle))
 

@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 )
 
 const (
@@ -63,7 +64,7 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 // given a value to keep_input_artifact. If forceOverride is true, then any
 // user input for keep_input_artifact is ignored and the artifact is either
 // kept or discarded according to the value set in `keep`.
-// PostProcess is cancellable using context
+// PostProcess is cancellable using context.
 func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, a packer.Artifact) (packer.Artifact, bool, bool, error) {
 	switch a.BuilderId() {
 	case qemuBuilderID, fileBuilderID, compressBuilderID, artificeBuilderID:
@@ -77,7 +78,7 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, a packer.
 	if len(a.Files()) < 1 {
 		return nil, false, false, fmt.Errorf("%s didn't receive any files", BuilderID)
 	}
-	im, err := newImage(a.Files()[0])
+	im, err := NewImage(a.Files()[0])
 	if err != nil {
 		return nil, false, false, err
 	}
@@ -97,16 +98,25 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packer.Ui, a packer.
 	p.runner.Run(ctx, state)
 
 	if e, ok := state.GetOk("error"); ok {
-		return nil, false, false, e.(error)
+		if errVal, ok := e.(error); ok {
+			return nil, false, false, errVal
+		}
+		return nil, false, false, fmt.Errorf("unknown error type: %T", e)
 	}
 
 	if _, ok := state.GetOk(multistep.StateHalted); ok {
 		return nil, false, false, errors.New("post-processing halted")
 	}
 
+	templatesRaw := state.Get(stateTemplates)
+	templates, ok := templatesRaw.([]*upcloud.Storage)
+	if !ok {
+		return nil, false, false, fmt.Errorf("templates is not of expected type []*upcloud.Storage, got %T", templatesRaw)
+	}
+
 	return &Artifact{
 		postProcessor: p,
-		templates:     state.Get(stateTemplates).([]*upcloud.Storage),
+		templates:     templates,
 		stateData: map[string]interface{}{
 			"generated_data": state.Get("generated_data"),
 		},

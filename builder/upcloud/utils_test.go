@@ -1,15 +1,17 @@
-package upcloud
+package upcloud //nolint:testpackage // not all fields can be exported
 
 import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/packer-plugin-sdk/multistep"
+
 	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
-	"github.com/hashicorp/packer-plugin-sdk/multistep"
 )
 
 func TestFindIPAddressByType(t *testing.T) {
+	t.Parallel()
 	want := "127.0.0.1"
 	got, err := findIPAddressByType(upcloud.IPAddressSlice{
 		upcloud.IPAddress{
@@ -23,7 +25,6 @@ func TestFindIPAddressByType(t *testing.T) {
 			Family:  "IPv4",
 		},
 	}, InterfaceTypePrivate)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +44,6 @@ func TestFindIPAddressByType(t *testing.T) {
 			Family:  "IPv6",
 		},
 	}, InterfaceTypePublic)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,6 +70,7 @@ func TestFindIPAddressByType(t *testing.T) {
 }
 
 func TestSSHHostCallback(t *testing.T) {
+	t.Parallel()
 	stateIPv6 := multistep.BasicStateBag{}
 	stateIPv6.Put("server_ip_address", &IPAddress{
 		Default: false,
@@ -101,6 +102,7 @@ func TestSSHHostCallback(t *testing.T) {
 }
 
 func TestConvertNetworkTypes(t *testing.T) {
+	t.Parallel()
 	want := []request.CreateServerInterface{
 		{
 			IPAddresses: []request.CreateServerIPAddress{
