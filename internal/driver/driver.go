@@ -26,23 +26,44 @@ const (
 )
 
 type (
-	Driver interface {
+	// ServerManager handles server lifecycle operations.
+	ServerManager interface {
 		CreateServer(ctx context.Context, opts *ServerOpts) (*upcloud.ServerDetails, error)
 		DeleteServer(ctx context.Context, serverUUID string) error
 		StopServer(ctx context.Context, serverUUID string) error
 		// TODO: rename method or split into two separate method GetStorageByUUID and GetTemplateByName
+		GetServerStorage(ctx context.Context, serverUUID string) (*upcloud.ServerStorageDevice, error)
+	}
+
+	// StorageManager handles storage operations.
+	StorageManager interface {
 		GetStorage(ctx context.Context, storageUUID, templateName string) (*upcloud.Storage, error)
 		RenameStorage(ctx context.Context, storageUUID, name string) (*upcloud.Storage, error)
-		GetServerStorage(ctx context.Context, serverUUID string) (*upcloud.ServerStorageDevice, error)
 		CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error)
-		GetTemplateByName(ctx context.Context, name, zone string) (*upcloud.Storage, error)
-		CreateTemplate(ctx context.Context, storageUUID, templateTitle string) (*upcloud.Storage, error)
 		CreateTemplateStorage(ctx context.Context, title, zone string, size int, tier string) (*upcloud.Storage, error)
 		ImportStorage(ctx context.Context, storageUUID, contentType string, f io.Reader) (*upcloud.StorageImportDetails, error)
 		WaitStorageOnline(ctx context.Context, storageUUID string) (*upcloud.Storage, error)
-		DeleteTemplate(ctx context.Context, templateUUID string) error
 		DeleteStorage(ctx context.Context, storageUUID string) error
+	}
+
+	// TemplateManager handles template operations.
+	TemplateManager interface {
+		GetTemplateByName(ctx context.Context, name, zone string) (*upcloud.Storage, error)
+		CreateTemplate(ctx context.Context, storageUUID, templateTitle string) (*upcloud.Storage, error)
+		DeleteTemplate(ctx context.Context, templateUUID string) error
+	}
+
+	// ZoneManager handles zone operations.
+	ZoneManager interface {
 		GetAvailableZones(ctx context.Context) []string
+	}
+
+	// Driver combines all management interfaces
+	Driver interface {
+		ServerManager
+		StorageManager
+		TemplateManager
+		ZoneManager
 	}
 
 	driver struct {

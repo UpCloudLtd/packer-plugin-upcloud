@@ -372,7 +372,7 @@ linters:
 
     # Check for too many interface members.
     # Go Proverbs: "The bigger the interface, the weaker the abstraction."
-    # - interfacebloat #FIXME
+    - interfacebloat
 
     ### - interfacer # deprecated
 
