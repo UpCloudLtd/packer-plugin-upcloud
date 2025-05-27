@@ -34,7 +34,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 	}
 	config, ok := state.Get("config").(*Config)
 	if !ok {
-		return stepHaltWithError(state, errors.New("Config is not of expected type"))
+		return stepHaltWithError(state, errors.New("config is not of expected type"))
 	}
 
 	if config.SSHPrivateKeyPath != "" && config.SSHPublicKeyPath != "" {
@@ -42,11 +42,11 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 		ui.Say("Using provided SSH keys...")
 
 		if config.Comm.SSHPrivateKey, err = os.ReadFile(config.SSHPrivateKeyPath); err != nil {
-			return stepHaltWithError(state, fmt.Errorf("Failed to read private key: %w", err))
+			return stepHaltWithError(state, fmt.Errorf("failed to read private key: %w", err))
 		}
 
 		if config.Comm.SSHPublicKey, err = os.ReadFile(config.SSHPublicKeyPath); err != nil {
-			return stepHaltWithError(state, fmt.Errorf("Failed to read public key: %w", err))
+			return stepHaltWithError(state, fmt.Errorf("failed to read public key: %w", err))
 		}
 
 		state.Put("ssh_key_public", strings.Trim(string(config.Comm.SSHPublicKey), "\n"))
@@ -57,7 +57,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 
 	priv, err := rsa.GenerateKey(rand.Reader, sshKeyBitSize)
 	if err != nil {
-		return stepHaltWithError(state, fmt.Errorf("Error generating SSH key: %w", err))
+		return stepHaltWithError(state, fmt.Errorf("error generating SSH key: %w", err))
 	}
 
 	// ASN.1 DER encoded form
@@ -71,7 +71,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 	// Marshal the public key into SSH compatible format
 	pub, err := ssh.NewPublicKey(&priv.PublicKey)
 	if err != nil {
-		return stepHaltWithError(state, fmt.Errorf("Error creating public ssh key: %w", err))
+		return stepHaltWithError(state, fmt.Errorf("error creating public ssh key: %w", err))
 	}
 
 	// Remember some state for the future
@@ -87,7 +87,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 		ui.Say(fmt.Sprintf("Saving key for debug purposes: %s", s.DebugKeyPath))
 		err := os.WriteFile(s.DebugKeyPath, config.Comm.SSHPrivateKey, 0o600)
 		if err != nil {
-			return stepHaltWithError(state, fmt.Errorf("Error saving debug key: %w", err))
+			return stepHaltWithError(state, fmt.Errorf("error saving debug key: %w", err))
 		}
 	}
 

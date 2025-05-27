@@ -83,7 +83,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 
 	templates, ok := state.GetOk("templates")
 	if !ok {
-		return nil, errors.New("No template found in state, the build was probably cancelled")
+		return nil, errors.New("no template found in state, the build was probably cancelled")
 	}
 
 	templatesVal, ok := templates.([]*upcloud.Storage)

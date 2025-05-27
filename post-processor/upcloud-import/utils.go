@@ -53,7 +53,7 @@ func deleteStorageIfExists(ctx context.Context, ui packer.Ui, driver driver.Driv
 func getStorages(state multistep.StateBag) ([]*upcloud.Storage, error) {
 	storages, ok := state.Get(stateStorages).([]*upcloud.Storage)
 	if !ok {
-		return nil, fmt.Errorf("Unable to get '%s' from state", stateStorages)
+		return nil, fmt.Errorf("unable to get '%s' from state", stateStorages)
 	}
 	return storages, nil
 }
@@ -61,7 +61,7 @@ func getStorages(state multistep.StateBag) ([]*upcloud.Storage, error) {
 func getTemplates(state multistep.StateBag) ([]*upcloud.Storage, error) {
 	storages, ok := state.Get(stateTemplates).([]*upcloud.Storage)
 	if !ok {
-		return nil, fmt.Errorf("Unable to get '%s' from state", stateTemplates)
+		return nil, fmt.Errorf("unable to get '%s' from state", stateTemplates)
 	}
 	return storages, nil
 }

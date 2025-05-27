@@ -42,7 +42,7 @@ func findIPAddressByType(addrs upcloud.IPAddressSlice, infType InterfaceType) (*
 	if ipv6 != nil {
 		return ipv6, nil
 	}
-	return nil, fmt.Errorf("Unable to find '%s' IP address", infType)
+	return nil, fmt.Errorf("unable to find '%s' IP address", infType)
 }
 
 func getNowString() string {

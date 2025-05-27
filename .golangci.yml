@@ -542,7 +542,7 @@ linters:
     # A lot of different checks, `go vet` on steroids, as described by the
     # author. Encourages some basic good practices, catches some hard to debug
     # problems.
-    #- staticcheck #FIXME
+    - staticcheck
 
     # Aligns and sorts struct tags, for better readability and
     # mainainability.
