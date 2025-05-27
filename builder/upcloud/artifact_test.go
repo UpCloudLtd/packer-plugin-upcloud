@@ -23,8 +23,7 @@ func TestArtifact_Id(t *testing.T) {
 	expected := fmt.Sprintf("%s,%s", uuid1, uuid2)
 
 	templates := []*upcloud.Storage{}
-	templates = append(templates, &upcloud.Storage{UUID: uuid1})
-	templates = append(templates, &upcloud.Storage{UUID: uuid2})
+	templates = append(templates, &upcloud.Storage{UUID: uuid1}, &upcloud.Storage{UUID: uuid2})
 
 	a := &Artifact{Templates: templates}
 	result := a.Id()
