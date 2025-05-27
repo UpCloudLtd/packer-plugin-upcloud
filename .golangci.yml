@@ -334,7 +334,7 @@ linters:
     # some case dependent false positives that are not easily avoidable through
     # config, for example related to intentionally relaxed file permissions and
     # `math/rand` vs `crypto/rand`.
-    # - gosec #FIXME
+    - gosec
 
     # Flags code smells that may prove to be hindrance to
     # internationalization ("i18n") and/or localization ("l10n").

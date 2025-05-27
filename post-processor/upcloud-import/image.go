@@ -82,10 +82,12 @@ func (i *image) CheckSHA256(sha256Sum string) error {
 		if err != nil {
 			return err
 		}
+		// #nosec G110 -- intentionally processing large compressed images
 		if _, err := io.Copy(cs, gsrc); err != nil {
 			return err
 		}
 	} else {
+		// #nosec G110 -- intentionally processing large compressed images
 		if _, err := io.Copy(cs, src); err != nil {
 			return err
 		}

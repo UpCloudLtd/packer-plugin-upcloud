@@ -182,7 +182,7 @@ func testAccPreCheck(t *testing.T) {
 
 func readLog(t *testing.T, logfile string) (string, error) {
 	t.Helper()
-	logs, err := os.Open(logfile)
+	logs, err := os.Open(logfile) // #nosec G304 -- logfile path is controlled by Packer SDK acctest framework
 	if err != nil {
 		return "", fmt.Errorf("Unable find %s", logfile)
 	}
