@@ -23,15 +23,15 @@ type Artifact struct {
 	StateData map[string]interface{}
 }
 
-func (*Artifact) BuilderId() string {
-	return BuilderId
+func (*Artifact) BuilderId() string { //nolint:revive // method is required by packer-plugin-sdk
+	return BuilderID
 }
 
 func (a *Artifact) Files() []string {
 	return []string{}
 }
 
-func (a *Artifact) Id() string {
+func (a *Artifact) Id() string { //nolint:revive // method is required by packer-plugin-sdk
 	result := []string{}
 	for _, t := range a.Templates {
 		result = append(result, t.UUID)

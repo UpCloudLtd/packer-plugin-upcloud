@@ -19,7 +19,7 @@ type Artifact struct {
 	driver        driver.Driver
 }
 
-func (a *Artifact) BuilderId() string {
+func (a *Artifact) BuilderId() string { //nolint:revive // method is required by packer-plugin-sdk
 	return BuilderID
 }
 
@@ -27,7 +27,7 @@ func (a *Artifact) Files() []string {
 	return []string{}
 }
 
-func (a *Artifact) Id() string {
+func (a *Artifact) Id() string { //nolint:revive // method is required by packer-plugin-sdk
 	return a.templates[0].UUID
 }
 

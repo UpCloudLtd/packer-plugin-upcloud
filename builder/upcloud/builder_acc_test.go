@@ -25,7 +25,7 @@ import (
 var testBuildBasic string
 
 //go:embed test-fixtures/json/storage-uuid.json
-var testBuilderStorageUuid string
+var testBuilderStorageUUID string
 
 //go:embed test-fixtures/json/storage-name.json
 var testBuilderStorageName string
@@ -54,7 +54,7 @@ func TestBuilderAcc_storageUuid(t *testing.T) {
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
-		Template: testBuilderStorageUuid,
+		Template: testBuilderStorageUUID,
 		Check:    checkTestResult(t),
 		Teardown: teardown(t, t.Name()),
 	}
@@ -103,7 +103,7 @@ func TestBuilderAcc_networking(t *testing.T) {
 var testBuildBasicHcl string
 
 //go:embed test-fixtures/hcl2/storage-uuid.pkr.hcl
-var testBuilderStorageUuidHcl string
+var testBuilderStorageUUIDHcl string
 
 //go:embed test-fixtures/hcl2/storage-name.pkr.hcl
 var testBuilderStorageNameHcl string
@@ -128,7 +128,7 @@ func TestBuilderAcc_storageUuid_hcl(t *testing.T) {
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
-		Template: testBuilderStorageUuidHcl,
+		Template: testBuilderStorageUUIDHcl,
 		Check:    checkTestResult(t),
 		Teardown: teardown(t, t.Name()),
 	}

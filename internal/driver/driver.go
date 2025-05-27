@@ -79,10 +79,10 @@ type (
 	}
 
 	ServerOpts struct {
-		StorageUuid  string
+		StorageUUID  string
 		StorageSize  int
 		Zone         string
-		SshPublicKey string
+		SSHPublicKey string
 		Networking   []request.CreateServerInterface
 		StorageTier  string
 	}
@@ -121,21 +121,21 @@ func (d *driver) CreateServer(ctx context.Context, opts *ServerOpts) (*upcloud.S
 	return response, nil
 }
 
-func (d *driver) DeleteServer(ctx context.Context, serverUuid string) error {
+func (d *driver) DeleteServer(ctx context.Context, serverUUID string) error {
 	return d.svc.DeleteServerAndStorages(ctx, &request.DeleteServerAndStoragesRequest{
-		UUID: serverUuid,
+		UUID: serverUUID,
 	})
 }
 
-func (d *driver) StopServer(ctx context.Context, serverUuid string) error {
+func (d *driver) StopServer(ctx context.Context, serverUUID string) error {
 	// Ensure the instance is not in maintenance state
-	err := d.waitUndesiredState(ctx, serverUuid, upcloud.ServerStateMaintenance)
+	err := d.waitUndesiredState(ctx, serverUUID, upcloud.ServerStateMaintenance)
 	if err != nil {
 		return err
 	}
 
 	// Check current server state and do nothing if already stopped
-	response, err := d.getServerDetails(ctx, serverUuid)
+	response, err := d.getServerDetails(ctx, serverUUID)
 	if err != nil {
 		return err
 	}
@@ -146,24 +146,24 @@ func (d *driver) StopServer(ctx context.Context, serverUuid string) error {
 
 	// Stop server
 	_, err = d.svc.StopServer(ctx, &request.StopServerRequest{
-		UUID: serverUuid,
+		UUID: serverUUID,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to stop server: %w", err)
 	}
 
 	// Wait for server to stop
-	err = d.waitDesiredState(ctx, serverUuid, upcloud.ServerStateStopped)
+	err = d.waitDesiredState(ctx, serverUUID, upcloud.ServerStateStopped)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *driver) CreateTemplate(ctx context.Context, serverStorageUuid, templateTitle string) (*upcloud.Storage, error) {
+func (d *driver) CreateTemplate(ctx context.Context, serverStorageUUID, templateTitle string) (*upcloud.Storage, error) {
 	// create image
 	response, err := d.svc.TemplatizeStorage(ctx, &request.TemplatizeStorageRequest{
-		UUID:  serverStorageUuid,
+		UUID:  serverStorageUUID,
 		Title: templateTitle,
 	})
 	if err != nil {
@@ -172,12 +172,12 @@ func (d *driver) CreateTemplate(ctx context.Context, serverStorageUuid, template
 	return d.WaitStorageOnline(ctx, response.UUID)
 }
 
-func (d *driver) WaitStorageOnline(ctx context.Context, storageUuid string) (*upcloud.Storage, error) {
+func (d *driver) WaitStorageOnline(ctx context.Context, storageUUID string) (*upcloud.Storage, error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
 	defer cancel()
 
 	details, err := d.svc.WaitForStorageState(timeoutCtx, &request.WaitForStorageStateRequest{
-		UUID:         storageUuid,
+		UUID:         storageUUID,
 		DesiredState: upcloud.StorageStateOnline,
 	})
 	if err != nil {
@@ -204,11 +204,11 @@ func (d *driver) GetTemplateByName(ctx context.Context, name, zone string) (*upc
 }
 
 // fetch storage by uuid or name.
-func (d *driver) GetStorage(ctx context.Context, storageUuid, storageName string) (*upcloud.Storage, error) {
-	if storageUuid != "" {
-		storage, err := d.getStorageByUuid(ctx, storageUuid)
+func (d *driver) GetStorage(ctx context.Context, storageUUID, storageName string) (*upcloud.Storage, error) {
+	if storageUUID != "" {
+		storage, err := d.getStorageByUUID(ctx, storageUUID)
 		if err != nil {
-			return nil, fmt.Errorf("error retrieving storage by uuid %q: %w", storageUuid, err)
+			return nil, fmt.Errorf("error retrieving storage by uuid %q: %w", storageUUID, err)
 		}
 		return storage, nil
 	}
@@ -266,8 +266,8 @@ func (d *driver) ImportStorage(ctx context.Context, storageUUID, contentType str
 	})
 }
 
-func (d *driver) DeleteTemplate(ctx context.Context, templateUuid string) error {
-	return d.DeleteStorage(ctx, templateUuid)
+func (d *driver) DeleteTemplate(ctx context.Context, templateUUID string) error {
+	return d.DeleteStorage(ctx, templateUUID)
 }
 
 func (d *driver) DeleteStorage(ctx context.Context, storageUUID string) error {
@@ -276,9 +276,9 @@ func (d *driver) DeleteStorage(ctx context.Context, storageUUID string) error {
 	})
 }
 
-func (d *driver) CloneStorage(ctx context.Context, storageUuid, zone, title string) (*upcloud.Storage, error) {
+func (d *driver) CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error) {
 	response, err := d.svc.CloneStorage(ctx, &request.CloneStorageRequest{
-		UUID:  storageUuid,
+		UUID:  storageUUID,
 		Zone:  zone,
 		Title: title,
 	})
@@ -288,9 +288,9 @@ func (d *driver) CloneStorage(ctx context.Context, storageUuid, zone, title stri
 	return d.WaitStorageOnline(ctx, response.UUID)
 }
 
-func (d *driver) getStorageByUuid(ctx context.Context, storageUuid string) (*upcloud.Storage, error) {
+func (d *driver) getStorageByUUID(ctx context.Context, storageUUID string) (*upcloud.Storage, error) {
 	response, err := d.svc.GetStorageDetails(ctx, &request.GetStorageDetailsRequest{
-		UUID: storageUuid,
+		UUID: storageUUID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error fetching storages: %w", err)
@@ -323,12 +323,12 @@ func (d *driver) getStorageByName(ctx context.Context, storageName string) (*upc
 	return &storage, nil
 }
 
-func (d *driver) waitDesiredState(ctx context.Context, serverUuid, state string) error {
+func (d *driver) waitDesiredState(ctx context.Context, serverUUID, state string) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
 	defer cancel()
 
 	request := &request.WaitForServerStateRequest{
-		UUID:         serverUuid,
+		UUID:         serverUUID,
 		DesiredState: state,
 	}
 	if _, err := d.svc.WaitForServerState(timeoutCtx, request); err != nil {
@@ -337,12 +337,12 @@ func (d *driver) waitDesiredState(ctx context.Context, serverUuid, state string)
 	return nil
 }
 
-func (d *driver) waitUndesiredState(ctx context.Context, serverUuid, state string) error {
+func (d *driver) waitUndesiredState(ctx context.Context, serverUUID, state string) error {
 	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
 	defer cancel()
 
 	request := &request.WaitForServerStateRequest{
-		UUID:           serverUuid,
+		UUID:           serverUUID,
 		UndesiredState: state,
 	}
 	if _, err := d.svc.WaitForServerState(timeoutCtx, request); err != nil {
@@ -351,9 +351,9 @@ func (d *driver) waitUndesiredState(ctx context.Context, serverUuid, state strin
 	return nil
 }
 
-func (d *driver) getServerDetails(ctx context.Context, serverUuid string) (*upcloud.ServerDetails, error) {
+func (d *driver) getServerDetails(ctx context.Context, serverUUID string) (*upcloud.ServerDetails, error) {
 	response, err := d.svc.GetServerDetails(ctx, &request.GetServerDetailsRequest{
-		UUID: serverUuid,
+		UUID: serverUUID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get details for server: %w", err)
@@ -361,8 +361,8 @@ func (d *driver) getServerDetails(ctx context.Context, serverUuid string) (*upcl
 	return response, nil
 }
 
-func (d *driver) GetServerStorage(ctx context.Context, serverUuid string) (*upcloud.ServerStorageDevice, error) {
-	details, err := d.getServerDetails(ctx, serverUuid)
+func (d *driver) GetServerStorage(ctx context.Context, serverUUID string) (*upcloud.ServerStorageDevice, error) {
+	details, err := d.getServerDetails(ctx, serverUUID)
 	if err != nil {
 		return nil, err
 	}
@@ -377,7 +377,7 @@ func (d *driver) GetServerStorage(ctx context.Context, serverUuid string) (*upcl
 		}
 	}
 	if !found {
-		return nil, fmt.Errorf("failed to find storage type disk for server %q", serverUuid)
+		return nil, fmt.Errorf("failed to find storage type disk for server %q", serverUUID)
 	}
 	return &storage, nil
 }
@@ -395,7 +395,7 @@ func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerReq
 		StorageDevices: []request.CreateServerStorageDevice{
 			{
 				Action:  request.CreateServerStorageDeviceActionClone,
-				Storage: opts.StorageUuid,
+				Storage: opts.StorageUUID,
 				Title:   titleDisk,
 				Size:    opts.StorageSize,
 				Tier:    opts.StorageTier,
@@ -407,7 +407,7 @@ func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerReq
 		LoginUser: &request.LoginUser{
 			CreatePassword: "no",
 			Username:       d.config.SSHUsername,
-			SSHKeys:        []string{opts.SshPublicKey},
+			SSHKeys:        []string{opts.SSHPublicKey},
 		},
 	}
 	return &request

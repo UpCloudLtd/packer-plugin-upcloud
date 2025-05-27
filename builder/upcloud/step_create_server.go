@@ -60,12 +60,12 @@ func (s *StepCreateServer) validateState(state multistep.StateBag) (packer.Ui, d
 		return nil, nil, "", errors.New("driver is not of expected type")
 	}
 
-	rawSshKeyPublic, ok := state.GetOk("ssh_key_public")
+	rawSSHKeyPublic, ok := state.GetOk("ssh_key_public")
 	if !ok {
 		return nil, nil, "", errors.New("SSH public key is missing")
 	}
 
-	sshKeyPublic, ok := rawSshKeyPublic.(string)
+	sshKeyPublic, ok := rawSSHKeyPublic.(string)
 	if !ok {
 		return nil, nil, "", errors.New("SSH public key is not of expected type")
 	}
@@ -89,10 +89,10 @@ func (s *StepCreateServer) createServer(ctx context.Context, ui packer.Ui, drv d
 	}
 
 	response, err := drv.CreateServer(ctx, &driver.ServerOpts{
-		StorageUuid:  storage.UUID,
+		StorageUUID:  storage.UUID,
 		StorageSize:  s.Config.StorageSize,
 		Zone:         s.Config.Zone,
-		SshPublicKey: sshKeyPublic,
+		SSHPublicKey: sshKeyPublic,
 		Networking:   networking,
 		StorageTier:  s.Config.StorageTier,
 	})
@@ -169,13 +169,13 @@ func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
 	ctx, cancel := contextWithDefaultTimeout()
 	defer cancel()
 	// Extract server uuid, return if no uuid has been stored
-	rawServerUuid, ok := state.GetOk("server_uuid")
+	rawServerUUID, ok := state.GetOk("server_uuid")
 
 	if !ok {
 		return
 	}
 
-	serverUuid, ok := rawServerUuid.(string)
+	serverUUID, ok := rawServerUUID.(string)
 	if !ok {
 		return
 	}
@@ -199,7 +199,7 @@ func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
 	// stop server
 	ui.Say(fmt.Sprintf("Stopping server %q...", serverTitle))
 
-	err := driver.StopServer(ctx, serverUuid)
+	err := driver.StopServer(ctx, serverUUID)
 	if err != nil {
 		ui.Error(err.Error())
 		return
@@ -208,7 +208,7 @@ func (s *StepCreateServer) Cleanup(state multistep.StateBag) {
 	// delete server
 	ui.Say(fmt.Sprintf("Deleting server %q...", serverTitle))
 
-	err = driver.DeleteServer(ctx, serverUuid)
+	err = driver.DeleteServer(ctx, serverUUID)
 	if err != nil {
 		ui.Error(err.Error())
 		return

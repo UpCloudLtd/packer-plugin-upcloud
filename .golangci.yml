@@ -522,7 +522,7 @@ linters:
     # which has been deprecated.
     # Similar: `stylecheck` (`revive` seems more extensive, `stylecheck` is a
     # sibling project to `staticcheck`).
-    ## - revive #FIXME
+    - revive
 
     # Verifies that `sql.Rows` `.Error()` is checked when querying database.
     # Easy to miss but important to do, for example to be aware of connection

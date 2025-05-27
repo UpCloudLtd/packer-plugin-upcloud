@@ -21,8 +21,8 @@ type StepCreateTemplate struct {
 
 // Run runs the actual step.
 func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	serverUuidRaw := state.Get("server_uuid")
-	serverUuid, ok := serverUuidRaw.(string)
+	serverUUIDRaw := state.Get("server_uuid")
+	serverUUID, ok := serverUUIDRaw.(string)
 	if !ok {
 		return stepHaltWithError(state, errors.New("server_uuid is not of expected type"))
 	}
@@ -37,15 +37,15 @@ func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 	}
 
 	// get storage details
-	storage, err := drv.GetServerStorage(ctx, serverUuid)
+	storage, err := drv.GetServerStorage(ctx, serverUUID)
 	if err != nil {
 		return stepHaltWithError(state, err)
 	}
 
 	// cloning to zones
-	cleanupStorageUuid := []string{}
-	storageUuids := []string{}
-	storageUuids = append(storageUuids, storage.UUID)
+	cleanupStorageUUID := []string{}
+	storageUUIDs := []string{}
+	storageUUIDs = append(storageUUIDs, storage.UUID)
 
 	for _, zone := range s.Config.CloneZones {
 		ui.Say(fmt.Sprintf("Cloning storage %q to zone %q...", storage.UUID, zone))
@@ -54,8 +54,8 @@ func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 		if err != nil {
 			return stepHaltWithError(state, err)
 		}
-		storageUuids = append(storageUuids, clonedStorage.UUID)
-		cleanupStorageUuid = append(cleanupStorageUuid, clonedStorage.UUID)
+		storageUUIDs = append(storageUUIDs, clonedStorage.UUID)
+		cleanupStorageUUID = append(cleanupStorageUUID, clonedStorage.UUID)
 	}
 	ui.Say("Cloning completed...")
 
@@ -70,7 +70,7 @@ func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 		templateTitle = s.Config.TemplateName
 	}
 
-	for _, uuid := range storageUuids {
+	for _, uuid := range storageUUIDs {
 		ui.Say(fmt.Sprintf("Creating template for storage %q...", uuid))
 		t, err := drv.CreateTemplate(ctx, uuid, templateTitle)
 		if err != nil {
@@ -81,7 +81,7 @@ func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 		ui.Say(fmt.Sprintf("Template for storage %q created...", uuid))
 	}
 
-	state.Put("cleanup_storage_uuids", cleanupStorageUuid)
+	state.Put("cleanup_storage_uuids", cleanupStorageUUID)
 	state.Put("templates", templates)
 
 	return multistep.ActionContinue

@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	BuilderId                    = "upcloud.builder"
+	BuilderID                    = "upcloud.builder"
 	defaultTimeout time.Duration = 1 * time.Hour
 )
 

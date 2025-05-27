@@ -17,8 +17,8 @@ type StepTeardownServer struct{}
 // Run runs the actual step.
 func (s *StepTeardownServer) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	// Extract server details
-	serverUuidRaw := state.Get("server_uuid")
-	serverUuid, ok := serverUuidRaw.(string)
+	serverUUIDRaw := state.Get("server_uuid")
+	serverUUID, ok := serverUUIDRaw.(string)
 	if !ok {
 		return stepHaltWithError(state, errors.New("server_uuid is not of expected type"))
 	}
@@ -39,7 +39,7 @@ func (s *StepTeardownServer) Run(ctx context.Context, state multistep.StateBag) 
 
 	ui.Say(fmt.Sprintf("Stopping server %q...", serverTitle))
 
-	err := driver.StopServer(ctx, serverUuid)
+	err := driver.StopServer(ctx, serverUUID)
 	if err != nil {
 		return stepHaltWithError(state, err)
 	}

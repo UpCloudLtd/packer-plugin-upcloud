@@ -19,9 +19,9 @@ type testArtifact struct {
 	files []string
 }
 
-func (a *testArtifact) BuilderId() string             { return artificeBuilderID }
+func (a *testArtifact) BuilderId() string             { return artificeBuilderID } //nolint:revive // method is required by packer-plugin-sdk
 func (a *testArtifact) Files() []string               { return a.files }
-func (a *testArtifact) Id() string                    { return "" }
+func (a *testArtifact) Id() string                    { return "" } //nolint:revive // method is required by packer-plugin-sdk
 func (a *testArtifact) String() string                { return "" }
 func (a *testArtifact) State(name string) interface{} { return nil }
 func (a *testArtifact) Destroy() error                { return nil }
