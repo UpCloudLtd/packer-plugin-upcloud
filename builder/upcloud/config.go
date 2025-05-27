@@ -139,8 +139,17 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	}
 
 	c.setEnv()
+	c.setDefaults()
 
-	// defaults
+	if errs := c.validate(); errs != nil && len(errs.Errors) > 0 {
+		return nil, errs
+	}
+
+	return nil, nil
+}
+
+// setDefaults sets default values for configuration fields.
+func (c *Config) setDefaults() {
 	if c.TemplatePrefix == "" && len(c.TemplateName) == 0 {
 		c.TemplatePrefix = DefaultTemplatePrefix
 	}
@@ -164,8 +173,10 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.Comm.Type == "ssh" && c.Comm.SSHUsername == "" {
 		c.Comm.SSHUsername = DefaultSSHUsername
 	}
+}
 
-	// validate
+// validate validates the configuration and returns any errors.
+func (c *Config) validate() *packer.MultiError {
 	var errs *packer.MultiError
 	if es := c.Comm.Prepare(&c.ctx); len(es) > 0 {
 		errs = packer.MultiErrorAppend(errs, es...)
@@ -213,11 +224,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		)
 	}
 
-	if errs != nil && len(errs.Errors) > 0 {
-		return nil, errs
-	}
-
-	return nil, nil
+	return errs
 }
 
 // get params from environment.

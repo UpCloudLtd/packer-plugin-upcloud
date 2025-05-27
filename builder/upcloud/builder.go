@@ -67,26 +67,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	generatedData := &packerbuilderdata.GeneratedData{State: state}
 
 	// Build the steps
-	steps := []multistep.Step{
-		&StepCreateSSHKey{
-			Debug:        b.config.PackerDebug,
-			DebugKeyPath: fmt.Sprintf("ssh_key-%s.pem", b.config.PackerBuildName),
-		},
-		&StepCreateServer{
-			Config:        &b.config,
-			GeneratedData: generatedData,
-		},
-		b.communicatorStep(),
-		&commonsteps.StepProvision{},
-		&commonsteps.StepCleanupTempKeys{
-			Comm: &b.config.Comm,
-		},
-		&StepTeardownServer{},
-		&StepCreateTemplate{
-			Config:        &b.config,
-			GeneratedData: generatedData,
-		},
-	}
+	steps := b.buildSteps(generatedData)
 
 	// Run
 	b.runner = commonsteps.NewRunner(steps, b.config.PackerConfig, ui)
@@ -124,6 +105,30 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	}
 
 	return artifact, nil
+}
+
+// buildSteps creates and returns the sequence of steps for the build process.
+func (b *Builder) buildSteps(generatedData *packerbuilderdata.GeneratedData) []multistep.Step {
+	return []multistep.Step{
+		&StepCreateSSHKey{
+			Debug:        b.config.PackerDebug,
+			DebugKeyPath: fmt.Sprintf("ssh_key-%s.pem", b.config.PackerBuildName),
+		},
+		&StepCreateServer{
+			Config:        &b.config,
+			GeneratedData: generatedData,
+		},
+		b.communicatorStep(),
+		&commonsteps.StepProvision{},
+		&commonsteps.StepCleanupTempKeys{
+			Comm: &b.config.Comm,
+		},
+		&StepTeardownServer{},
+		&StepCreateTemplate{
+			Config:        &b.config,
+			GeneratedData: generatedData,
+		},
+	}
 }
 
 // CommunicatorStep returns step based on communicator type

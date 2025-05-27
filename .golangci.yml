@@ -260,7 +260,7 @@ linters:
     # test/validate.
     # Similar: cyclomatic complexity and maintainability linters, but this very
     # basic and easy to understand limit is good enough for most cases.
-    #- funlen #FIXME
+    - funlen
 
     # Enforce standard ways to use ginkgo and gomega.
     # Not used much with us, but does not hurt.
@@ -294,7 +294,7 @@ linters:
 
     # Quite an opinionated linter, but has a lot of good suggestions and
     # catches bugs. See `linters.settings` for some more info.
-    # - gocritic #FIXME
+    - gocritic
 
     # See `cyclop` for discussion.
     ## - gocyclo # DISABLE
