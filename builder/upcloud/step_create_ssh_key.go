@@ -16,6 +16,10 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+const (
+	sshKeyBitSize = 3072
+)
+
 // StepCreateSSHKey represents the step that creates ssh private and public keys.
 type StepCreateSSHKey struct {
 	Debug        bool
@@ -51,7 +55,7 @@ func (s *StepCreateSSHKey) Run(_ context.Context, state multistep.StateBag) mult
 
 	ui.Say("Creating temporary ssh key...")
 
-	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	priv, err := rsa.GenerateKey(rand.Reader, sshKeyBitSize)
 	if err != nil {
 		return stepHaltWithError(state, fmt.Errorf("Error generating SSH key: %w", err))
 	}

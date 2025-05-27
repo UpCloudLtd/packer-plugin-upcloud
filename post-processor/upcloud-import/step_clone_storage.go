@@ -10,12 +10,19 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
+const (
+	// minZonesForCloning represents the minimum number of zones required to perform cloning.
+	// We need at least 2 zones: one source zone and one target zone.
+	minZonesForCloning = 2
+)
+
 type stepCloneStorage struct {
 	postProcessor *PostProcessor
 }
 
 func (s *stepCloneStorage) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
-	if len(s.postProcessor.config.Zones) < 2 {
+	// Skip cloning if we don't have enough zones
+	if len(s.postProcessor.config.Zones) < minZonesForCloning {
 		return multistep.ActionContinue
 	}
 	uiRaw := state.Get(stateUI)

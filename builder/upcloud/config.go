@@ -19,15 +19,17 @@ import (
 type InterfaceType string
 
 const (
-	DefaultTemplatePrefix               = "custom-image"
-	DefaultSSHUsername                  = "root"
-	DefaultCommunicator                 = "ssh"
-	DefaultStorageSize                  = 25
-	DefaultTimeout                      = 5 * time.Minute
-	DefaultStorageTier                  = upcloud.StorageTierMaxIOPS
-	InterfaceTypePublic   InterfaceType = upcloud.IPAddressAccessPublic
-	InterfaceTypeUtility  InterfaceType = upcloud.IPAddressAccessUtility
-	InterfaceTypePrivate  InterfaceType = upcloud.IPAddressAccessPrivate
+	DefaultTemplatePrefix                 = "custom-image"
+	DefaultSSHUsername                    = "root"
+	DefaultCommunicator                   = "ssh"
+	DefaultStorageSize                    = 25
+	DefaultTimeout                        = 5 * time.Minute
+	DefaultStorageTier                    = upcloud.StorageTierMaxIOPS
+	InterfaceTypePublic     InterfaceType = upcloud.IPAddressAccessPublic
+	InterfaceTypeUtility    InterfaceType = upcloud.IPAddressAccessUtility
+	InterfaceTypePrivate    InterfaceType = upcloud.IPAddressAccessPrivate
+	maxTemplateNameLength                 = 40
+	maxTemplatePrefixLength               = 40
 )
 
 // for config type conversion.
@@ -206,13 +208,13 @@ func (c *Config) validate() *packer.MultiError {
 		)
 	}
 
-	if len(c.TemplatePrefix) > 40 {
+	if len(c.TemplatePrefix) > maxTemplatePrefixLength {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'template_prefix' must be 0-40 characters"),
 		)
 	}
 
-	if len(c.TemplateName) > 40 {
+	if len(c.TemplateName) > maxTemplateNameLength {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'template_name' is limited to 40 characters"),
 		)

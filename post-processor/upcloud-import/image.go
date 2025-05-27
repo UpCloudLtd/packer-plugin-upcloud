@@ -54,7 +54,8 @@ func (i *image) Size() int64 {
 
 // SizeGB return image size in gigabytes rounded up to nearest integer.
 func (i *image) SizeGB() int {
-	return int(i.Size()/1024/1024/1024) + 1
+	const bytesPerGB = 1024 * 1024 * 1024
+	return int(i.Size()/bytesPerGB) + 1
 }
 
 // File returns image file name.

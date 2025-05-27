@@ -58,7 +58,7 @@ type (
 		GetAvailableZones(ctx context.Context) []string
 	}
 
-	// Driver combines all management interfaces
+	// Driver combines all management interfaces.
 	Driver interface {
 		ServerManager
 		StorageManager

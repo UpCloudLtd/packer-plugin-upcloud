@@ -418,7 +418,7 @@ linters:
     # is a tad on the aggressive side, it disallows a lot of bare numbers in
     # cases where using them is just fine. We allow some more in the default
     # config below. See also https://github.com/tommy-muehle/go-mnd/pull/32
-    #- mnd #FIXME
+    - mnd
 
     # Require explicit tagging of exported fields in structs passed to
     # Marshal-like functions. Being explicit about them decreases likelihood
