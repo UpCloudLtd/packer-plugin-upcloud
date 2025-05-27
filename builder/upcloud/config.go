@@ -4,46 +4,36 @@ package upcloud
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 )
 
 type InterfaceType string
 
 const (
-	DefaultTemplatePrefix               = "custom-image"
-	DefaultSSHUsername                  = "root"
-	DefaultCommunicator                 = "ssh"
-	DefaultStorageSize                  = 25
-	DefaultTimeout                      = 5 * time.Minute
-	DefaultStorageTier                  = upcloud.StorageTierMaxIOPS
-	InterfaceTypePublic   InterfaceType = upcloud.IPAddressAccessPublic
-	InterfaceTypeUtility  InterfaceType = upcloud.IPAddressAccessUtility
-	InterfaceTypePrivate  InterfaceType = upcloud.IPAddressAccessPrivate
+	DefaultTemplatePrefix                 = "custom-image"
+	DefaultSSHUsername                    = "root"
+	DefaultCommunicator                   = "ssh"
+	DefaultStorageSize                    = 25
+	DefaultTimeout                        = 5 * time.Minute
+	DefaultStorageTier                    = upcloud.StorageTierMaxIOPS
+	InterfaceTypePublic     InterfaceType = upcloud.IPAddressAccessPublic
+	InterfaceTypeUtility    InterfaceType = upcloud.IPAddressAccessUtility
+	InterfaceTypePrivate    InterfaceType = upcloud.IPAddressAccessPrivate
+	maxTemplateNameLength                 = 40
+	maxTemplatePrefixLength               = 40
 )
 
-var (
-	DefaultNetworking = []request.CreateServerInterface{
-		{
-			IPAddresses: []request.CreateServerIPAddress{
-				{
-					Family: upcloud.IPAddressFamilyIPv4,
-				},
-			},
-			Type: upcloud.IPAddressAccessPublic,
-		},
-	}
-)
-
-// for config type convertion
+// for config type conversion.
 type NetworkInterface struct {
 	// List of IP Addresses
 	IPAddresses []IPAddress `mapstructure:"ip_addresses"`
@@ -130,7 +120,7 @@ type Config struct {
 	ctx interpolate.Context
 }
 
-// DefaultIPaddress returns default IP address and its type (public,private,utility)
+// DefaultIPaddress returns default IP address and its type (public,private,utility).
 func (c *Config) DefaultIPaddress() (*IPAddress, InterfaceType) {
 	for _, iface := range c.NetworkInterfaces {
 		for _, addr := range iface.IPAddresses {
@@ -147,14 +137,22 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		Interpolate:        true,
 		InterpolateContext: &c.ctx,
 	}, raws...)
-
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode configuration: %w", err)
 	}
 
 	c.setEnv()
+	c.setDefaults()
 
-	// defaults
+	if errs := c.validate(); errs != nil && len(errs.Errors) > 0 {
+		return nil, errs
+	}
+
+	return nil, nil
+}
+
+// setDefaults sets default values for configuration fields.
+func (c *Config) setDefaults() {
 	if c.TemplatePrefix == "" && len(c.TemplateName) == 0 {
 		c.TemplatePrefix = DefaultTemplatePrefix
 	}
@@ -178,8 +176,10 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.Comm.Type == "ssh" && c.Comm.SSHUsername == "" {
 		c.Comm.SSHUsername = DefaultSSHUsername
 	}
+}
 
-	// validate
+// validate validates the configuration and returns any errors.
+func (c *Config) validate() *packer.MultiError {
 	var errs *packer.MultiError
 	if es := c.Comm.Prepare(&c.ctx); len(es) > 0 {
 		errs = packer.MultiErrorAppend(errs, es...)
@@ -209,13 +209,13 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		)
 	}
 
-	if len(c.TemplatePrefix) > 40 {
+	if len(c.TemplatePrefix) > maxTemplatePrefixLength {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'template_prefix' must be 0-40 characters"),
 		)
 	}
 
-	if len(c.TemplateName) > 40 {
+	if len(c.TemplateName) > maxTemplateNameLength {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'template_name' is limited to 40 characters"),
 		)
@@ -227,14 +227,10 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		)
 	}
 
-	if errs != nil && len(errs.Errors) > 0 {
-		return nil, errs
-	}
-
-	return nil, nil
+	return errs
 }
 
-// get params from environment
+// get params from environment.
 func (c *Config) setEnv() {
 	if c.Username == "" {
 		c.Username = driver.UsernameFromEnv()

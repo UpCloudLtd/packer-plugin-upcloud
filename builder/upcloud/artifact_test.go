@@ -1,27 +1,29 @@
-package upcloud
+package upcloud //nolint:testpackage // not all fields can be exported in Artifact
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/packer/registry/image"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 )
 
 func TestArtifact_impl(t *testing.T) {
+	t.Parallel()
 	var _ packersdk.Artifact = new(Artifact)
 }
 
 func TestArtifact_Id(t *testing.T) {
+	t.Parallel()
 	uuid1 := "some-uuid-1"
 	uuid2 := "some-uuid-2"
 	expected := fmt.Sprintf("%s,%s", uuid1, uuid2)
 
 	templates := []*upcloud.Storage{}
-	templates = append(templates, &upcloud.Storage{UUID: uuid1})
-	templates = append(templates, &upcloud.Storage{UUID: uuid2})
+	templates = append(templates, &upcloud.Storage{UUID: uuid1}, &upcloud.Storage{UUID: uuid2})
 
 	a := &Artifact{Templates: templates}
 	result := a.Id()
@@ -32,6 +34,7 @@ func TestArtifact_Id(t *testing.T) {
 }
 
 func TestArtifact_String(t *testing.T) {
+	t.Parallel()
 	expected := `Storage template created, UUID: some-uuid`
 
 	templates := []*upcloud.Storage{}
@@ -46,6 +49,7 @@ func TestArtifact_String(t *testing.T) {
 }
 
 func TestArtifact_Metadata(t *testing.T) {
+	t.Parallel()
 	templates := []*upcloud.Storage{}
 	templates = append(templates,
 		&upcloud.Storage{
@@ -74,7 +78,11 @@ func TestArtifact_Metadata(t *testing.T) {
 			"source_template_uuid":  "source-uuid",
 		},
 	}
-	got := a.State(image.ArtifactStateURI).([]*image.Image)
+	result := a.State(image.ArtifactStateURI)
+	got, ok := result.([]*image.Image)
+	if !ok {
+		t.Fatalf("Expected []*image.Image, got %T", result)
+	}
 	want := &image.Image{
 		ImageID:        "some-uuid",
 		ProviderName:   "upcloud",

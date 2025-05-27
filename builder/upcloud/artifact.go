@@ -3,14 +3,16 @@ package upcloud
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
+
+	"github.com/hashicorp/packer-plugin-sdk/packer/registry/image"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
-	"github.com/hashicorp/packer-plugin-sdk/packer/registry/image"
 )
 
-// packersdk.Artifact implementation
+// packersdk.Artifact implementation.
 type Artifact struct {
 	config    *Config
 	driver    driver.Driver
@@ -21,15 +23,15 @@ type Artifact struct {
 	StateData map[string]interface{}
 }
 
-func (*Artifact) BuilderId() string {
-	return BuilderId
+func (*Artifact) BuilderId() string { //nolint:revive // method is required by packer-plugin-sdk
+	return BuilderID
 }
 
 func (a *Artifact) Files() []string {
 	return []string{}
 }
 
-func (a *Artifact) Id() string {
+func (a *Artifact) Id() string { //nolint:revive // method is required by packer-plugin-sdk
 	result := []string{}
 	for _, t := range a.Templates {
 		result = append(result, t.UUID)
@@ -59,7 +61,7 @@ func (a *Artifact) Destroy() error {
 	for _, t := range a.Templates {
 		err := a.driver.DeleteTemplate(ctx, t.UUID)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to delete template %s: %w", t.UUID, err)
 		}
 	}
 	return nil
@@ -68,11 +70,15 @@ func (a *Artifact) Destroy() error {
 func (a *Artifact) buildHCPPackerRegistryMetadata() ([]*image.Image, error) {
 	var sourceTemplateUUID, sourceTemplateTitle string
 	if v, ok := a.StateData["source_template_uuid"]; ok {
-		sourceTemplateUUID = v.(string)
+		if uuid, ok := v.(string); ok {
+			sourceTemplateUUID = uuid
+		}
 	}
 
 	if v, ok := a.StateData["source_template_title"]; ok {
-		sourceTemplateTitle = v.(string)
+		if title, ok := v.(string); ok {
+			sourceTemplateTitle = title
+		}
 	}
 
 	images := make([]*image.Image, 0)
@@ -83,7 +89,7 @@ func (a *Artifact) buildHCPPackerRegistryMetadata() ([]*image.Image, error) {
 			image.WithProvider("upcloud"),
 		)
 		if err != nil {
-			return images, err
+			return images, fmt.Errorf("failed to create registry image for template %s: %w", template.UUID, err)
 		}
 
 		img.SourceImageID = sourceTemplateUUID
@@ -91,7 +97,7 @@ func (a *Artifact) buildHCPPackerRegistryMetadata() ([]*image.Image, error) {
 		img.Labels["source"] = sourceTemplateTitle
 		img.Labels["name"] = template.Title
 		img.Labels["name_prefix"] = a.config.TemplatePrefix
-		img.Labels["size"] = fmt.Sprint(template.Size)
+		img.Labels["size"] = strconv.Itoa(template.Size)
 		images = append(images, img)
 	}
 	return images, nil

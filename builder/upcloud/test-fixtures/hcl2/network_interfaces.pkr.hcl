@@ -1,7 +1,7 @@
 source "upcloud" "network_interfaces" {
   storage_name = "Debian GNU/Linux 11 (Bullseye)"
   storage_size = 10
-  zone         = "nl-ams1"
+  zone         = "pl-waw1"
 
   network_interfaces {
     ip_addresses {

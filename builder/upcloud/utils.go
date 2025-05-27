@@ -6,21 +6,24 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
-	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
+
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
 )
 
-// wraps error logic
+// wraps error logic.
 func stepHaltWithError(state multistep.StateBag, err error) multistep.StepAction {
-	ui := state.Get("ui").(packer.Ui)
+	uiRaw := state.Get("ui")
+	if ui, ok := uiRaw.(packer.Ui); ok {
+		ui.Error(err.Error())
+	}
 	state.Put("error", err)
-	ui.Error(err.Error())
 	return multistep.ActionHalt
 }
 
-// Find IP address by type from list of IP addresses
+// Find IP address by type from list of IP addresses.
 func findIPAddressByType(addrs upcloud.IPAddressSlice, infType InterfaceType) (*IPAddress, error) {
 	var ipv6 *IPAddress
 	for _, ipAddress := range addrs {
@@ -30,7 +33,7 @@ func findIPAddressByType(addrs upcloud.IPAddressSlice, infType InterfaceType) (*
 				// prefer IPv4 over IPv6 - return first matching IPv4 interface if found
 				return &IPAddress{Address: ipAddress.Address, Family: ipAddress.Family}, nil
 			case upcloud.IPAddressFamilyIPv6:
-				// not returning IPv6 because there might be IPv4 address comming up in the slice
+				// not returning IPv6 because there might be IPv4 address coming up in the slice
 				ipv6 = &IPAddress{Address: ipAddress.Address, Family: ipAddress.Family}
 			}
 		}
@@ -39,7 +42,7 @@ func findIPAddressByType(addrs upcloud.IPAddressSlice, infType InterfaceType) (*
 	if ipv6 != nil {
 		return ipv6, nil
 	}
-	return nil, fmt.Errorf("Unable to find '%s' IP address", infType)
+	return nil, fmt.Errorf("unable to find '%s' IP address", infType)
 }
 
 func getNowString() string {
@@ -47,7 +50,7 @@ func getNowString() string {
 }
 
 // sshHostCallback returns server's IP addresss.
-// Note that IPv6 address needs to be enclosed in square brackets
+// Note that IPv6 address needs to be enclosed in square brackets.
 func sshHostCallback(state multistep.StateBag) (string, error) {
 	addr, ok := state.Get("server_ip_address").(*IPAddress)
 	if !ok || addr == nil {
@@ -77,4 +80,17 @@ func convertNetworkTypes(rawNetworking []NetworkInterface) []request.CreateServe
 
 func contextWithDefaultTimeout() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), defaultTimeout)
+}
+
+func defaultNetworking() []request.CreateServerInterface {
+	return []request.CreateServerInterface{
+		{
+			IPAddresses: []request.CreateServerIPAddress{
+				{
+					Family: upcloud.IPAddressFamilyIPv4,
+				},
+			},
+			Type: upcloud.IPAddressAccessPublic,
+		},
+	}
 }
