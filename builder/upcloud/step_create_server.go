@@ -107,23 +107,39 @@ func (s *StepCreateServer) createServer(ctx context.Context, ui packer.Ui, drv d
 // selectIPAddress selects the appropriate IP address for the server.
 func (s *StepCreateServer) selectIPAddress(ui packer.Ui, response *upcloud.ServerDetails) (*IPAddress, error) {
 	addr, infType := s.Config.DefaultIPaddress()
-	if addr != nil {
-		if addr.Address == "" {
-			var err error
-			addr, err = findIPAddressByType(response.IPAddresses, infType)
-			if err != nil {
-				return nil, err
-			}
-		}
-		ui.Say(fmt.Sprintf("Selecting default ip '%s' as Server IP", addr.Address))
-	} else {
-		var err error
-		addr, err = findIPAddressByType(response.IPAddresses, InterfaceTypePublic)
-		if err != nil {
-			return nil, err
-		}
-		ui.Say(fmt.Sprintf("Auto-selecting ip '%s' as Server IP", addr.Address))
+
+	// Handle case when no default IP address is configured
+	if addr == nil {
+		return s.selectAutoIPAddress(ui, response)
 	}
+
+	// Handle case when default IP address needs to be resolved
+	if addr.Address == "" {
+		return s.selectDefaultIPAddress(ui, response, infType)
+	}
+
+	// Use the explicitly configured IP address
+	ui.Say(fmt.Sprintf("Selecting default ip '%s' as Server IP", addr.Address))
+	return addr, nil
+}
+
+// selectAutoIPAddress automatically selects a public IP address.
+func (s *StepCreateServer) selectAutoIPAddress(ui packer.Ui, response *upcloud.ServerDetails) (*IPAddress, error) {
+	addr, err := findIPAddressByType(response.IPAddresses, InterfaceTypePublic)
+	if err != nil {
+		return nil, err
+	}
+	ui.Say(fmt.Sprintf("Auto-selecting ip '%s' as Server IP", addr.Address))
+	return addr, nil
+}
+
+// selectDefaultIPAddress selects an IP address based on the configured interface type.
+func (s *StepCreateServer) selectDefaultIPAddress(ui packer.Ui, response *upcloud.ServerDetails, infType InterfaceType) (*IPAddress, error) {
+	addr, err := findIPAddressByType(response.IPAddresses, infType)
+	if err != nil {
+		return nil, err
+	}
+	ui.Say(fmt.Sprintf("Selecting default ip '%s' as Server IP", addr.Address))
 	return addr, nil
 }
 

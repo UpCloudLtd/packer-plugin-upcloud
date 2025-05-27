@@ -435,7 +435,7 @@ linters:
 
     # Warns on deeply nested if-statements. These are hard to read and follow.
     # Can be a chore to address after the fact, enabling early recommended.
-    #- nestif #FIXME
+    - nestif
 
     # Flags returning a `nil` after checking for an error, a fairly common
     # mistake to make with `==` vs `!=`.
