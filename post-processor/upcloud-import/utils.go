@@ -44,7 +44,7 @@ func deleteStorageIfExists(ctx context.Context, ui packer.Ui, driver driver.Driv
 		ui.Say(fmt.Sprintf("Cleanup storage '%s' (%s)", storage.Title, storage.UUID))
 		if err := driver.DeleteStorage(ctx, storage.UUID); err != nil {
 			ui.Error(err.Error())
-			return err
+			return fmt.Errorf("failed to delete storage %s: %w", storage.UUID, err)
 		}
 	}
 	return nil

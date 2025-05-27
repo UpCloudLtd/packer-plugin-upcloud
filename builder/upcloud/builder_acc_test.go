@@ -265,7 +265,7 @@ func teardown(t *testing.T, testName string) func() error {
 		for _, u := range uuids {
 			t.Logf("Cleaning up created templates: %s", u)
 			if err := drv.DeleteTemplate(ctx, u); err != nil {
-				return err
+				return fmt.Errorf("failed to delete template %s during teardown: %w", u, err)
 			}
 		}
 

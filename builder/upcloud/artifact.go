@@ -61,7 +61,7 @@ func (a *Artifact) Destroy() error {
 	for _, t := range a.Templates {
 		err := a.driver.DeleteTemplate(ctx, t.UUID)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to delete template %s: %w", t.UUID, err)
 		}
 	}
 	return nil
@@ -89,7 +89,7 @@ func (a *Artifact) buildHCPPackerRegistryMetadata() ([]*image.Image, error) {
 			image.WithProvider("upcloud"),
 		)
 		if err != nil {
-			return images, err
+			return images, fmt.Errorf("failed to create registry image for template %s: %w", template.UUID, err)
 		}
 
 		img.SourceImageID = sourceTemplateUUID

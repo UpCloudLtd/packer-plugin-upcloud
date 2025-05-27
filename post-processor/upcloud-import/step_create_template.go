@@ -103,19 +103,19 @@ func (s *stepCreateTemplate) createTemplateBasedOnStorage(ctx context.Context, u
 	template, err := s.postProcessor.driver.CreateTemplate(ctx, storage.UUID, name)
 	if err != nil {
 		ui.Error(err.Error())
-		return nil, err
+		return nil, fmt.Errorf("failed to create template %s: %w", name, err)
 	}
 	if existingTemplate != nil {
 		ui.Say(fmt.Sprintf("Deleting existing template '%s' (%s) [%s]", existingTemplate.Title, existingTemplate.UUID, existingTemplate.Zone))
 		if err := s.postProcessor.driver.DeleteStorage(ctx, existingTemplate.UUID); err != nil {
 			ui.Error(err.Error())
-			return nil, err
+			return nil, fmt.Errorf("failed to delete existing template %s: %w", existingTemplate.Title, err)
 		}
 		ui.Say(fmt.Sprintf("Renamimg temporary template '%s' to %s [%s]", template.Title, s.postProcessor.config.TemplateName, template.Zone))
 		template, err = s.postProcessor.driver.RenameStorage(ctx, template.UUID, s.postProcessor.config.TemplateName)
 		if err != nil {
 			ui.Error(err.Error())
-			return nil, err
+			return nil, fmt.Errorf("failed to rename template %s: %w", template.Title, err)
 		}
 	}
 

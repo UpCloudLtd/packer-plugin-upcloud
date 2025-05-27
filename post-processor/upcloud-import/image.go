@@ -25,7 +25,7 @@ type image struct {
 func NewImage(path string) (*image, error) {
 	s, err := os.Stat(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to stat image file %s: %w", path, err)
 	}
 	ext := filepath.Ext(path)
 	switch ext {
@@ -44,7 +44,7 @@ func NewImage(path string) (*image, error) {
 		im.ContentType = contentTypeGzip
 	}
 
-	return &im, err
+	return &im, nil
 }
 
 // Size returns image size in bytes.
@@ -81,16 +81,16 @@ func (i *image) CheckSHA256(sha256Sum string) error {
 			_ = gsrc.Close()
 		}()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create gzip reader for %s: %w", i.Path, err)
 		}
 		// #nosec G110 -- intentionally processing large compressed images
 		if _, err := io.Copy(cs, gsrc); err != nil {
-			return err
+			return fmt.Errorf("failed to copy gzipped data from %s for checksum calculation: %w", i.Path, err)
 		}
 	} else {
 		// #nosec G110 -- intentionally processing large compressed images
 		if _, err := io.Copy(cs, src); err != nil {
-			return err
+			return fmt.Errorf("failed to copy data from %s for checksum calculation: %w", i.Path, err)
 		}
 	}
 	csString := hex.EncodeToString(cs.Sum(nil))

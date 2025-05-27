@@ -629,7 +629,7 @@ linters:
     # Checks that errors returned originating from external packages are
     # wrapped. The most important facet of wrapping errors is to provide
     # context for figuring out where an error actually occurred.
-    # - wrapcheck
+    - wrapcheck
 
     # A whitespace linter that is quite aggressive, causing a lot of changes
     # in typical codebases. `whitespace` is the generally preferred choice

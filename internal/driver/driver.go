@@ -122,9 +122,13 @@ func (d *driver) CreateServer(ctx context.Context, opts *ServerOpts) (*upcloud.S
 }
 
 func (d *driver) DeleteServer(ctx context.Context, serverUUID string) error {
-	return d.svc.DeleteServerAndStorages(ctx, &request.DeleteServerAndStoragesRequest{
+	err := d.svc.DeleteServerAndStorages(ctx, &request.DeleteServerAndStoragesRequest{
 		UUID: serverUUID,
 	})
+	if err != nil {
+		return fmt.Errorf("failed to delete server %s and its storages: %w", serverUUID, err)
+	}
+	return nil
 }
 
 func (d *driver) StopServer(ctx context.Context, serverUUID string) error {
@@ -191,7 +195,7 @@ func (d *driver) GetTemplateByName(ctx context.Context, name, zone string) (*upc
 		Type: upcloud.StorageTypeTemplate,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get template storages: %w", err)
 	}
 
 	for _, s := range response.Storages {
@@ -229,7 +233,7 @@ func (d *driver) RenameStorage(ctx context.Context, storageUUID, name string) (*
 		Title: name,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to rename storage %s to %s: %w", storageUUID, name, err)
 	}
 
 	return d.WaitStorageOnline(ctx, details.UUID)
@@ -243,7 +247,7 @@ func (d *driver) CreateTemplateStorage(ctx context.Context, title, zone string, 
 		Zone:  zone,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create template storage %s in zone %s: %w", title, zone, err)
 	}
 	return d.WaitStorageOnline(ctx, storage.UUID)
 }
@@ -255,15 +259,19 @@ func (d *driver) ImportStorage(ctx context.Context, storageUUID, contentType str
 		Source:         "direct_upload",
 		SourceLocation: f,
 	}); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create storage import for %s: %w", storageUUID, err)
 	}
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, d.config.Timeout)
 	defer cancel()
 
-	return d.svc.WaitForStorageImportCompletion(timeoutCtx, &request.WaitForStorageImportCompletionRequest{
+	result, err := d.svc.WaitForStorageImportCompletion(timeoutCtx, &request.WaitForStorageImportCompletionRequest{
 		StorageUUID: storageUUID,
 	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to wait for storage import completion for %s: %w", storageUUID, err)
+	}
+	return result, nil
 }
 
 func (d *driver) DeleteTemplate(ctx context.Context, templateUUID string) error {
@@ -271,9 +279,13 @@ func (d *driver) DeleteTemplate(ctx context.Context, templateUUID string) error 
 }
 
 func (d *driver) DeleteStorage(ctx context.Context, storageUUID string) error {
-	return d.svc.DeleteStorage(ctx, &request.DeleteStorageRequest{
+	err := d.svc.DeleteStorage(ctx, &request.DeleteStorageRequest{
 		UUID: storageUUID,
 	})
+	if err != nil {
+		return fmt.Errorf("failed to delete storage %s: %w", storageUUID, err)
+	}
+	return nil
 }
 
 func (d *driver) CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error) {
@@ -283,7 +295,7 @@ func (d *driver) CloneStorage(ctx context.Context, storageUUID, zone, title stri
 		Title: title,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to clone storage %s to zone %s with title %s: %w", storageUUID, zone, title, err)
 	}
 	return d.WaitStorageOnline(ctx, response.UUID)
 }

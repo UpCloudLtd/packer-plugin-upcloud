@@ -4,6 +4,7 @@ package upcloudimport
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -54,7 +55,7 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 			Exclude: []string{},
 		},
 	}, raws...); err != nil {
-		return &c, err
+		return &c, fmt.Errorf("failed to decode configuration: %w", err)
 	}
 
 	c.fromEnv()

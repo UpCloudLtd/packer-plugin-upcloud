@@ -76,7 +76,11 @@ func (s *StepCreateServer) validateState(state multistep.StateBag) (packer.Ui, d
 // getStorage retrieves the storage template to use for server creation.
 func (s *StepCreateServer) getStorage(ctx context.Context, ui packer.Ui, drv driver.Driver) (*upcloud.Storage, error) {
 	ui.Say("Getting storage...")
-	return drv.GetStorage(ctx, s.Config.StorageUUID, s.Config.StorageName)
+	storage, err := drv.GetStorage(ctx, s.Config.StorageUUID, s.Config.StorageName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get storage (UUID: %s, Name: %s): %w", s.Config.StorageUUID, s.Config.StorageName, err)
+	}
+	return storage, nil
 }
 
 // createServer creates the server with the specified configuration.
@@ -97,7 +101,7 @@ func (s *StepCreateServer) createServer(ctx context.Context, ui packer.Ui, drv d
 		StorageTier:  s.Config.StorageTier,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create server in zone %s: %w", s.Config.Zone, err)
 	}
 
 	ui.Say(fmt.Sprintf("Server %q created and in 'started' state", response.Title))

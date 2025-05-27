@@ -4,6 +4,7 @@ package upcloud
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -137,7 +138,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		InterpolateContext: &c.ctx,
 	}, raws...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode configuration: %w", err)
 	}
 
 	c.setEnv()

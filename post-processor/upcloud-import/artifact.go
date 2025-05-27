@@ -45,7 +45,7 @@ func (a *Artifact) Destroy() error {
 	for _, t := range a.templates {
 		err := a.driver.DeleteTemplate(ctx, t.UUID)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to delete template %s: %w", t.UUID, err)
 		}
 	}
 	return nil
