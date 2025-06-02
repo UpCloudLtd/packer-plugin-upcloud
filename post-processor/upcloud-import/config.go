@@ -4,19 +4,20 @@ package upcloudimport
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 )
 
-const defaultTimeout time.Duration = 60 * time.Minute
+const DefaultTimeout time.Duration = 60 * time.Minute
 
 type Config struct {
-
 	// The username to use when interfacing with the UpCloud API.
 	Username string `mapstructure:"username" required:"true"`
 
@@ -54,7 +55,7 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 			Exclude: []string{},
 		},
 	}, raws...); err != nil {
-		return &c, err
+		return &c, fmt.Errorf("failed to decode configuration: %w", err)
 	}
 
 	c.fromEnv()
@@ -89,7 +90,7 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 	}
 
 	if c.Timeout < 1 {
-		c.Timeout = defaultTimeout
+		c.Timeout = DefaultTimeout
 	}
 
 	// Set the default storage tier to maxiops if not specified

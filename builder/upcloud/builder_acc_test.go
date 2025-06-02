@@ -1,7 +1,6 @@
-package upcloud
+package upcloud //nolint:testpackage // not all fields can be exported in Artifact
 
 import (
-	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -11,8 +10,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/hashicorp/packer-plugin-sdk/acctest"
+
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+
+	_ "embed"
 )
 
 // Run tests: PACKER_ACC=1 go test -count 1 -v ./...  -timeout=120m
@@ -23,7 +25,7 @@ import (
 var testBuildBasic string
 
 //go:embed test-fixtures/json/storage-uuid.json
-var testBuilderStorageUuid string
+var testBuilderStorageUUID string
 
 //go:embed test-fixtures/json/storage-name.json
 var testBuilderStorageName string
@@ -35,57 +37,62 @@ var testBuilderNetworking string
 var testBuilderBasicStandardTier string
 
 func TestBuilderAcc_default(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuildBasic,
-		Check:    checkTestResult(),
-		Teardown: teardown(t.Name()),
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_storageUuid(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
-		Template: testBuilderStorageUuid,
-		Check:    checkTestResult(),
-		Teardown: teardown(t.Name()),
+		Template: testBuilderStorageUUID,
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_storageName(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuilderStorageName,
-		Check:    checkTestResult(),
-		Teardown: teardown(t.Name()),
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_standardTier(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuilderBasicStandardTier,
-		Check:    checkTestResult(),
-		Teardown: teardown(t.Name()),
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_networking(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuilderNetworking,
-		Check:    checkTestResult(),
-		Teardown: teardown(t.Name()),
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
@@ -96,7 +103,7 @@ func TestBuilderAcc_networking(t *testing.T) {
 var testBuildBasicHcl string
 
 //go:embed test-fixtures/hcl2/storage-uuid.pkr.hcl
-var testBuilderStorageUuidHcl string
+var testBuilderStorageUUIDHcl string
 
 //go:embed test-fixtures/hcl2/storage-name.pkr.hcl
 var testBuilderStorageNameHcl string
@@ -105,61 +112,66 @@ var testBuilderStorageNameHcl string
 var testBuilderNetworkInterfacesHcl string
 
 func TestBuilderAcc_default_hcl(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuildBasicHcl,
-		Check:    checkTestResult(),
-		Teardown: teardown(t.Name()),
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_storageUuid_hcl(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
-		Template: testBuilderStorageUuidHcl,
-		Check:    checkTestResult(),
-		Teardown: teardown(t.Name()),
+		Template: testBuilderStorageUUIDHcl,
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_storageName_hcl(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuilderStorageNameHcl,
-		Check:    checkTestResult(),
-		Teardown: teardown(t.Name()),
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
 
 func TestBuilderAcc_network_interfaces(t *testing.T) {
+	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuilderNetworkInterfacesHcl,
 		Check: func(buildCommand *exec.Cmd, logfile string) error {
 			re := regexp.MustCompile(`upcloud.network_interfaces: Selecting default ip '10.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}' as Server IP`)
-			log, err := readLog(logfile)
+			log, err := readLog(t, logfile)
 			if err != nil {
 				return err
 			}
-			fmt.Println(log)
+			// Log content is checked via regex, no need to print it
 			if !re.MatchString(log) {
 				return fmt.Errorf("Unable find default utility network IP from the log %s", logfile)
 			}
 			return nil
 		},
-		Teardown: teardown(t.Name()),
+		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
 }
 
 func testAccPreCheck(t *testing.T) {
+	t.Helper()
 	if v := driver.UsernameFromEnv(); v == "" {
 		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigUsernameLegacy, driver.EnvConfigUsername)
 	}
@@ -168,12 +180,15 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-func readLog(logfile string) (string, error) {
-	logs, err := os.Open(logfile)
+func readLog(t *testing.T, logfile string) (string, error) {
+	t.Helper()
+	logs, err := os.Open(logfile) // #nosec G304 -- logfile path is controlled by Packer SDK acctest framework
 	if err != nil {
 		return "", fmt.Errorf("Unable find %s", logfile)
 	}
-	defer logs.Close()
+	defer func() {
+		_ = logs.Close()
+	}()
 
 	logsBytes, err := io.ReadAll(logs)
 	if err != nil {
@@ -182,15 +197,13 @@ func readLog(logfile string) (string, error) {
 	return string(logsBytes), nil
 }
 
-func checkTestResult() func(*exec.Cmd, string) error {
+func checkTestResult(t *testing.T) func(*exec.Cmd, string) error {
+	t.Helper()
 	return func(buildCommand *exec.Cmd, logfile string) error {
-
-		log, err := readLog(logfile)
+		log, err := readLog(t, logfile)
 		if err != nil {
 			return err
 		}
-
-		fmt.Print(log)
 
 		if buildCommand.ProcessState != nil {
 			if buildCommand.ProcessState.ExitCode() != 0 {
@@ -198,7 +211,7 @@ func checkTestResult() func(*exec.Cmd, string) error {
 			}
 		}
 
-		_, err = getUuidsFromLog(log)
+		_, err = getUuidsFromLog(t, log)
 		if err != nil {
 			return err
 		}
@@ -208,7 +221,8 @@ func checkTestResult() func(*exec.Cmd, string) error {
 
 var re = regexp.MustCompile(`"Storage template created, UUID: (.*?)"`)
 
-func getUuidsFromLog(log string) ([]string, error) {
+func getUuidsFromLog(t *testing.T, log string) ([]string, error) {
+	t.Helper()
 	var match string
 	ms := re.FindAllStringSubmatch(log, -1)
 	for _, m := range ms {
@@ -226,17 +240,18 @@ func getUuidsFromLog(log string) ([]string, error) {
 	return uuid, nil
 }
 
-func teardown(testName string) func() error {
+func teardown(t *testing.T, testName string) func() error {
+	t.Helper()
 	logfile := fmt.Sprintf("packer_log_%s.txt", testName)
 	return func() error {
 		ctx, cancel := contextWithDefaultTimeout()
 		defer cancel()
-		log, err := readLog(logfile)
+		log, err := readLog(t, logfile)
 		if err != nil {
 			return err
 		}
 
-		uuids, err := getUuidsFromLog(log)
+		uuids, err := getUuidsFromLog(t, log)
 		if err != nil {
 			return err
 		}
@@ -248,9 +263,9 @@ func teardown(testName string) func() error {
 		})
 
 		for _, u := range uuids {
-			fmt.Printf("Cleaning up created templates: %s\n", u)
+			t.Logf("Cleaning up created templates: %s", u)
 			if err := drv.DeleteTemplate(ctx, u); err != nil {
-				return err
+				return fmt.Errorf("failed to delete template %s during teardown: %w", u, err)
 			}
 		}
 
