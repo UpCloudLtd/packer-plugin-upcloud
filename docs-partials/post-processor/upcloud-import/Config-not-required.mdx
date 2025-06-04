@@ -1,5 +1,11 @@
 <!-- Code generated from the comments of the Config struct in post-processor/upcloud-import/config.go; DO NOT EDIT MANUALLY -->
 
+- `username` (string) - The username to use when interfacing with the UpCloud API.
+
+- `password` (string) - The password to use when interfacing with the UpCloud API.
+
+- `token` (string) - The API token to use when interfacing with the UpCloud API. This is mutually exclusive with username and password.
+
 - `replace_existing` (bool) - Replace existing template if one exists with the same name. Defaults to `false`.
 
 - `storage_tier` (string) - The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.

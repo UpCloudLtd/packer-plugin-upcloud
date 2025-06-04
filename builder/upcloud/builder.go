@@ -54,6 +54,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	b.driver = driver.NewDriver(&driver.DriverConfig{
 		Username:    b.config.Username,
 		Password:    b.config.Password,
+		Token:       b.config.Token,
 		Timeout:     b.config.Timeout,
 		SSHUsername: b.config.Comm.SSHUsername,
 	})

@@ -19,10 +19,13 @@ const DefaultTimeout time.Duration = 60 * time.Minute
 
 type Config struct {
 	// The username to use when interfacing with the UpCloud API.
-	Username string `mapstructure:"username" required:"true"`
+	Username string `mapstructure:"username"`
 
 	// The password to use when interfacing with the UpCloud API.
-	Password string `mapstructure:"password" required:"true"`
+	Password string `mapstructure:"password"`
+
+	// The API token to use when interfacing with the UpCloud API. This is mutually exclusive with username and password.
+	Token string `mapstructure:"token"`
 
 	// The list of zones in which the template should be imported
 	Zones []string `mapstructure:"zones" required:"true"`
@@ -60,23 +63,22 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 
 	c.fromEnv()
 
+	if errs := c.validate(); len(errs.Errors) > 0 {
+		return &c, errs
+	}
+
+	c.setDefaults()
+
+	return &c, nil
+}
+
+// validate validates the configuration and returns any errors.
+func (c *Config) validate() *packer.MultiError {
 	errs := new(packer.MultiError)
 
 	if len(c.Zones) == 0 {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("list of zones is empty"))
-	}
-
-	if c.Username == "" {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("'username' must be specified"),
-		)
-	}
-
-	if c.Password == "" {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("'password' must be specified"),
-		)
 	}
 
 	if c.TemplateName == "" {
@@ -85,10 +87,53 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 		)
 	}
 
-	if len(errs.Errors) > 0 {
-		return &c, errs
+	// Validate authentication
+	if authErrs := c.validateAuthentication(); authErrs != nil {
+		errs = packer.MultiErrorAppend(errs, authErrs.Errors...)
 	}
 
+	return errs
+}
+
+// validateAuthentication checks authentication configuration.
+func (c *Config) validateAuthentication() *packer.MultiError {
+	var errs *packer.MultiError
+
+	// Check authentication: either username/password OR token, but not both
+	hasUsernamePassword := c.Username != "" || c.Password != ""
+	hasAPIToken := c.Token != ""
+
+	if hasUsernamePassword && hasAPIToken {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("you cannot specify both username/password and token. Use either username/password or token for authentication"),
+		)
+	}
+
+	if !hasUsernamePassword && !hasAPIToken {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("authentication required: specify either username and password, or token"),
+		)
+	}
+
+	// If using username/password, both must be provided
+	if hasUsernamePassword && (c.Username == "" || c.Password == "") {
+		if c.Username == "" {
+			errs = packer.MultiErrorAppend(
+				errs, errors.New("'username' must be specified when using username/password authentication"),
+			)
+		}
+		if c.Password == "" {
+			errs = packer.MultiErrorAppend(
+				errs, errors.New("'password' must be specified when using username/password authentication"),
+			)
+		}
+	}
+
+	return errs
+}
+
+// setDefaults sets default values for configuration fields.
+func (c *Config) setDefaults() {
 	if c.Timeout < 1 {
 		c.Timeout = DefaultTimeout
 	}
@@ -97,8 +142,6 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 	if c.StorageTier == "" {
 		c.StorageTier = "maxiops"
 	}
-
-	return &c, nil
 }
 
 func (c *Config) fromEnv() {
@@ -107,5 +150,8 @@ func (c *Config) fromEnv() {
 	}
 	if c.Password == "" {
 		c.Password = driver.PasswordFromEnv()
+	}
+	if c.Token == "" {
+		c.Token = driver.TokenFromEnv()
 	}
 }

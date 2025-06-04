@@ -10,8 +10,9 @@ import (
 // FlatConfig is an auto-generated flat version of Config.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatConfig struct {
-	Username            *string           `mapstructure:"username" required:"true" cty:"username" hcl:"username"`
-	Password            *string           `mapstructure:"password" required:"true" cty:"password" hcl:"password"`
+	Username            *string           `mapstructure:"username" cty:"username" hcl:"username"`
+	Password            *string           `mapstructure:"password" cty:"password" hcl:"password"`
+	Token               *string           `mapstructure:"token" cty:"token" hcl:"token"`
 	Zones               []string          `mapstructure:"zones" required:"true" cty:"zones" hcl:"zones"`
 	TemplateName        *string           `mapstructure:"template_name" required:"true" cty:"template_name" hcl:"template_name"`
 	ReplaceExisting     *bool             `mapstructure:"replace_existing" cty:"replace_existing" hcl:"replace_existing"`
@@ -41,6 +42,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
 		"username":                   &hcldec.AttrSpec{Name: "username", Type: cty.String, Required: false},
 		"password":                   &hcldec.AttrSpec{Name: "password", Type: cty.String, Required: false},
+		"token":                      &hcldec.AttrSpec{Name: "token", Type: cty.String, Required: false},
 		"zones":                      &hcldec.AttrSpec{Name: "zones", Type: cty.List(cty.String), Required: false},
 		"template_name":              &hcldec.AttrSpec{Name: "template_name", Type: cty.String, Required: false},
 		"replace_existing":           &hcldec.AttrSpec{Name: "replace_existing", Type: cty.Bool, Required: false},

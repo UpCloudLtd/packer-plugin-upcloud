@@ -53,6 +53,7 @@ func (p *PostProcessor) Configure(raws ...interface{}) error {
 	p.driver = driver.NewDriver(&driver.DriverConfig{
 		Username: p.config.Username,
 		Password: p.config.Password,
+		Token:    p.config.Token,
 		Timeout:  p.config.Timeout,
 	})
 	return p.validate()

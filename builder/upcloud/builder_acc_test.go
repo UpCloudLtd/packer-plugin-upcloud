@@ -1,3 +1,5 @@
+//go:build integration
+
 package upcloud //nolint:testpackage // not all fields can be exported in Artifact
 
 import (
