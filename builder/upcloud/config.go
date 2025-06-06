@@ -61,10 +61,13 @@ type Config struct {
 	Comm                communicator.Config `mapstructure:",squash"`
 
 	// The username to use when interfacing with the UpCloud API.
-	Username string `mapstructure:"username" required:"true"`
+	Username string `mapstructure:"username"`
 
 	// The password to use when interfacing with the UpCloud API.
-	Password string `mapstructure:"password" required:"true"`
+	Password string `mapstructure:"password"`
+
+	// The API token to use when interfacing with the UpCloud API. This is mutually exclusive with username and password.
+	Token string `mapstructure:"token"`
 
 	// The zone in which the server and template should be created (e.g. nl-ams1).
 	Zone string `mapstructure:"zone" required:"true"`
@@ -141,8 +144,8 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		return nil, fmt.Errorf("failed to decode configuration: %w", err)
 	}
 
-	c.setEnv()
-	c.setDefaults()
+	c.SetEnv()
+	c.SetDefaults()
 
 	if errs := c.validate(); errs != nil && len(errs.Errors) > 0 {
 		return nil, errs
@@ -152,7 +155,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 }
 
 // setDefaults sets default values for configuration fields.
-func (c *Config) setDefaults() {
+func (c *Config) SetDefaults() {
 	if c.TemplatePrefix == "" && len(c.TemplateName) == 0 {
 		c.TemplatePrefix = DefaultTemplatePrefix
 	}
@@ -185,18 +188,12 @@ func (c *Config) validate() *packer.MultiError {
 		errs = packer.MultiErrorAppend(errs, es...)
 	}
 
-	if c.Username == "" {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("'username' must be specified"),
-		)
+	// Validate authentication
+	if authErrs := c.validateAuthentication(); authErrs != nil {
+		errs = packer.MultiErrorAppend(errs, authErrs.Errors...)
 	}
 
-	if c.Password == "" {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("'password' must be specified"),
-		)
-	}
-
+	// Validate required fields
 	if c.Zone == "" {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'zone' must be specified"),
@@ -208,6 +205,55 @@ func (c *Config) validate() *packer.MultiError {
 			errs, errors.New("'storage_uuid' or 'storage_name' must be specified"),
 		)
 	}
+
+	// Validate template configuration
+	if templateErrs := c.validateTemplate(); templateErrs != nil {
+		errs = packer.MultiErrorAppend(errs, templateErrs.Errors...)
+	}
+
+	return errs
+}
+
+// validateAuthentication checks authentication configuration.
+func (c *Config) validateAuthentication() *packer.MultiError {
+	var errs *packer.MultiError
+
+	// Check authentication: either username/password OR token, but not both
+	hasUsernamePassword := c.Username != "" || c.Password != ""
+	hasAPIToken := c.Token != ""
+
+	if hasUsernamePassword && hasAPIToken {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("you cannot specify both username/password and token. Use either username/password or token for authentication"),
+		)
+	}
+
+	if !hasUsernamePassword && !hasAPIToken {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("authentication required: specify either username and password, or token"),
+		)
+	}
+
+	// If using username/password, both must be provided
+	if hasUsernamePassword && (c.Username == "" || c.Password == "") {
+		if c.Username == "" {
+			errs = packer.MultiErrorAppend(
+				errs, errors.New("'username' must be specified when using username/password authentication"),
+			)
+		}
+		if c.Password == "" {
+			errs = packer.MultiErrorAppend(
+				errs, errors.New("'password' must be specified when using username/password authentication"),
+			)
+		}
+	}
+
+	return errs
+}
+
+// validateTemplate checks template configuration.
+func (c *Config) validateTemplate() *packer.MultiError {
+	var errs *packer.MultiError
 
 	if len(c.TemplatePrefix) > maxTemplatePrefixLength {
 		errs = packer.MultiErrorAppend(
@@ -231,12 +277,16 @@ func (c *Config) validate() *packer.MultiError {
 }
 
 // get params from environment.
-func (c *Config) setEnv() {
+func (c *Config) SetEnv() {
 	if c.Username == "" {
 		c.Username = driver.UsernameFromEnv()
 	}
 
 	if c.Password == "" {
 		c.Password = driver.PasswordFromEnv()
+	}
+
+	if c.Token == "" {
+		c.Token = driver.TokenFromEnv()
 	}
 }

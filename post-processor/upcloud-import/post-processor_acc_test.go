@@ -1,3 +1,5 @@
+//go:build integration
+
 package upcloudimport //nolint:testpackage // not all fields can be exported
 
 import (

@@ -67,8 +67,9 @@ type FlatConfig struct {
 	WinRMUseSSL               *bool                  `mapstructure:"winrm_use_ssl" cty:"winrm_use_ssl" hcl:"winrm_use_ssl"`
 	WinRMInsecure             *bool                  `mapstructure:"winrm_insecure" cty:"winrm_insecure" hcl:"winrm_insecure"`
 	WinRMUseNTLM              *bool                  `mapstructure:"winrm_use_ntlm" cty:"winrm_use_ntlm" hcl:"winrm_use_ntlm"`
-	Username                  *string                `mapstructure:"username" required:"true" cty:"username" hcl:"username"`
-	Password                  *string                `mapstructure:"password" required:"true" cty:"password" hcl:"password"`
+	Username                  *string                `mapstructure:"username" cty:"username" hcl:"username"`
+	Password                  *string                `mapstructure:"password" cty:"password" hcl:"password"`
+	Token                     *string                `mapstructure:"token" cty:"token" hcl:"token"`
 	Zone                      *string                `mapstructure:"zone" required:"true" cty:"zone" hcl:"zone"`
 	StorageUUID               *string                `mapstructure:"storage_uuid" required:"true" cty:"storage_uuid" hcl:"storage_uuid"`
 	StorageName               *string                `mapstructure:"storage_name" cty:"storage_name" hcl:"storage_name"`
@@ -155,6 +156,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"winrm_use_ntlm":               &hcldec.AttrSpec{Name: "winrm_use_ntlm", Type: cty.Bool, Required: false},
 		"username":                     &hcldec.AttrSpec{Name: "username", Type: cty.String, Required: false},
 		"password":                     &hcldec.AttrSpec{Name: "password", Type: cty.String, Required: false},
+		"token":                        &hcldec.AttrSpec{Name: "token", Type: cty.String, Required: false},
 		"zone":                         &hcldec.AttrSpec{Name: "zone", Type: cty.String, Required: false},
 		"storage_uuid":                 &hcldec.AttrSpec{Name: "storage_uuid", Type: cty.String, Required: false},
 		"storage_name":                 &hcldec.AttrSpec{Name: "storage_name", Type: cty.String, Required: false},

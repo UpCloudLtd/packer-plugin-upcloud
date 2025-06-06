@@ -9,10 +9,6 @@ The upcloud builder is used to generate storage templates on UpCloud.
 
 <!-- Code generated from the comments of the Config struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
 
-- `username` (string) - The username to use when interfacing with the UpCloud API.
-
-- `password` (string) - The password to use when interfacing with the UpCloud API.
-
 - `zone` (string) - The zone in which the server and template should be created (e.g. nl-ams1).
 
 - `storage_uuid` (string) - The UUID of the storage you want to use as a template when creating the server.
@@ -33,6 +29,12 @@ The upcloud builder is used to generate storage templates on UpCloud.
 ### Optional
 
 <!-- Code generated from the comments of the Config struct in builder/upcloud/config.go; DO NOT EDIT MANUALLY -->
+
+- `username` (string) - The username to use when interfacing with the UpCloud API.
+
+- `password` (string) - The password to use when interfacing with the UpCloud API.
+
+- `token` (string) - The API token to use when interfacing with the UpCloud API. This is mutually exclusive with username and password.
 
 - `storage_name` (string) - The name of the storage that will be used to find the first matching storage in the list of existing templates.
   

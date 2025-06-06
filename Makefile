@@ -24,11 +24,10 @@ PACKER_SDC_RENDER_DOCS=$(PACKER_SDC) renderdocs -src docs-src/ -partials docs-pa
 default: build
 
 test:
-	@go test -race -count $(COUNT) $(TEST) -timeout=3m
+	@go test -race -count $(COUNT) -tags "!integration" $(TEST) -timeout=3m
 
 test_integration: build install
-
-	PACKER_ACC=1 go test -count 1 -v $(TESTARGS) ./...  -timeout=120m
+	PACKER_ACC=1 go test -count 1 -v -tags integration $(TESTARGS) ./...  -timeout=120m
 
 build:
 	@go build -v -o ${BINARY}

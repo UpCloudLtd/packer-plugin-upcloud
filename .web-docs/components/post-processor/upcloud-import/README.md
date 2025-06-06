@@ -9,10 +9,6 @@ Username and password configuration arguments can be omitted if environment vari
 
 <!-- Code generated from the comments of the Config struct in post-processor/upcloud-import/config.go; DO NOT EDIT MANUALLY -->
 
-- `username` (string) - The username to use when interfacing with the UpCloud API.
-
-- `password` (string) - The password to use when interfacing with the UpCloud API.
-
 - `zones` ([]string) - The list of zones in which the template should be imported
 
 - `template_name` (string) - The name of the template. Use `replace_existing` to replace existing template
@@ -24,6 +20,12 @@ Username and password configuration arguments can be omitted if environment vari
 ### Optional
 
 <!-- Code generated from the comments of the Config struct in post-processor/upcloud-import/config.go; DO NOT EDIT MANUALLY -->
+
+- `username` (string) - The username to use when interfacing with the UpCloud API.
+
+- `password` (string) - The password to use when interfacing with the UpCloud API.
+
+- `token` (string) - The API token to use when interfacing with the UpCloud API. This is mutually exclusive with username and password.
 
 - `replace_existing` (bool) - Replace existing template if one exists with the same name. Defaults to `false`.
 

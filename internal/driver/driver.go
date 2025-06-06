@@ -20,6 +20,7 @@ const (
 	DefaultHostname                  string = "custom"
 	EnvConfigUsername                string = "UPCLOUD_USERNAME"
 	EnvConfigPassword                string = "UPCLOUD_PASSWORD"
+	EnvConfigAPIToken                string = "UPCLOUD_TOKEN"
 	EnvConfigUsernameLegacy          string = "UPCLOUD_API_USER"
 	EnvConfigPasswordLegacy          string = "UPCLOUD_API_PASSWORD"
 	upcloudErrorCodeMetadataDisabled string = "METADATA_DISABLED_ON_CLOUD-INIT"
@@ -74,6 +75,7 @@ type (
 	DriverConfig struct {
 		Username    string
 		Password    string
+		Token       string
 		Timeout     time.Duration
 		SSHUsername string
 	}
@@ -89,8 +91,17 @@ type (
 )
 
 func NewDriver(c *DriverConfig) Driver {
-	client := client.New(c.Username, c.Password)
-	svc := service.New(client)
+	var cl *client.Client
+
+	// Use API token if provided, otherwise fall back to username/password
+	if c.Token != "" {
+		// TODO: Update this with a proper token auth wrapper when upcloud-go-api supports it
+		cl = client.New("", "", client.WithBearerAuth(c.Token))
+	} else {
+		cl = client.New(c.Username, c.Password)
+	}
+
+	svc := service.New(cl)
 	return &driver{
 		svc:    svc,
 		config: c,
@@ -453,4 +464,8 @@ func PasswordFromEnv() string {
 		passwd = os.Getenv(EnvConfigPassword)
 	}
 	return passwd
+}
+
+func TokenFromEnv() string {
+	return os.Getenv(EnvConfigAPIToken)
 }
