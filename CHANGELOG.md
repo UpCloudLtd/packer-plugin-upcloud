@@ -9,6 +9,10 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 - Authentication token support through `UPCLOUD_TOKEN` environment variable and `token` config parameter
 
+### Fixed
+
+- Update Go version to 1.24.4
+
 ## [1.6.0] - 2025-05-23
 
 ### Added
