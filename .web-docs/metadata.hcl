@@ -13,6 +13,6 @@ integration {
   component {
     type = "post-processor"
     name = "UpCloud Import"
-    slug = "import"
+    slug = "upcloud-import"
   }
 }
