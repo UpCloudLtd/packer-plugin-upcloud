@@ -30,11 +30,11 @@ $ packer plugins install github.com/UpCloudLtd/upcloud
 #### Builders
 
 
-- [upcloud](/packer/integrations/upcloudltd/upcloud/latest/components/builder/upcloud) - The upcloud builder is used to generate storage templates on UpCloud.
+- [upcloud](/packer/integrations/UpCloudLtd/upcloud/latest/components/builder/upcloud) - The upcloud builder is used to generate storage templates on UpCloud.
 
 #### Post-processors
 
-- [upcloud-import](/packer/integrations/upcloudltd/upcloud/latest/components/post-processor/import) - The upcloud import post-processors is used to import disk images to UpCloud.
+- [upcloud-import](/packer/integrations/UpCloudLtd/upcloud/latest/components/post-processor/upcloud-import) - The upcloud import post-processors is used to import disk images to UpCloud.
 
 ### JSON Templates
 From Packer version 1.7.0, template HCL2 becomes officially the preferred way to write Packer configuration. While the `json` format is still supported, but certain new features, such as `packer init` works only in newer HCL2 format.
