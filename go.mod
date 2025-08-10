@@ -1,6 +1,6 @@
 module github.com/UpCloudLtd/packer-plugin-upcloud
 
-go 1.24.4
+go 1.24.6
 
 require (
 	github.com/UpCloudLtd/upcloud-go-api/v8 v8.18.0
