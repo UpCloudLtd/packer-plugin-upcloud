@@ -1,6 +1,13 @@
 name: Lint
 on:
   pull_request:
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/lint.yaml'
+permissions:
+  contents: read
 jobs:
   golangci-lint:
     runs-on: ubuntu-latest

@@ -16,6 +16,9 @@ on:
         required: false
         default: "./example"
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest

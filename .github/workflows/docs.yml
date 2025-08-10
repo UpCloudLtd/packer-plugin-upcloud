@@ -8,11 +8,17 @@ on:
       - main
       - test-docs-generator # for testing
 
+permissions:
+  contents: read
+
 jobs:
   update:
     name: Update
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
