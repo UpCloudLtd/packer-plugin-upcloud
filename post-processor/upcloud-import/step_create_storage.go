@@ -30,11 +30,17 @@ func (s *stepCreateStorage) Run(ctx context.Context, state multistep.StateBag) m
 	if err != nil {
 		return haltOnError(ui, state, err)
 	}
-	size := s.image.SizeGB()
-	if size < storageMinSizeGB {
-		size = storageMinSizeGB
+	var size int
+	if s.postProcessor.config.StorageSize > 0 {
+		size = s.postProcessor.config.StorageSize
+		ui.Say(fmt.Sprintf("Creating storage device (%dGB) for '%s' image using manually specified size", size, s.image.File()))
+	} else {
+		size = s.image.SizeGB()
+		if size < storageMinSizeGB {
+			size = storageMinSizeGB
+		}
+		ui.Say(fmt.Sprintf("Creating storage device (%dGB) for '%s' image", size, s.image.File()))
 	}
-	ui.Say(fmt.Sprintf("Creating storage device (%dGB) for '%s' image", size, s.image.File()))
 	storage, err := s.postProcessor.driver.CreateTemplateStorage(ctx,
 		fmt.Sprintf("%s-%s", BuilderID, time.Now().Format(timestampSuffixLayout)),
 		s.postProcessor.config.Zones[0],

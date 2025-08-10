@@ -5,6 +5,10 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- `storage_size` parameter to upcloud-import post-processor
+
 ### Fixed
 
 - Update Go version to 1.24.6
