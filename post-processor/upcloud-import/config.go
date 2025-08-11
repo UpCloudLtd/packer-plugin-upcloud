@@ -40,6 +40,11 @@ type Config struct {
 	// The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
 	StorageTier string `mapstructure:"storage_tier"`
 
+	// The storage size in gigabytes. If not specified, defaults to the image size
+	// (minimum 10GB). When importing compressed images that expand significantly, specify
+	// a larger value to ensure adequate space for the uncompressed content.
+	StorageSize int `mapstructure:"storage_size"`
+
 	// The amount of time to wait for resource state changes. Defaults to `60m`.
 	Timeout time.Duration `mapstructure:"state_timeout_duration"`
 
@@ -90,6 +95,20 @@ func (c *Config) validate() *packer.MultiError {
 	// Validate authentication
 	if authErrs := c.validateAuthentication(); authErrs != nil {
 		errs = packer.MultiErrorAppend(errs, authErrs.Errors...)
+	}
+
+	// Validate storage size if specified
+	if c.StorageSize > 0 {
+		if c.StorageSize < storageMinSizeGB {
+			errs = packer.MultiErrorAppend(
+				errs, fmt.Errorf("'storage_size' must be at least %dGB", storageMinSizeGB),
+			)
+		}
+		if c.StorageSize > storageMaxSizeGB {
+			errs = packer.MultiErrorAppend(
+				errs, fmt.Errorf("'storage_size' cannot exceed %dGB", storageMaxSizeGB),
+			)
+		}
 	}
 
 	return errs

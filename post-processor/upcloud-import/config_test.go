@@ -286,3 +286,95 @@ func TestNewConfig_StorageTierDefault(t *testing.T) {
 	require.NotNil(t, c)
 	assert.Equal(t, "maxiops", c.StorageTier)
 }
+
+func TestNewConfig_StorageSize(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		storageSize   interface{} // Use interface{} to test both presence and absence
+		expectError   bool
+		expectedSize  int
+		errorContains string
+	}{
+		{
+			name:         "not specified - should default to 0",
+			storageSize:  nil, // Don't include storage_size in config
+			expectError:  false,
+			expectedSize: 0,
+		},
+		{
+			name:         "valid size",
+			storageSize:  50,
+			expectError:  false,
+			expectedSize: 50,
+		},
+		{
+			name:         "minimum valid size",
+			storageSize:  10,
+			expectError:  false,
+			expectedSize: 10,
+		},
+		{
+			name:         "maximum valid size",
+			storageSize:  4096,
+			expectError:  false,
+			expectedSize: 4096,
+		},
+		{
+			name:          "too small - below minimum",
+			storageSize:   5,
+			expectError:   true,
+			errorContains: "'storage_size' must be at least 10GB",
+		},
+		{
+			name:          "too large - above maximum",
+			storageSize:   5000,
+			expectError:   true,
+			errorContains: "'storage_size' cannot exceed 4096GB",
+		},
+		{
+			name:         "zero - invalid",
+			storageSize:  0,
+			expectError:  false, // 0 means not specified, which is valid
+			expectedSize: 0,
+		},
+		{
+			name:         "negative - invalid",
+			storageSize:  -10,
+			expectError:  false, // Negative values are treated as 0 (not specified)
+			expectedSize: -10,   // The value is stored as-is, validation only checks > 0
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			configMap := map[string]interface{}{
+				"token":         "test-token",
+				"zones":         []string{"fi-hel1"},
+				"template_name": "my-template",
+			}
+
+			if tt.storageSize != nil {
+				configMap["storage_size"] = tt.storageSize
+			}
+
+			c, err := upcloudimport.NewConfig([]interface{}{configMap}...)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorContains != "" {
+					assert.Contains(t, err.Error(), tt.errorContains)
+				}
+			} else {
+				assert.NoError(t, err)
+				require.NotNil(t, c)
+				assert.Equal(t, tt.expectedSize, c.StorageSize)
+			}
+
+			require.NotNil(t, c)
+		})
+	}
+}

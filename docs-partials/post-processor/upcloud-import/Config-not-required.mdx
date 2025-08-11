@@ -10,6 +10,10 @@
 
 - `storage_tier` (string) - The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
 
+- `storage_size` (int) - The storage size in gigabytes. If not specified, defaults to the image size
+  (minimum 10GB). When importing compressed images that expand significantly, specify
+  a larger value to ensure adequate space for the uncompressed content.
+
 - `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `60m`.
 
 <!-- End of code generated from the comments of the Config struct in post-processor/upcloud-import/config.go; -->
