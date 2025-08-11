@@ -5,6 +5,10 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- Update Go version to 1.24.6
+
 ## [1.7.0] - 2025-06-10
 
 ### Added
