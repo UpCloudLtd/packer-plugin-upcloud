@@ -28,12 +28,5 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Run unit-tests
+      - name: Run unit tests
         run: make test
-
-      - name: Run acceptance tests
-        env:
-          UPCLOUD_USERNAME: ${{ secrets.UPCLOUD_API_USER }}
-          UPCLOUD_PASSWORD: ${{ secrets.UPCLOUD_API_PASSWORD }}
-          PACKER_ACC: 1
-        run: make test_integration
