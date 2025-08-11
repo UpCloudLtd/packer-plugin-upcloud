@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/acctest"
 
@@ -20,6 +21,8 @@ import (
 )
 
 // Run tests: PACKER_ACC=1 go test -count 1 -v ./...  -timeout=120m
+
+const defaultTestTimeout = 15 * time.Minute
 
 // json
 
@@ -261,7 +264,7 @@ func teardown(t *testing.T, testName string) func() error {
 		drv := driver.NewDriver(&driver.DriverConfig{
 			Username: driver.UsernameFromEnv(),
 			Password: driver.PasswordFromEnv(),
-			Timeout:  DefaultTimeout,
+			Timeout:  defaultTestTimeout,
 		})
 
 		for _, u := range uuids {
