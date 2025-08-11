@@ -2,10 +2,16 @@ name: Notify Integration Release (Tag)
 on:
   push:
     tags:
-      - '*.*.*'   # Proper releases
+      - 'v*.*.*'   # Proper releases
+
+permissions:
+  contents: read
+
 jobs:
   strip-version:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
     outputs:
       packer-version: ${{ steps.strip.outputs.packer-version }}
     steps:
