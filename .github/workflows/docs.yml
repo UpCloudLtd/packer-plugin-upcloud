@@ -28,7 +28,7 @@ jobs:
       - name: Generate documentation
         run: make docs
       - name: Create PR for docs update
-        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54 # v4.2.4
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
         with:
           add-paths: docs/
           branch: chore/update-docs
