@@ -1,7 +1,6 @@
 # This is a manually triggered action workflow.
 # It uses Packer at latest version to init, validate and build
 # an example configuration in a folder.
-# This action is compatible with Packer v1.7.0 or later.
 name: test plugin example
 
 on:
@@ -26,30 +25,24 @@ jobs:
     env:
       UPCLOUD_API_USER: ${{ secrets.UPCLOUD_API_USER }}
       UPCLOUD_API_PASSWORD: ${{ secrets.UPCLOUD_API_PASSWORD }}
+      PACKER_LOG: ${{ github.event.inputs.logs }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Init
-        uses: hashicorp/packer-github-actions@master
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@1aa358be5cf73883762b302a3a03abd66e75b232 # v3.1.0
         with:
-          working_directory: ${{ github.event.inputs.folder }}
-          command: init
+          version: "latest"
 
-      - name: Validate
-        uses: hashicorp/packer-github-actions@master
-        with:
-          working_directory: ${{ github.event.inputs.folder }}
-          command: validate
-          arguments: -var="ssh_public_key=/dev/null"
-        env:
-          PACKER_LOG: ${{ github.event.inputs.logs }}
+      - name: Run Packer Init
+        working-directory: ${{ github.event.inputs.folder }}
+        run: packer init .
 
-      - name: Build
-        uses: hashicorp/packer-github-actions@master
-        with:
-          working_directory: ${{ github.event.inputs.folder }}
-          command: build
-          arguments: -var="ssh_public_key=/dev/null"
-        env:
-          PACKER_LOG: ${{ github.event.inputs.logs }}
+      - name: Run Packer Validate
+        working-directory: ${{ github.event.inputs.folder }}
+        run: packer validate -var="ssh_public_key=/dev/null" .
+
+      - name: Run Packer Build
+        working-directory: ${{ github.event.inputs.folder }}
+        run: packer build -var="ssh_public_key=/dev/null" .
