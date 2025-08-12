@@ -5,6 +5,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.8.0] - 2025-08-11
+
 ### Added
 
 - `storage_size` parameter to upcloud-import post-processor
@@ -12,6 +14,11 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 ### Fixed
 
 - Update Go version to 1.24.6
+
+### Changed
+
+- Update `packer-plugin-sdk` to [v0.6.2](https://github.com/hashicorp/packer-plugin-sdk/releases/tag/v0.6.2)
+- Update `upcloud-go-api` to [v8.23.0](https://github.com/UpCloudLtd/upcloud-go-api/releases/tag/v8.23.0)
 
 ## [1.7.0] - 2025-06-10
 
@@ -120,7 +127,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 - Upgrade to Packer 1.7.0
 - Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
 
-[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.5.3...v1.6.0
 [1.5.3]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.5.2...v1.5.3
