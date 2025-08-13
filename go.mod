@@ -3,7 +3,7 @@ module github.com/UpCloudLtd/packer-plugin-upcloud
 go 1.24.6
 
 require (
-	github.com/UpCloudLtd/upcloud-go-api/v8 v8.23.0
+	github.com/UpCloudLtd/upcloud-go-api/v8 v8.24.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/hashicorp/packer-plugin-sdk v0.6.2
 	github.com/stretchr/testify v1.10.0
