@@ -5,6 +5,13 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.8.1] - 2025-08-18
+
+### Fixed
+
+- Use `zip` archive format for release assets
+- Update Go version to 1.25.0
+
 ## [1.8.0] - 2025-08-11
 
 ### Added
@@ -127,7 +134,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 - Upgrade to Packer 1.7.0
 - Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
 
-[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.8.1...HEAD
+[1.8.1]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.5.3...v1.6.0
