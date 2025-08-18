@@ -41,9 +41,7 @@ builds:
         goarch: amd64
     binary: "{{ .ProjectName }}_v{{ .Version }}_{{ .Env.API_VERSION }}_{{ .Os }}_{{ .Arch }}"
 archives:
-  -
-    format_overrides:
-      - formats: ['zip']
+  - formats: ["zip"]
     files:
       - none*
     name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Env.API_VERSION }}_{{ .Os }}_{{ .Arch }}"
