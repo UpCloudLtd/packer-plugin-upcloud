@@ -5,6 +5,14 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- Support for using API token from system keyring.
+
+### Changed
+
+- If both basic authentication and API token are provided, the API token will be used instead of raising an error.
+
 ## [1.8.1] - 2025-08-18
 
 ### Fixed

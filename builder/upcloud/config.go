@@ -144,7 +144,11 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		return nil, fmt.Errorf("failed to decode configuration: %w", err)
 	}
 
-	c.SetEnv()
+	err = c.SetEnv()
+	if err != nil {
+		return nil, err
+	}
+
 	c.SetDefaults()
 
 	if errs := c.validate(); errs != nil && len(errs.Errors) > 0 {
@@ -188,11 +192,6 @@ func (c *Config) validate() *packer.MultiError {
 		errs = packer.MultiErrorAppend(errs, es...)
 	}
 
-	// Validate authentication
-	if authErrs := c.validateAuthentication(); authErrs != nil {
-		errs = packer.MultiErrorAppend(errs, authErrs.Errors...)
-	}
-
 	// Validate required fields
 	if c.Zone == "" {
 		errs = packer.MultiErrorAppend(
@@ -209,43 +208,6 @@ func (c *Config) validate() *packer.MultiError {
 	// Validate template configuration
 	if templateErrs := c.validateTemplate(); templateErrs != nil {
 		errs = packer.MultiErrorAppend(errs, templateErrs.Errors...)
-	}
-
-	return errs
-}
-
-// validateAuthentication checks authentication configuration.
-func (c *Config) validateAuthentication() *packer.MultiError {
-	var errs *packer.MultiError
-
-	// Check authentication: either username/password OR token, but not both
-	hasUsernamePassword := c.Username != "" || c.Password != ""
-	hasAPIToken := c.Token != ""
-
-	if hasUsernamePassword && hasAPIToken {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("you cannot specify both username/password and token. Use either username/password or token for authentication"),
-		)
-	}
-
-	if !hasUsernamePassword && !hasAPIToken {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("authentication required: specify either username and password, or token"),
-		)
-	}
-
-	// If using username/password, both must be provided
-	if hasUsernamePassword && (c.Username == "" || c.Password == "") {
-		if c.Username == "" {
-			errs = packer.MultiErrorAppend(
-				errs, errors.New("'username' must be specified when using username/password authentication"),
-			)
-		}
-		if c.Password == "" {
-			errs = packer.MultiErrorAppend(
-				errs, errors.New("'password' must be specified when using username/password authentication"),
-			)
-		}
 	}
 
 	return errs
@@ -277,16 +239,14 @@ func (c *Config) validateTemplate() *packer.MultiError {
 }
 
 // get params from environment.
-func (c *Config) SetEnv() {
-	if c.Username == "" {
-		c.Username = driver.UsernameFromEnv()
+func (c *Config) SetEnv() error {
+	creds, err := driver.CredentialsFromEnv(c.Username, c.Password, c.Token)
+	if err != nil {
+		return err //nolint:wrapcheck // Use the original error from the shared credentials package
 	}
 
-	if c.Password == "" {
-		c.Password = driver.PasswordFromEnv()
-	}
-
-	if c.Token == "" {
-		c.Token = driver.TokenFromEnv()
-	}
+	c.Username = creds.Username
+	c.Password = creds.Password
+	c.Token = creds.Token
+	return nil
 }

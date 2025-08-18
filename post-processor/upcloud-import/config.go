@@ -66,7 +66,9 @@ func NewConfig(raws ...interface{}) (*Config, error) {
 		return &c, fmt.Errorf("failed to decode configuration: %w", err)
 	}
 
-	c.fromEnv()
+	if err := c.fromEnv(); err != nil {
+		return &c, err
+	}
 
 	if errs := c.validate(); len(errs.Errors) > 0 {
 		return &c, errs
@@ -92,11 +94,6 @@ func (c *Config) validate() *packer.MultiError {
 		)
 	}
 
-	// Validate authentication
-	if authErrs := c.validateAuthentication(); authErrs != nil {
-		errs = packer.MultiErrorAppend(errs, authErrs.Errors...)
-	}
-
 	// Validate storage size if specified
 	if c.StorageSize > 0 {
 		if c.StorageSize < storageMinSizeGB {
@@ -107,43 +104,6 @@ func (c *Config) validate() *packer.MultiError {
 		if c.StorageSize > storageMaxSizeGB {
 			errs = packer.MultiErrorAppend(
 				errs, fmt.Errorf("'storage_size' cannot exceed %dGB", storageMaxSizeGB),
-			)
-		}
-	}
-
-	return errs
-}
-
-// validateAuthentication checks authentication configuration.
-func (c *Config) validateAuthentication() *packer.MultiError {
-	var errs *packer.MultiError
-
-	// Check authentication: either username/password OR token, but not both
-	hasUsernamePassword := c.Username != "" || c.Password != ""
-	hasAPIToken := c.Token != ""
-
-	if hasUsernamePassword && hasAPIToken {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("you cannot specify both username/password and token. Use either username/password or token for authentication"),
-		)
-	}
-
-	if !hasUsernamePassword && !hasAPIToken {
-		errs = packer.MultiErrorAppend(
-			errs, errors.New("authentication required: specify either username and password, or token"),
-		)
-	}
-
-	// If using username/password, both must be provided
-	if hasUsernamePassword && (c.Username == "" || c.Password == "") {
-		if c.Username == "" {
-			errs = packer.MultiErrorAppend(
-				errs, errors.New("'username' must be specified when using username/password authentication"),
-			)
-		}
-		if c.Password == "" {
-			errs = packer.MultiErrorAppend(
-				errs, errors.New("'password' must be specified when using username/password authentication"),
 			)
 		}
 	}
@@ -163,14 +123,14 @@ func (c *Config) setDefaults() {
 	}
 }
 
-func (c *Config) fromEnv() {
-	if c.Username == "" {
-		c.Username = driver.UsernameFromEnv()
+func (c *Config) fromEnv() error {
+	creds, err := driver.CredentialsFromEnv(c.Username, c.Password, c.Token)
+	if err != nil {
+		return err //nolint:wrapcheck // Use the original error from shared credentials package
 	}
-	if c.Password == "" {
-		c.Password = driver.PasswordFromEnv()
-	}
-	if c.Token == "" {
-		c.Token = driver.TokenFromEnv()
-	}
+
+	c.Username = creds.Username
+	c.Password = creds.Password
+	c.Token = creds.Token
+	return nil
 }
