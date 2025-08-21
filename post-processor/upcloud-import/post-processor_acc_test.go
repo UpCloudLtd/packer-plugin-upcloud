@@ -34,14 +34,9 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 		t.Skip("skip acceptance test")
 	}
 	ctx := t.Context()
-	username := driver.UsernameFromEnv()
-	if username == "" {
-		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigUsernameLegacy, driver.EnvConfigUsername)
-	}
-
-	password := driver.PasswordFromEnv()
-	if password == "" {
-		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigPasswordLegacy, driver.EnvConfigPassword)
+	creds, err := driver.CredentialsFromEnv("", "", "")
+	if err != nil {
+		t.Skip(err.Error())
 	}
 
 	testName := fmt.Sprintf("%s-acc-test-%s", BuilderID, time.Now().Format(timestampSuffixLayout))
@@ -55,8 +50,9 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 
 	var p PostProcessor
 	err = p.Configure([]interface{}{map[string]interface{}{
-		"username":         username,
-		"password":         password,
+		"username":         creds.Username,
+		"password":         creds.Password,
+		"token":            creds.Token,
 		"zones":            []string{"pl-waw1", "fi-hel2"},
 		"template_name":    testName,
 		"replace_existing": true,
@@ -72,8 +68,9 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	require.NotNil(t, a)
 
 	driver := driver.NewDriver(&driver.DriverConfig{
-		Username: username,
-		Password: password,
+		Username: creds.Username,
+		Password: creds.Password,
+		Token:    creds.Token,
 		Timeout:  time.Minute * 30,
 	})
 	t1, err := driver.GetTemplateByName(ctx, testName, "pl-waw1")

@@ -177,11 +177,10 @@ func TestBuilderAcc_network_interfaces(t *testing.T) {
 
 func testAccPreCheck(t *testing.T) {
 	t.Helper()
-	if v := driver.UsernameFromEnv(); v == "" {
-		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigUsernameLegacy, driver.EnvConfigUsername)
-	}
-	if v := driver.PasswordFromEnv(); v == "" {
-		t.Skipf("%s or %s must be set for acceptance tests", driver.EnvConfigPasswordLegacy, driver.EnvConfigPassword)
+
+	_, err := driver.CredentialsFromEnv("", "", "")
+	if err != nil {
+		t.Skip(err.Error())
 	}
 }
 
@@ -261,9 +260,11 @@ func teardown(t *testing.T, testName string) func() error {
 			return err
 		}
 
+		creds, _ := driver.CredentialsFromEnv("", "", "")
 		drv := driver.NewDriver(&driver.DriverConfig{
-			Username: driver.UsernameFromEnv(),
-			Password: driver.PasswordFromEnv(),
+			Username: creds.Username,
+			Password: creds.Password,
+			Token:    creds.Token,
 			Timeout:  defaultTestTimeout,
 		})
 
