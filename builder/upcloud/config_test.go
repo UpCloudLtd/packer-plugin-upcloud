@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/builder/upcloud"
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
@@ -65,8 +66,10 @@ func TestConfig_Prepare_BothAuthMethods(t *testing.T) {
 	}
 
 	warns, err := c.Prepare(raws...)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "you cannot specify both username/password and token")
+	assert.NoError(t, err)
+	assert.Equal(t, "test-api-token", c.Token)
+	assert.Equal(t, "", c.Username)
+	assert.Equal(t, "", c.Password)
 	assert.Empty(t, warns)
 }
 
@@ -81,8 +84,8 @@ func TestConfig_Prepare_NoAuthMethods(t *testing.T) {
 	}
 
 	warns, err := c.Prepare(raws...)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "authentication required: specify either username and password, or token")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "credentials not found")
 	assert.Empty(t, warns)
 }
 
@@ -98,8 +101,8 @@ func TestConfig_Prepare_OnlyUsername(t *testing.T) {
 	}
 
 	warns, err := c.Prepare(raws...)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "'password' must be specified when using username/password authentication")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "credentials not found")
 	assert.Empty(t, warns)
 }
 
@@ -115,8 +118,8 @@ func TestConfig_Prepare_OnlyPassword(t *testing.T) {
 	}
 
 	warns, err := c.Prepare(raws...)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "'username' must be specified when using username/password authentication")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "credentials not found")
 	assert.Empty(t, warns)
 }
 
@@ -283,11 +286,30 @@ func TestConfig_setEnv_APIToken(t *testing.T) {
 	t.Setenv(driver.EnvConfigAPIToken, "test-token")
 
 	c := &upcloud.Config{}
-	c.SetEnv()
+	err := c.SetEnv()
+	assert.NoError(t, err)
 	assert.Equal(t, "test-token", c.Token)
 }
 
-func TestConfig_setEnv_DoesNotOverrideExisting(t *testing.T) {
+func TestConfig_setEnv_DoesNotOverrideExisting_basic(t *testing.T) {
+	t.Setenv(driver.EnvConfigUsername, "env-user")
+	t.Setenv(driver.EnvConfigPassword, "env-pass")
+	t.Setenv(driver.EnvConfigAPIToken, "env-token")
+
+	c := &upcloud.Config{
+		Username: "existing-user",
+		Password: "existing-pass",
+	}
+	err := c.SetEnv()
+	assert.NoError(t, err)
+
+	// Should not override existing values
+	assert.Equal(t, "existing-user", c.Username)
+	assert.Equal(t, "existing-pass", c.Password)
+	assert.Equal(t, "", c.Token)
+}
+
+func TestConfig_setEnv_DoesNotOverrideExisting_token(t *testing.T) {
 	t.Setenv(driver.EnvConfigUsername, "env-user")
 	t.Setenv(driver.EnvConfigPassword, "env-pass")
 	t.Setenv(driver.EnvConfigAPIToken, "env-token")
@@ -297,11 +319,12 @@ func TestConfig_setEnv_DoesNotOverrideExisting(t *testing.T) {
 		Password: "existing-pass",
 		Token:    "existing-token",
 	}
-	c.SetEnv()
+	err := c.SetEnv()
+	assert.NoError(t, err)
 
 	// Should not override existing values
-	assert.Equal(t, "existing-user", c.Username)
-	assert.Equal(t, "existing-pass", c.Password)
+	assert.Equal(t, "", c.Username)
+	assert.Equal(t, "", c.Password)
 	assert.Equal(t, "existing-token", c.Token)
 }
 

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/UpCloudLtd/upcloud-go-api/credentials"
 	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/client"
 	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
@@ -450,22 +451,19 @@ func getNowString() string {
 	return time.Now().Format("20060102-150405")
 }
 
-func UsernameFromEnv() string {
-	username := os.Getenv(EnvConfigUsernameLegacy)
-	if username == "" {
-		username = os.Getenv(EnvConfigUsername)
+func CredentialsFromEnv(username, password, token string) (credentials.Credentials, error) {
+	config := credentials.Credentials{
+		Username: username,
+		Password: password,
+		Token:    token,
 	}
-	return username
-}
 
-func PasswordFromEnv() string {
-	passwd := os.Getenv(EnvConfigPasswordLegacy)
-	if passwd == "" {
-		passwd = os.Getenv(EnvConfigPassword)
+	if config.Username == "" {
+		config.Username = os.Getenv(EnvConfigUsernameLegacy)
 	}
-	return passwd
-}
+	if config.Password == "" {
+		config.Password = os.Getenv(EnvConfigPasswordLegacy)
+	}
 
-func TokenFromEnv() string {
-	return os.Getenv(EnvConfigAPIToken)
+	return credentials.Parse(config) //nolint:wrapcheck // Use the original error from shared credentials package
 }

@@ -58,9 +58,10 @@ func TestNewConfig_BothAuthMethods(t *testing.T) {
 		"template_name": "my-template",
 	}}...)
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "you cannot specify both username/password and token")
-	require.NotNil(t, c)
+	assert.NoError(t, err)
+	assert.Equal(t, "test-api-token", c.Token)
+	assert.Equal(t, "", c.Username)
+	assert.Equal(t, "", c.Password)
 }
 
 func TestNewConfig_NoAuthMethods(t *testing.T) {
@@ -70,8 +71,8 @@ func TestNewConfig_NoAuthMethods(t *testing.T) {
 		"template_name": "my-template",
 	}}...)
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "authentication required: specify either username and password, or token")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "credentials not found")
 	require.NotNil(t, c)
 }
 
@@ -83,8 +84,8 @@ func TestNewConfig_OnlyUsername(t *testing.T) {
 		"template_name": "my-template",
 	}}...)
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "'password' must be specified when using username/password authentication")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "credentials not found")
 	require.NotNil(t, c)
 }
 
@@ -96,8 +97,8 @@ func TestNewConfig_OnlyPassword(t *testing.T) {
 		"template_name": "my-template",
 	}}...)
 
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "'username' must be specified when using username/password authentication")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "credentials not found")
 	require.NotNil(t, c)
 }
 
