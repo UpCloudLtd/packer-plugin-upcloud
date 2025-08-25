@@ -5,6 +5,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.9.0] - 2025-08-26
+
 ### Added
 
 - Support for using API token from system keyring.
@@ -142,7 +144,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 - Upgrade to Packer 1.7.0
 - Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
 
-[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.8.1...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.8.1...v1.9.0
 [1.8.1]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.6.0...v1.7.0
