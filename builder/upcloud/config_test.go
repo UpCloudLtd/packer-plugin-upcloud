@@ -68,8 +68,8 @@ func TestConfig_Prepare_BothAuthMethods(t *testing.T) {
 	warns, err := c.Prepare(raws...)
 	assert.NoError(t, err)
 	assert.Equal(t, "test-api-token", c.Token)
-	assert.Equal(t, "", c.Username)
-	assert.Equal(t, "", c.Password)
+	assert.Empty(t, c.Username)
+	assert.Empty(t, c.Password)
 	assert.Empty(t, warns)
 }
 
@@ -306,7 +306,7 @@ func TestConfig_setEnv_DoesNotOverrideExisting_basic(t *testing.T) {
 	// Should not override existing values
 	assert.Equal(t, "existing-user", c.Username)
 	assert.Equal(t, "existing-pass", c.Password)
-	assert.Equal(t, "", c.Token)
+	assert.Empty(t, c.Token)
 }
 
 func TestConfig_setEnv_DoesNotOverrideExisting_token(t *testing.T) {
@@ -323,8 +323,8 @@ func TestConfig_setEnv_DoesNotOverrideExisting_token(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should not override existing values
-	assert.Equal(t, "", c.Username)
-	assert.Equal(t, "", c.Password)
+	assert.Empty(t, c.Username)
+	assert.Empty(t, c.Password)
 	assert.Equal(t, "existing-token", c.Token)
 }
 
@@ -412,4 +412,178 @@ func TestConfig_Prepare_CustomValues(t *testing.T) {
 	assert.Equal(t, 10*time.Minute, c.Timeout)
 	assert.Equal(t, 30*time.Second, c.BootWait)
 	assert.Equal(t, []string{"nl-ams1", "us-nyc1"}, c.CloneZones)
+}
+
+func TestConfig_validateNetworkInterfaces(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name           string
+		interfaces     []upcloud.NetworkInterface
+		expectError    bool
+		errorSubstring string
+	}{
+		{
+			name: "valid public interface",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type: upcloud.InterfaceTypePublic,
+					IPAddresses: []upcloud.IPAddress{
+						{Family: "IPv4", Default: true},
+					},
+				},
+			},
+			expectError: false,
+		},
+		{
+			name: "valid private interface with UUID",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type:    upcloud.InterfaceTypePrivate,
+					Network: "01234567-89ab-cdef-0123-456789abcdef",
+					IPAddresses: []upcloud.IPAddress{
+						{Family: "IPv4", Address: "192.168.1.100"},
+					},
+				},
+			},
+			expectError: false,
+		},
+		{
+			name: "invalid interface type",
+			interfaces: []upcloud.NetworkInterface{
+				{Type: upcloud.InterfaceType("invalid")},
+			},
+			expectError:    true,
+			errorSubstring: "has invalid type: invalid",
+		},
+		{
+			name: "private interface without UUID",
+			interfaces: []upcloud.NetworkInterface{
+				{Type: upcloud.InterfaceTypePrivate},
+			},
+			expectError:    true,
+			errorSubstring: "private network requires network UUID",
+		},
+		{
+			name: "private interface with invalid UUID",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type:    upcloud.InterfaceTypePrivate,
+					Network: "not-a-uuid",
+				},
+			},
+			expectError:    true,
+			errorSubstring: "invalid network UUID",
+		},
+		{
+			name: "invalid IP family",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type: upcloud.InterfaceTypePublic,
+					IPAddresses: []upcloud.IPAddress{
+						{Family: "IPv5"},
+					},
+				},
+			},
+			expectError:    true,
+			errorSubstring: "invalid IP family 'IPv5'",
+		},
+		{
+			name: "invalid IP address",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type: upcloud.InterfaceTypePublic,
+					IPAddresses: []upcloud.IPAddress{
+						{Family: "IPv4", Address: "invalid-ip"},
+					},
+				},
+			},
+			expectError:    true,
+			errorSubstring: "invalid IP address 'invalid-ip'",
+		},
+		{
+			name: "IP family mismatch - IPv4 family with IPv6 address",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type: upcloud.InterfaceTypePublic,
+					IPAddresses: []upcloud.IPAddress{
+						{Family: "IPv4", Address: "2001:db8::1"},
+					},
+				},
+			},
+			expectError:    true,
+			errorSubstring: "IP family is IPv4 but address is IPv6",
+		},
+		{
+			name: "IP family mismatch - IPv6 family with IPv4 address",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type: upcloud.InterfaceTypePublic,
+					IPAddresses: []upcloud.IPAddress{
+						{Family: "IPv6", Address: "192.168.1.1"},
+					},
+				},
+			},
+			expectError:    true,
+			errorSubstring: "IP family is IPv6 but address is IPv4",
+		},
+		{
+			name: "multiple interfaces with mixed errors",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type: upcloud.InterfaceTypePublic,
+					IPAddresses: []upcloud.IPAddress{
+						{Family: "IPv4", Default: true},
+					},
+				},
+				{
+					Type: upcloud.InterfaceType("invalid"),
+				},
+				{
+					Type:    upcloud.InterfaceTypePrivate,
+					Network: "bad-uuid",
+				},
+			},
+			expectError:    true,
+			errorSubstring: "has invalid type",
+		},
+		{
+			name:        "empty interfaces slice",
+			interfaces:  []upcloud.NetworkInterface{},
+			expectError: false,
+		},
+		{
+			name: "interface with empty IP addresses",
+			interfaces: []upcloud.NetworkInterface{
+				{
+					Type:        upcloud.InterfaceTypeUtility,
+					IPAddresses: []upcloud.IPAddress{},
+				},
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			c := &upcloud.Config{
+				Username:          "testuser",
+				Password:          "testpass",
+				Zone:              "fi-hel1",
+				StorageUUID:       "01000000-0000-4000-8000-000030060200",
+				NetworkInterfaces: tt.interfaces,
+			}
+
+			_, err := c.Prepare(map[string]interface{}{})
+
+			if tt.expectError {
+				assert.Error(t, err, "expected validation errors")
+				if tt.errorSubstring != "" {
+					assert.Contains(t, err.Error(), tt.errorSubstring)
+				}
+			} else {
+				assert.NoError(t, err, "unexpected validation errors")
+			}
+		})
+	}
 }
