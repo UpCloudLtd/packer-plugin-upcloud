@@ -7,7 +7,7 @@ require (
 	github.com/UpCloudLtd/upcloud-go-api/v8 v8.25.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/hashicorp/packer-plugin-sdk v0.6.2
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	github.com/zclconf/go-cty v1.16.3
 	golang.org/x/crypto v0.41.0
 )
