@@ -5,8 +5,10 @@ package upcloud
 import (
 	"errors"
 	"fmt"
+	"net"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -29,8 +31,8 @@ const (
 	InterfaceTypePublic     InterfaceType = upcloud.IPAddressAccessPublic
 	InterfaceTypeUtility    InterfaceType = upcloud.IPAddressAccessUtility
 	InterfaceTypePrivate    InterfaceType = upcloud.IPAddressAccessPrivate
-	maxTemplateNameLength                 = 40
-	maxTemplatePrefixLength               = 40
+	MaxTemplateNameLength                 = 40
+	MaxTemplatePrefixLength               = 40
 )
 
 // for config type conversion.
@@ -210,6 +212,11 @@ func (c *Config) validate() *packer.MultiError {
 		errs = packer.MultiErrorAppend(errs, templateErrs.Errors...)
 	}
 
+	// Validate network interfaces
+	if networkErrs := c.validateNetworkInterfaces(); networkErrs != nil {
+		errs = packer.MultiErrorAppend(errs, networkErrs.Errors...)
+	}
+
 	return errs
 }
 
@@ -217,13 +224,13 @@ func (c *Config) validate() *packer.MultiError {
 func (c *Config) validateTemplate() *packer.MultiError {
 	var errs *packer.MultiError
 
-	if len(c.TemplatePrefix) > maxTemplatePrefixLength {
+	if len(c.TemplatePrefix) > MaxTemplatePrefixLength {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'template_prefix' must be 0-40 characters"),
 		)
 	}
 
-	if len(c.TemplateName) > maxTemplateNameLength {
+	if len(c.TemplateName) > MaxTemplateNameLength {
 		errs = packer.MultiErrorAppend(
 			errs, errors.New("'template_name' is limited to 40 characters"),
 		)
@@ -249,4 +256,59 @@ func (c *Config) SetEnv() error {
 	c.Password = creds.Password
 	c.Token = creds.Token
 	return nil
+}
+
+// validateNetworkInterfaces checks network interface configuration.
+func (c *Config) validateNetworkInterfaces() *packer.MultiError {
+	var errs *packer.MultiError
+
+	for i, iface := range c.NetworkInterfaces {
+		// Validate interface type
+		switch iface.Type {
+		case InterfaceTypePublic, InterfaceTypePrivate, InterfaceTypeUtility:
+			// valid
+		default:
+			errs = packer.MultiErrorAppend(errs, fmt.Errorf("network interface %d has invalid type: %s", i, iface.Type))
+		}
+
+		// Validate network UUID for private networks
+		if iface.Type == InterfaceTypePrivate {
+			if iface.Network == "" {
+				errs = packer.MultiErrorAppend(errs, fmt.Errorf("network interface %d: private network requires network UUID", i))
+			} else if _, err := uuid.Parse(iface.Network); err != nil {
+				errs = packer.MultiErrorAppend(errs, fmt.Errorf("network interface %d: invalid network UUID '%s'", i, iface.Network))
+			}
+		}
+
+		// Validate IP addresses
+		for j, ip := range iface.IPAddresses {
+			if ip.Family != upcloud.IPAddressFamilyIPv4 && ip.Family != upcloud.IPAddressFamilyIPv6 {
+				errs = packer.MultiErrorAppend(errs, fmt.Errorf("network interface %d, IP %d: invalid IP family '%s'", i, j, ip.Family))
+			}
+
+			if ip.Address == "" {
+				continue
+			}
+
+			parsedIP := net.ParseIP(ip.Address)
+			if parsedIP == nil {
+				errs = packer.MultiErrorAppend(errs, fmt.Errorf("network interface %d, IP %d: invalid IP address '%s'", i, j, ip.Address))
+				continue
+			}
+
+			isIPv4 := parsedIP.To4() != nil
+			switch ip.Family {
+			case upcloud.IPAddressFamilyIPv4:
+				if !isIPv4 {
+					errs = packer.MultiErrorAppend(errs, fmt.Errorf("network interface %d, IP %d: IP family is IPv4 but address is IPv6", i, j))
+				}
+			case upcloud.IPAddressFamilyIPv6:
+				if isIPv4 {
+					errs = packer.MultiErrorAppend(errs, fmt.Errorf("network interface %d, IP %d: IP family is IPv6 but address is IPv4", i, j))
+				}
+			}
+		}
+	}
+
+	return errs
 }
