@@ -26,7 +26,7 @@ const (
 	DefaultSSHUsername                    = "root"
 	DefaultCommunicator                   = "ssh"
 	DefaultStorageSize                    = 25
-	DefaultTimeout                        = 5 * time.Minute
+	DefaultTimeout                        = 20 * time.Minute
 	DefaultStorageTier                    = upcloud.StorageTierMaxIOPS
 	InterfaceTypePublic     InterfaceType = upcloud.IPAddressAccessPublic
 	InterfaceTypeUtility    InterfaceType = upcloud.IPAddressAccessUtility
@@ -103,7 +103,7 @@ type Config struct {
 	// For most production workloads, MaxIOPS is recommended for best performance.
 	StorageTier string `mapstructure:"storage_tier"`
 
-	// The amount of time to wait for resource state changes. Defaults to `5m`.
+	// The amount of time to wait for resource state changes. Defaults to `20m`.
 	Timeout time.Duration `mapstructure:"state_timeout_duration"`
 
 	// The amount of time to wait after booting the server. Defaults to '0s'

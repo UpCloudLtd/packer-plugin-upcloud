@@ -55,7 +55,7 @@ The upcloud builder is used to generate storage templates on UpCloud.
 - `storage_tier` (string) - The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
   For most production workloads, MaxIOPS is recommended for best performance.
 
-- `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `5m`.
+- `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `20m`.
 
 - `boot_wait` (duration string | ex: "1h5m2s") - The amount of time to wait after booting the server. Defaults to '0s'
 
