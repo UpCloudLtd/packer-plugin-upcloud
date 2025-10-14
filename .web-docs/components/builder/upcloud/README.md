@@ -38,7 +38,7 @@ The upcloud builder is used to generate storage templates on UpCloud.
 
 - `storage_name` (string) - The name of the storage that will be used to find the first matching storage in the list of existing templates.
   
-  Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 20.04").
+  Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 24.04").
 
 - `template_prefix` (string) - The prefix to use for the generated template title. Defaults to `custom-image`.
   You can use this option to easily differentiate between different templates.
@@ -141,7 +141,7 @@ source "upcloud" "test" {
   username        = "${var.username}"
   password        = "${var.password}"
   zone            = "nl-ams1"
-  storage_name    = "ubuntu server 20.04"
+  storage_name    = "ubuntu server 24.04"
   template_prefix = "ubuntu-server"
   # uncomment to use standard tier storage
   # storage_tier = "standard
@@ -201,7 +201,7 @@ source "upcloud" "test" {
   username        = "${var.username}"
   password        = "${var.password}"
   zone            = "nl-ams1"
-  storage_name    = "ubuntu server 20.04"
+  storage_name    = "ubuntu server 24.04"
   template_prefix = "ubuntu-server"
 
   network_interfaces {

@@ -30,7 +30,7 @@ source "upcloud" "test" {
   username        = "${var.username}"
   password        = "${var.password}"
   zone            = "nl-ams1"
-  storage_name    = "ubuntu server 20.04"
+  storage_name    = "ubuntu server 24.04"
   template_prefix = "ubuntu-server"
   # uncomment to use standard tier storage
   # storage_tier = "standard
