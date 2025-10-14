@@ -5,6 +5,10 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+
+- Increase default timeout to `20m`.
+
 ## [1.9.1] - 2025-08-29
 
 ### Fixed

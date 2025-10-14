@@ -372,14 +372,14 @@ func TestConfig_StorageName(t *testing.T) {
 			"username":     "testuser",
 			"password":     "testpass",
 			"zone":         "fi-hel1",
-			"storage_name": "Ubuntu Server 20.04",
+			"storage_name": "Ubuntu Server 24.04",
 		},
 	}
 
 	warns, err := c.Prepare(raws...)
 	assert.NoError(t, err)
 	assert.Empty(t, warns)
-	assert.Equal(t, "Ubuntu Server 20.04", c.StorageName)
+	assert.Equal(t, "Ubuntu Server 24.04", c.StorageName)
 	assert.Empty(t, c.StorageUUID)
 }
 

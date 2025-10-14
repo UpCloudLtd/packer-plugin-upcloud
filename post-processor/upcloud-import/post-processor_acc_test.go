@@ -43,6 +43,7 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	imageFile, err := os.CreateTemp(os.TempDir(), fmt.Sprintf("%s-*.raw", testName))
 	require.NoError(t, err)
 	defer func() {
+		imageFile.Close()
 		if err := os.Remove(imageFile.Name()); err != nil {
 			t.Logf("Warning: failed to remove temp file: %v", err)
 		}
