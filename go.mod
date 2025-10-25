@@ -1,6 +1,6 @@
 module github.com/UpCloudLtd/packer-plugin-upcloud
 
-go 1.25.0
+go 1.25.3
 
 require (
 	github.com/UpCloudLtd/upcloud-go-api/credentials v0.1.1
