@@ -4,7 +4,7 @@ go 1.25.3
 
 require (
 	github.com/UpCloudLtd/upcloud-go-api/credentials v0.1.1
-	github.com/UpCloudLtd/upcloud-go-api/v8 v8.31.1
+	github.com/UpCloudLtd/upcloud-go-api/v8 v8.32.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/hashicorp/packer-plugin-sdk v0.6.4
