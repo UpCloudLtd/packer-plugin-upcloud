@@ -24,7 +24,7 @@ func TestArtifact_Id(t *testing.T) {
 	uuid2 := "some-uuid-2"
 	expected := fmt.Sprintf("%s,%s", uuid1, uuid2)
 
-	templates := []*upcloud.Storage{}
+	templates := make([]*upcloud.Storage, 0, 2)
 	templates = append(templates, &upcloud.Storage{UUID: uuid1}, &upcloud.Storage{UUID: uuid2})
 
 	a := &Artifact{Templates: templates}
@@ -39,7 +39,7 @@ func TestArtifact_String(t *testing.T) {
 	t.Parallel()
 	expected := `Storage template created, UUID: some-uuid`
 
-	templates := []*upcloud.Storage{}
+	templates := make([]*upcloud.Storage, 0, 1)
 	templates = append(templates, &upcloud.Storage{UUID: "some-uuid"})
 
 	a := &Artifact{Templates: templates}
@@ -52,7 +52,7 @@ func TestArtifact_String(t *testing.T) {
 
 func TestArtifact_Metadata(t *testing.T) {
 	t.Parallel()
-	templates := []*upcloud.Storage{}
+	templates := make([]*upcloud.Storage, 0, 2)
 	templates = append(templates,
 		&upcloud.Storage{
 			UUID:  "some-uuid",
