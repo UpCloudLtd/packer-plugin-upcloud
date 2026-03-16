@@ -93,6 +93,7 @@ func (s *StepCreateServer) createServer(ctx context.Context, ui packer.Ui, drv d
 	}
 
 	response, err := drv.CreateServer(ctx, &driver.ServerOpts{
+		ServerPlan:   s.Config.ServerPlan,
 		StorageUUID:  storage.UUID,
 		StorageSize:  s.Config.StorageSize,
 		Zone:         s.Config.Zone,

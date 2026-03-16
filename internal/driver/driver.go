@@ -82,6 +82,7 @@ type (
 	}
 
 	ServerOpts struct {
+		ServerPlan   string
 		StorageUUID  string
 		StorageSize  int
 		Zone         string
@@ -409,13 +410,17 @@ func (d *driver) GetServerStorage(ctx context.Context, serverUUID string) (*upcl
 func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerRequest {
 	title := fmt.Sprintf("packer-%s-%s", DefaultHostname, getNowString())
 	titleDisk := fmt.Sprintf("%s-disk1", DefaultHostname)
+	plan := opts.ServerPlan
+	if plan == "" {
+		plan = DefaultPlan
+	}
 
 	request := request.CreateServerRequest{
 		Title:            title,
 		Hostname:         DefaultHostname,
 		Zone:             opts.Zone,
 		PasswordDelivery: request.PasswordDeliveryNone,
-		Plan:             DefaultPlan,
+		Plan:             plan,
 		StorageDevices: []request.CreateServerStorageDevice{
 			{
 				Action:  request.CreateServerStorageDeviceActionClone,

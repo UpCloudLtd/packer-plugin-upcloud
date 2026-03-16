@@ -74,6 +74,9 @@ type Config struct {
 	// The zone in which the server and template should be created (e.g. nl-ams1).
 	Zone string `mapstructure:"zone" required:"true"`
 
+	// Server plan to use for the builder server. Defaults to `1xCPU-2GB`.
+	ServerPlan string `mapstructure:"server_plan"`
+
 	// The UUID of the storage you want to use as a template when creating the server.
 	//
 	// Optionally use `storage_name` parameter to find matching storage
