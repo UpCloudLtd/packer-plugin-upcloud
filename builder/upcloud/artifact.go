@@ -32,7 +32,7 @@ func (a *Artifact) Files() []string {
 }
 
 func (a *Artifact) Id() string { //nolint:revive // method is required by packer-plugin-sdk
-	result := []string{}
+	result := make([]string, 0, len(a.Templates))
 	for _, t := range a.Templates {
 		result = append(result, t.UUID)
 	}

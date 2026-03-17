@@ -5,6 +5,10 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- `server_plan` parameter to builder configuration for selecting server plan to use during build.
+
 ## [1.9.2] - 2025-10-16
 
 ### Changed

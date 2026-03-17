@@ -60,8 +60,8 @@ func TestNewConfig_BothAuthMethods(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "test-api-token", c.Token)
-	assert.Equal(t, "", c.Username)
-	assert.Equal(t, "", c.Password)
+	assert.Empty(t, c.Username)
+	assert.Empty(t, c.Password)
 }
 
 func TestNewConfig_NoAuthMethods(t *testing.T) {

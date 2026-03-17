@@ -71,6 +71,7 @@ type FlatConfig struct {
 	Password                  *string                `mapstructure:"password" cty:"password" hcl:"password"`
 	Token                     *string                `mapstructure:"token" cty:"token" hcl:"token"`
 	Zone                      *string                `mapstructure:"zone" required:"true" cty:"zone" hcl:"zone"`
+	ServerPlan                *string                `mapstructure:"server_plan" cty:"server_plan" hcl:"server_plan"`
 	StorageUUID               *string                `mapstructure:"storage_uuid" required:"true" cty:"storage_uuid" hcl:"storage_uuid"`
 	StorageName               *string                `mapstructure:"storage_name" cty:"storage_name" hcl:"storage_name"`
 	TemplatePrefix            *string                `mapstructure:"template_prefix" cty:"template_prefix" hcl:"template_prefix"`
@@ -158,6 +159,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"password":                     &hcldec.AttrSpec{Name: "password", Type: cty.String, Required: false},
 		"token":                        &hcldec.AttrSpec{Name: "token", Type: cty.String, Required: false},
 		"zone":                         &hcldec.AttrSpec{Name: "zone", Type: cty.String, Required: false},
+		"server_plan":                  &hcldec.AttrSpec{Name: "server_plan", Type: cty.String, Required: false},
 		"storage_uuid":                 &hcldec.AttrSpec{Name: "storage_uuid", Type: cty.String, Required: false},
 		"storage_name":                 &hcldec.AttrSpec{Name: "storage_name", Type: cty.String, Required: false},
 		"template_prefix":              &hcldec.AttrSpec{Name: "template_prefix", Type: cty.String, Required: false},

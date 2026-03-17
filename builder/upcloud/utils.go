@@ -63,9 +63,9 @@ func sshHostCallback(state multistep.StateBag) (string, error) {
 }
 
 func convertNetworkTypes(rawNetworking []NetworkInterface) []request.CreateServerInterface {
-	networking := []request.CreateServerInterface{}
+	networking := make([]request.CreateServerInterface, 0, len(rawNetworking))
 	for _, iface := range rawNetworking {
-		ips := []request.CreateServerIPAddress{}
+		ips := make([]request.CreateServerIPAddress, 0, len(iface.IPAddresses))
 		for _, ip := range iface.IPAddresses {
 			ips = append(ips, request.CreateServerIPAddress{Family: ip.Family, Address: ip.Address})
 		}

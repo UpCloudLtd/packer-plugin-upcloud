@@ -38,8 +38,8 @@ var testBuilderStorageName string
 //go:embed test-fixtures/json/networking.json
 var testBuilderNetworking string
 
-//go:embed test-fixtures/json/basic_standard_tier.json
-var testBuilderBasicStandardTier string
+//go:embed test-fixtures/json/plan_and_tier.json
+var testBuilderPlanAndTier string
 
 func TestBuilderAcc_default(t *testing.T) {
 	t.Parallel()
@@ -78,12 +78,12 @@ func TestBuilderAcc_storageName(t *testing.T) {
 	acctest.TestPlugin(t, testCase)
 }
 
-func TestBuilderAcc_standardTier(t *testing.T) {
+func TestBuilderAcc_planAndTier(t *testing.T) {
 	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
-		Template: testBuilderBasicStandardTier,
+		Template: testBuilderPlanAndTier,
 		Check:    checkTestResult(t),
 		Teardown: teardown(t, t.Name()),
 	}
@@ -107,6 +107,9 @@ func TestBuilderAcc_networking(t *testing.T) {
 //go:embed test-fixtures/hcl2/basic.pkr.hcl
 var testBuildBasicHcl string
 
+//go:embed test-fixtures/hcl2/plan_and_tier.pkr.hcl
+var testBuilderPlanAndTierHcl string
+
 //go:embed test-fixtures/hcl2/storage-uuid.pkr.hcl
 var testBuilderStorageUUIDHcl string
 
@@ -122,6 +125,18 @@ func TestBuilderAcc_default_hcl(t *testing.T) {
 	testCase := &acctest.PluginTestCase{
 		Name:     t.Name(),
 		Template: testBuildBasicHcl,
+		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
+func TestBuilderAcc_planAndTier_hcl(t *testing.T) {
+	t.Parallel()
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderPlanAndTierHcl,
 		Check:    checkTestResult(t),
 		Teardown: teardown(t, t.Name()),
 	}
@@ -152,7 +167,7 @@ func TestBuilderAcc_storageName_hcl(t *testing.T) {
 	acctest.TestPlugin(t, testCase)
 }
 
-func TestBuilderAcc_network_interfaces(t *testing.T) {
+func TestBuilderAcc_network_interfaces_hcl(t *testing.T) {
 	t.Parallel()
 	testAccPreCheck(t)
 	testCase := &acctest.PluginTestCase{
