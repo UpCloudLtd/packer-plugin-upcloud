@@ -5,6 +5,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-03-17
+
 ### Added
 
 - `server_plan` parameter to builder configuration for selecting server plan to use during build.
@@ -161,7 +163,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 - Upgrade to Packer 1.7.0
 - Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
 
-[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.9.2...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.9.2...v1.10.0
 [1.9.2]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.8.1...v1.9.0
