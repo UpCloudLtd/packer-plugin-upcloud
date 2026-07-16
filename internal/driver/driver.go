@@ -51,7 +51,7 @@ type (
 	// TemplateManager handles template operations.
 	TemplateManager interface {
 		GetTemplateByName(ctx context.Context, name, zone string) (*upcloud.Storage, error)
-		CreateTemplate(ctx context.Context, storageUUID, templateTitle string) (*upcloud.Storage, error)
+		CreateTemplate(ctx context.Context, storageUUID, templateTitle string, templateLabels map[string]string) (*upcloud.Storage, error)
 		DeleteTemplate(ctx context.Context, templateUUID string) error
 	}
 
@@ -177,8 +177,7 @@ func (d *driver) StopServer(ctx context.Context, serverUUID string) error {
 	return nil
 }
 
-func (d *driver) CreateTemplate(ctx context.Context, serverStorageUUID, templateTitle string) (*upcloud.Storage, error) {
-	// create image
+func (d *driver) CreateTemplate(ctx context.Context, serverStorageUUID, templateTitle string, templateLabels map[string]string) (*upcloud.Storage, error) {
 	response, err := d.svc.TemplatizeStorage(ctx, &request.TemplatizeStorageRequest{
 		UUID:  serverStorageUUID,
 		Title: templateTitle,
@@ -186,7 +185,30 @@ func (d *driver) CreateTemplate(ctx context.Context, serverStorageUUID, template
 	if err != nil {
 		return nil, fmt.Errorf("error creating image: %w", err)
 	}
-	return d.WaitStorageOnline(ctx, response.UUID)
+	storage, err := d.WaitStorageOnline(ctx, response.UUID)
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for image to become online: %w", err)
+	}
+
+	if len(templateLabels) > 0 {
+		labels := make([]upcloud.Label, 0, len(templateLabels))
+		for k, v := range templateLabels {
+			labels = append(labels, upcloud.Label{
+				Key:   k,
+				Value: v,
+			})
+		}
+
+		response, err = d.svc.ModifyStorage(ctx, &request.ModifyStorageRequest{
+			UUID:   response.UUID,
+			Labels: &labels,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error setting labels for image: %w", err)
+		}
+		storage = &response.Storage
+	}
+	return storage, nil
 }
 
 func (d *driver) WaitStorageOnline(ctx context.Context, storageUUID string) (*upcloud.Storage, error) {

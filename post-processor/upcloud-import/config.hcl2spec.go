@@ -15,6 +15,7 @@ type FlatConfig struct {
 	Token               *string           `mapstructure:"token" cty:"token" hcl:"token"`
 	Zones               []string          `mapstructure:"zones" required:"true" cty:"zones" hcl:"zones"`
 	TemplateName        *string           `mapstructure:"template_name" required:"true" cty:"template_name" hcl:"template_name"`
+	TemplateLabels      map[string]string `mapstructure:"template_labels" cty:"template_labels" hcl:"template_labels"`
 	ReplaceExisting     *bool             `mapstructure:"replace_existing" cty:"replace_existing" hcl:"replace_existing"`
 	StorageTier         *string           `mapstructure:"storage_tier" cty:"storage_tier" hcl:"storage_tier"`
 	StorageSize         *int              `mapstructure:"storage_size" cty:"storage_size" hcl:"storage_size"`
@@ -46,6 +47,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"token":                      &hcldec.AttrSpec{Name: "token", Type: cty.String, Required: false},
 		"zones":                      &hcldec.AttrSpec{Name: "zones", Type: cty.List(cty.String), Required: false},
 		"template_name":              &hcldec.AttrSpec{Name: "template_name", Type: cty.String, Required: false},
+		"template_labels":            &hcldec.AttrSpec{Name: "template_labels", Type: cty.Map(cty.String), Required: false},
 		"replace_existing":           &hcldec.AttrSpec{Name: "replace_existing", Type: cty.Bool, Required: false},
 		"storage_tier":               &hcldec.AttrSpec{Name: "storage_tier", Type: cty.String, Required: false},
 		"storage_size":               &hcldec.AttrSpec{Name: "storage_size", Type: cty.Number, Required: false},

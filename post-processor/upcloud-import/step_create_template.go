@@ -100,7 +100,7 @@ func (s *stepCreateTemplate) createTemplateBasedOnStorage(ctx context.Context, u
 			existingTemplate = nil
 		}
 	}
-	template, err := s.postProcessor.driver.CreateTemplate(ctx, storage.UUID, name)
+	template, err := s.postProcessor.driver.CreateTemplate(ctx, storage.UUID, name, s.postProcessor.config.TemplateLabels)
 	if err != nil {
 		ui.Error(err.Error())
 		return nil, fmt.Errorf("failed to create template %s: %w", name, err)

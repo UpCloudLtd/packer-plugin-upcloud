@@ -27,6 +27,8 @@ Username and password configuration arguments can be omitted if environment vari
 
 - `token` (string) - The API token to use when interfacing with the UpCloud API. This is mutually exclusive with username and password.
 
+- `template_labels` (map[string]string) - Labels to configure for the template.
+
 - `replace_existing` (bool) - Replace existing template if one exists with the same name. Defaults to `false`.
 
 - `storage_tier` (string) - The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.

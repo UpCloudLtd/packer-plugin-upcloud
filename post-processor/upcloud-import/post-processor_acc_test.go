@@ -51,11 +51,15 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 
 	var p PostProcessor
 	err = p.Configure([]interface{}{map[string]interface{}{
-		"username":         creds.Username,
-		"password":         creds.Password,
-		"token":            creds.Token,
-		"zones":            []string{"pl-waw1", "fi-hel2"},
-		"template_name":    testName,
+		"username":      creds.Username,
+		"password":      creds.Password,
+		"token":         creds.Token,
+		"zones":         []string{"pl-waw1", "fi-hel2"},
+		"template_name": testName,
+		"template_labels": map[string]string{
+			"environment": "test",
+			"created-by":  "packer-plugin-upcloud",
+		},
 		"replace_existing": true,
 	}}...)
 	require.NoError(t, err)
@@ -76,9 +80,11 @@ func TestPostProcessorAcc_raw(t *testing.T) {
 	})
 	t1, err := driver.GetTemplateByName(ctx, testName, "pl-waw1")
 	require.NoError(t, err)
+	assert.Len(t, t1.Labels, 2)
 	assert.NoError(t, driver.DeleteStorage(ctx, t1.UUID))
 
 	t1, err = driver.GetTemplateByName(ctx, testName, "fi-hel2")
 	require.NoError(t, err)
+	assert.Len(t, t1.Labels, 2)
 	assert.NoError(t, driver.DeleteStorage(ctx, t1.UUID))
 }
