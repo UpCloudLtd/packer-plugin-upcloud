@@ -34,6 +34,9 @@ type Config struct {
 	// with same name or suffix template name with e.g. timestamp to avoid errors during import
 	TemplateName string `mapstructure:"template_name" required:"true"`
 
+	// Labels to configure for the template.
+	TemplateLabels map[string]string `mapstructure:"template_labels"`
+
 	// Replace existing template if one exists with the same name. Defaults to `false`.
 	ReplaceExisting bool `mapstructure:"replace_existing"`
 

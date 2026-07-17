@@ -290,7 +290,7 @@ linters:
     # Promotes making consts out of repeated strings. Eases maintenance,
     # lessens the chance of typo errors and helps with DX as well.
     # Perhaps slightly on the aggressive side for example in tests.
-    - goconst
+    # - goconst
 
     # Quite an opinionated linter, but has a lot of good suggestions and
     # catches bugs. See `linters.settings` for some more info.

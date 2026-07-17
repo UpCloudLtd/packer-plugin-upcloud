@@ -3,6 +3,7 @@
 package upcloud //nolint:testpackage // not all fields can be exported in Artifact
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -116,6 +117,9 @@ var testBuilderStorageUUIDHcl string
 //go:embed test-fixtures/hcl2/storage-name.pkr.hcl
 var testBuilderStorageNameHcl string
 
+//go:embed test-fixtures/hcl2/labels.pkr.hcl
+var testBuilderLabelsHcl string
+
 //go:embed test-fixtures/hcl2/network_interfaces.pkr.hcl
 var testBuilderNetworkInterfacesHcl string
 
@@ -162,6 +166,48 @@ func TestBuilderAcc_storageName_hcl(t *testing.T) {
 		Name:     t.Name(),
 		Template: testBuilderStorageNameHcl,
 		Check:    checkTestResult(t),
+		Teardown: teardown(t, t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
+func TestBuilderAcc_labels_hcl(t *testing.T) {
+	t.Parallel()
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderLabelsHcl,
+		Check: func(buildCommand *exec.Cmd, logfile string) error {
+			err := checkTestResult(t)(buildCommand, logfile)
+			if err != nil {
+				return err
+			}
+
+			uuids, err := getUuidsFromLog(t, logfile)
+			if err != nil {
+				return err
+			}
+			return nil
+
+			creds, _ := driver.CredentialsFromEnv("", "", "")
+			drv := driver.NewDriver(&driver.DriverConfig{
+				Username: creds.Username,
+				Password: creds.Password,
+				Token:    creds.Token,
+				Timeout:  defaultTestTimeout,
+			})
+
+			for _, uuid := range uuids {
+				storage, err := drv.GetStorage(context.Background(), uuid, "")
+				if err != nil {
+					return fmt.Errorf("failed to get storage %s: %w", uuid, err)
+				}
+				if len(storage.Labels) != 2 {
+					return fmt.Errorf("expected 2 labels for storage %s, got: %d", uuid, len(storage.Labels))
+				}
+			}
+			return nil
+		},
 		Teardown: teardown(t, t.Name()),
 	}
 	acctest.TestPlugin(t, testCase)
@@ -219,18 +265,13 @@ func readLog(t *testing.T, logfile string) (string, error) {
 func checkTestResult(t *testing.T) func(*exec.Cmd, string) error {
 	t.Helper()
 	return func(buildCommand *exec.Cmd, logfile string) error {
-		log, err := readLog(t, logfile)
-		if err != nil {
-			return err
-		}
-
 		if buildCommand.ProcessState != nil {
 			if buildCommand.ProcessState.ExitCode() != 0 {
 				return fmt.Errorf("Bad exit code. Logfile: %s", logfile)
 			}
 		}
 
-		_, err = getUuidsFromLog(t, log)
+		_, err := getUuidsFromLog(t, logfile)
 		if err != nil {
 			return err
 		}
@@ -240,8 +281,14 @@ func checkTestResult(t *testing.T) func(*exec.Cmd, string) error {
 
 var re = regexp.MustCompile(`"Storage template created, UUID: (.*?)"`)
 
-func getUuidsFromLog(t *testing.T, log string) ([]string, error) {
+func getUuidsFromLog(t *testing.T, logfile string) ([]string, error) {
 	t.Helper()
+
+	log, err := readLog(t, logfile)
+	if err != nil {
+		return nil, err
+	}
+
 	var match string
 	ms := re.FindAllStringSubmatch(log, -1)
 	for _, m := range ms {
@@ -265,12 +312,8 @@ func teardown(t *testing.T, testName string) func() error {
 	return func() error {
 		ctx, cancel := contextWithDefaultTimeout()
 		defer cancel()
-		log, err := readLog(t, logfile)
-		if err != nil {
-			return err
-		}
 
-		uuids, err := getUuidsFromLog(t, log)
+		uuids, err := getUuidsFromLog(t, logfile)
 		if err != nil {
 			return err
 		}

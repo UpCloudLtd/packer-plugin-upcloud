@@ -5,6 +5,10 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- `template_labels` parameter to builder and post-processor configurations for adding labels to the created templates.
+
 ## [1.10.0] - 2026-03-17
 
 ### Added

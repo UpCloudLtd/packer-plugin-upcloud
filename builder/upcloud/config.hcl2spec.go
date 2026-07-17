@@ -76,6 +76,7 @@ type FlatConfig struct {
 	StorageName               *string                `mapstructure:"storage_name" cty:"storage_name" hcl:"storage_name"`
 	TemplatePrefix            *string                `mapstructure:"template_prefix" cty:"template_prefix" hcl:"template_prefix"`
 	TemplateName              *string                `mapstructure:"template_name" cty:"template_name" hcl:"template_name"`
+	TemplateLabels            map[string]string      `mapstructure:"template_labels" cty:"template_labels" hcl:"template_labels"`
 	StorageSize               *int                   `mapstructure:"storage_size" cty:"storage_size" hcl:"storage_size"`
 	StorageTier               *string                `mapstructure:"storage_tier" cty:"storage_tier" hcl:"storage_tier"`
 	Timeout                   *string                `mapstructure:"state_timeout_duration" cty:"state_timeout_duration" hcl:"state_timeout_duration"`
@@ -164,6 +165,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"storage_name":                 &hcldec.AttrSpec{Name: "storage_name", Type: cty.String, Required: false},
 		"template_prefix":              &hcldec.AttrSpec{Name: "template_prefix", Type: cty.String, Required: false},
 		"template_name":                &hcldec.AttrSpec{Name: "template_name", Type: cty.String, Required: false},
+		"template_labels":              &hcldec.AttrSpec{Name: "template_labels", Type: cty.Map(cty.String), Required: false},
 		"storage_size":                 &hcldec.AttrSpec{Name: "storage_size", Type: cty.Number, Required: false},
 		"storage_tier":                 &hcldec.AttrSpec{Name: "storage_tier", Type: cty.String, Required: false},
 		"state_timeout_duration":       &hcldec.AttrSpec{Name: "state_timeout_duration", Type: cty.String, Required: false},

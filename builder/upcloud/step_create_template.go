@@ -72,7 +72,7 @@ func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 
 	for _, uuid := range storageUUIDs {
 		ui.Say(fmt.Sprintf("Creating template for storage %q...", uuid))
-		t, err := drv.CreateTemplate(ctx, uuid, templateTitle)
+		t, err := drv.CreateTemplate(ctx, uuid, templateTitle, s.Config.TemplateLabels)
 		if err != nil {
 			return stepHaltWithError(state, err)
 		}

@@ -97,6 +97,9 @@ type Config struct {
 	// It cannot be used in conjunction with the prefix setting.
 	TemplateName string `mapstructure:"template_name"`
 
+	// Labels to configure for the template.
+	TemplateLabels map[string]string `mapstructure:"template_labels"`
+
 	// The storage size in gigabytes. Defaults to `25`.
 	// Changing this value is useful if you aim to build a template for larger server configurations where the preconfigured server disk is larger than 25 GB.
 	// The operating system disk can also be later extended if needed. Note that Windows templates require large storage size, than default 25 Gb.
