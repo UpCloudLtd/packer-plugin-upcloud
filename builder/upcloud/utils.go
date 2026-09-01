@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 
+	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
 	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud/request"
 )
@@ -76,6 +77,22 @@ func convertNetworkTypes(rawNetworking []NetworkInterface) []request.CreateServe
 		})
 	}
 	return networking
+}
+
+func convertStorage(rawStorage []Storage, bootUUID string) []driver.StorageDevice {
+	storage := make([]driver.StorageDevice, 0, len(rawStorage))
+	for i, s := range rawStorage {
+		uuid := s.UUID
+		if i == 0 {
+			uuid = bootUUID
+		}
+		storage = append(storage, driver.StorageDevice{
+			UUID: uuid,
+			Size: s.Size,
+			Tier: s.Tier,
+		})
+	}
+	return storage
 }
 
 func contextWithDefaultTimeout() (context.Context, context.CancelFunc) {

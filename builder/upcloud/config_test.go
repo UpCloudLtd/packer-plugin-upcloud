@@ -153,7 +153,7 @@ func TestConfig_Prepare_MissingStorage(t *testing.T) {
 
 	warns, err := c.Prepare(raws...)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "'storage_uuid' or 'storage_name' must be specified")
+	assert.Contains(t, err.Error(), "at least one 'storage' block must be specified")
 	assert.Empty(t, warns)
 }
 
@@ -586,4 +586,316 @@ func TestConfig_validateNetworkInterfaces(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestConfig_Prepare_LegacyStorageFieldsBecomeTheFirstStorage(t *testing.T) {
+	t.Parallel()
+	c := &upcloud.Config{}
+	raws := []interface{}{
+		map[string]interface{}{
+			"username":     "testuser",
+			"password":     "testpass",
+			"zone":         "fi-hel1",
+			"storage_uuid": "01000000-0000-4000-8000-000030060200",
+			"storage_size": 50,
+			"storage_tier": "standard",
+		},
+	}
+
+	warns, err := c.Prepare(raws...)
+	assert.NoError(t, err)
+	assert.Empty(t, warns)
+
+	// the deprecated single-storage options describe the disk the server boots from
+	require.Len(t, c.Storage, 1)
+	assert.Equal(t, "01000000-0000-4000-8000-000030060200", c.Storage[0].UUID)
+	assert.Equal(t, 50, c.Storage[0].Size)
+	assert.Equal(t, "standard", c.Storage[0].Tier)
+}
+
+func TestConfig_Prepare_LegacyStorageNameBecomesTheFirstStorage(t *testing.T) {
+	t.Parallel()
+	c := &upcloud.Config{}
+	raws := []interface{}{
+		map[string]interface{}{
+			"username":     "testuser",
+			"password":     "testpass",
+			"zone":         "fi-hel1",
+			"storage_name": "ubuntu server 24.04",
+		},
+	}
+
+	warns, err := c.Prepare(raws...)
+	assert.NoError(t, err)
+	assert.Empty(t, warns)
+
+	// no UUID yet: it is resolved from the name at build time
+	require.Len(t, c.Storage, 1)
+	assert.Empty(t, c.Storage[0].UUID)
+	assert.Equal(t, 25, c.Storage[0].Size)
+	assert.Equal(t, "maxiops", c.Storage[0].Tier)
+}
+
+func TestConfig_Prepare_StorageBlocksWinOverLegacyFields(t *testing.T) {
+	t.Parallel()
+	c := &upcloud.Config{}
+	raws := []interface{}{
+		map[string]interface{}{
+			"username":     "testuser",
+			"password":     "testpass",
+			"zone":         "fi-hel1",
+			"storage_uuid": "01000000-0000-4000-8000-000030060200",
+			"storage": []map[string]interface{}{
+				{"uuid": "01000000-0000-4000-8000-000030060201"},
+			},
+		},
+	}
+
+	_, err := c.Prepare(raws...)
+	assert.NoError(t, err)
+
+	require.Len(t, c.Storage, 1)
+	assert.Equal(t, "01000000-0000-4000-8000-000030060201", c.Storage[0].UUID)
+}
+
+func TestConfig_Prepare_StorageBlocks(t *testing.T) {
+	t.Parallel()
+	c := &upcloud.Config{}
+	raws := []interface{}{
+		map[string]interface{}{
+			"username":     "testuser",
+			"password":     "testpass",
+			"zone":         "fi-hel1",
+			"storage_tier": "standard",
+			"storage": []map[string]interface{}{
+				{"uuid": "01000000-0000-4000-8000-000030060201", "size": 50},
+				{"uuid": "01000000-0000-4000-8000-000030060202", "tier": "archive"},
+			},
+		},
+	}
+
+	warns, err := c.Prepare(raws...)
+	assert.NoError(t, err)
+	assert.Empty(t, warns)
+
+	require.Len(t, c.Storage, 2)
+	assert.Equal(t, "01000000-0000-4000-8000-000030060201", c.Storage[0].UUID)
+	assert.Equal(t, 50, c.Storage[0].Size)
+	// tier is inherited from 'storage_tier' when not set
+	assert.Equal(t, "standard", c.Storage[0].Tier)
+	assert.Equal(t, "01000000-0000-4000-8000-000030060202", c.Storage[1].UUID)
+	assert.Zero(t, c.Storage[1].Size)
+	assert.Equal(t, "archive", c.Storage[1].Tier)
+}
+
+func TestConfig_Prepare_Storage_DefaultTier(t *testing.T) {
+	t.Parallel()
+	c := &upcloud.Config{}
+	raws := []interface{}{
+		map[string]interface{}{
+			"username": "testuser",
+			"password": "testpass",
+			"zone":     "fi-hel1",
+			"storage": []map[string]interface{}{
+				{"uuid": "01000000-0000-4000-8000-000030060201"},
+			},
+		},
+	}
+
+	_, err := c.Prepare(raws...)
+	assert.NoError(t, err)
+
+	require.Len(t, c.Storage, 1)
+	assert.Equal(t, "maxiops", c.Storage[0].Tier)
+}
+
+func TestConfig_validateStorage(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name           string
+		storage        []upcloud.Storage
+		expectError    bool
+		errorSubstring string
+	}{
+		{
+			name:           "no storage at all",
+			storage:        nil,
+			expectError:    true,
+			errorSubstring: "at least one 'storage' block must be specified",
+		},
+		{
+			name:           "empty storage slice",
+			storage:        []upcloud.Storage{},
+			expectError:    true,
+			errorSubstring: "at least one 'storage' block must be specified",
+		},
+		{
+			name: "valid storage",
+			storage: []upcloud.Storage{
+				{UUID: "01000000-0000-4000-8000-000030060201", Size: 50, Tier: "maxiops"},
+			},
+			expectError: false,
+		},
+		{
+			name: "several valid storages",
+			storage: []upcloud.Storage{
+				{UUID: "01000000-0000-4000-8000-000030060201"},
+				{UUID: "01000000-0000-4000-8000-000030060202", Size: 50},
+			},
+			expectError: false,
+		},
+		{
+			name: "missing storage uuid",
+			storage: []upcloud.Storage{
+				{Size: 50},
+			},
+			expectError:    true,
+			errorSubstring: "storage 0: 'uuid' must be specified",
+		},
+		{
+			name: "invalid storage uuid",
+			storage: []upcloud.Storage{
+				{UUID: "not-a-uuid"},
+			},
+			expectError:    true,
+			errorSubstring: "storage 0: invalid storage UUID 'not-a-uuid'",
+		},
+		{
+			name: "negative size",
+			storage: []upcloud.Storage{
+				{UUID: "01000000-0000-4000-8000-000030060201", Size: -1},
+			},
+			expectError:    true,
+			errorSubstring: "storage 0: 'size' must not be negative",
+		},
+		{
+			name: "error reports the offending index",
+			storage: []upcloud.Storage{
+				{UUID: "01000000-0000-4000-8000-000030060201"},
+				{UUID: "not-a-uuid"},
+			},
+			expectError:    true,
+			errorSubstring: "storage 1: invalid storage UUID",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			c := &upcloud.Config{
+				Username: "testuser",
+				Password: "testpass",
+				Zone:     "fi-hel1",
+				Storage:  tt.storage,
+			}
+
+			_, err := c.Prepare(map[string]interface{}{})
+
+			if tt.expectError {
+				assert.Error(t, err, "expected validation errors")
+				if tt.errorSubstring != "" {
+					assert.Contains(t, err.Error(), tt.errorSubstring)
+				}
+			} else {
+				assert.NoError(t, err, "unexpected validation errors")
+			}
+		})
+	}
+}
+
+func TestConfig_Prepare_ArtifactType(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name           string
+		artifactType   interface{}
+		expected       string
+		expectError    bool
+		errorSubstring string
+	}{
+		{
+			name:         "defaults to template",
+			artifactType: nil,
+			expected:     "template",
+		},
+		{
+			name:         "explicit template",
+			artifactType: "template",
+			expected:     "template",
+		},
+		{
+			name:         "storage",
+			artifactType: "storage",
+			expected:     "storage",
+		},
+		{
+			name:           "unknown type",
+			artifactType:   "snapshot",
+			expectError:    true,
+			errorSubstring: `'artifact_type' must be either "template" or "storage", got "snapshot"`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			raw := map[string]interface{}{
+				"username":     "testuser",
+				"password":     "testpass",
+				"zone":         "fi-hel1",
+				"storage_uuid": "01000000-0000-4000-8000-000030060200",
+			}
+			if tt.artifactType != nil {
+				raw["artifact_type"] = tt.artifactType
+			}
+
+			c := &upcloud.Config{}
+			_, err := c.Prepare(raw)
+
+			if tt.expectError {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorSubstring)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, c.ArtifactType)
+		})
+	}
+}
+
+func TestConfig_Prepare_StorageArtifactRejectsCloneZones(t *testing.T) {
+	t.Parallel()
+	c := &upcloud.Config{}
+	raws := []interface{}{
+		map[string]interface{}{
+			"username":      "testuser",
+			"password":      "testpass",
+			"zone":          "fi-hel1",
+			"storage_uuid":  "01000000-0000-4000-8000-000030060200",
+			"artifact_type": "storage",
+			"clone_zones":   []string{"nl-ams1"},
+		},
+	}
+
+	// a regular storage can be cloned into any zone, so a per-zone set of them makes no sense
+	_, err := c.Prepare(raws...)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), `'clone_zones' cannot be used when 'artifact_type' is "storage"`)
+}
+
+func TestConfig_Prepare_TemplateArtifactAllowsCloneZones(t *testing.T) {
+	t.Parallel()
+	c := &upcloud.Config{}
+	raws := []interface{}{
+		map[string]any{
+			"username":     "testuser",
+			"password":     "testpass",
+			"zone":         "fi-hel1",
+			"storage_uuid": "01000000-0000-4000-8000-000030060200",
+			"clone_zones":  []string{"nl-ams1"},
+		},
+	}
+
+	_, err := c.Prepare(raws...)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"nl-ams1"}, c.CloneZones)
 }

@@ -100,3 +100,18 @@ func TestArtifact_Metadata(t *testing.T) {
 	}
 	assert.Equal(t, want, got[0])
 }
+
+func TestArtifact_String_StorageArtifact(t *testing.T) {
+	t.Parallel()
+	expected := `Storage created, UUID: some-uuid`
+
+	a := &Artifact{
+		Templates: []*upcloud.Storage{{UUID: "some-uuid"}},
+		config:    &Config{ArtifactType: ArtifactTypeStorage},
+	}
+	result := a.String()
+
+	if result != expected {
+		t.Errorf("Expected: %q, got: %q", expected, result)
+	}
+}

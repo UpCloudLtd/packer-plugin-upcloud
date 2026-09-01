@@ -8,6 +8,13 @@
 
 - `server_plan` (string) - Server plan to use for the builder server. Defaults to `1xCPU-2GB`.
 
+- `storage_uuid` (string) - The UUID of the storage you want to use as a template when creating the server.
+  
+  Optionally use `storage_name` parameter to find matching storage.
+  
+  Deprecated: use a `storage` block instead. When no `storage` block is given, this
+  option, `storage_size` and `storage_tier` describe the first one.
+
 - `storage_name` (string) - The name of the storage that will be used to find the first matching storage in the list of existing templates.
   
   Note that `storage_uuid` parameter has higher priority. You should use either `storage_uuid` or `storage_name` for not strict matching (e.g "ubuntu server 24.04").
@@ -25,9 +32,35 @@
 - `storage_size` (int) - The storage size in gigabytes. Defaults to `25`.
   Changing this value is useful if you aim to build a template for larger server configurations where the preconfigured server disk is larger than 25 GB.
   The operating system disk can also be later extended if needed. Note that Windows templates require large storage size, than default 25 Gb.
+  
+  Deprecated: use the `size` option of a `storage` block instead.
 
 - `storage_tier` (string) - The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
   For most production workloads, MaxIOPS is recommended for best performance.
+  
+  Also the default for the `tier` option of a `storage` block.
+
+- `storage` ([]Storage) - The storages to clone onto the builder server, one `storage` block per disk. Disks are
+  attached in the order given, so the first block is the disk the server boots from.
+  
+  A template is created for every disk of the builder server, so this also controls how
+  many templates the build produces. Use several blocks to build templates for a
+  multi-disk server, e.g. one whose data volume lives on a separate disk.
+  
+  When omitted, the deprecated `storage_uuid`/`storage_name`, `storage_size` and
+  `storage_tier` options describe the single storage to clone.
+
+- `artifact_type` (string) - What the build produces out of the disks of the builder server. Available options are
+  `template` and `storage`. Defaults to `template`.
+  
+  A `template` is a storage of type template, ready to be used as the source of a new
+  server, but UpCloud only lets it be cloned inside the zone it was created in. A
+  `storage` is a detached regular storage, which can be cloned into any zone, at the cost
+  of not being usable as a server template directly. Use `storage` when a single set of
+  artifacts has to serve servers in several zones, instead of a per-zone template set
+  built with `clone_zones`; the two cannot be combined.
+  
+  Note that `template_labels` only applies to templates.
 
 - `state_timeout_duration` (duration string | ex: "1h5m2s") - The amount of time to wait for resource state changes. Defaults to `20m`.
 
