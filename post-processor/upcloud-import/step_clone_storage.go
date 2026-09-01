@@ -47,7 +47,7 @@ func (s *stepCloneStorage) Run(ctx context.Context, state multistep.StateBag) mu
 		go func(zone string) {
 			defer wg.Done()
 			ui.Say(fmt.Sprintf("Cloning storage '%s' from %s to %s", storages[0].Title, storages[0].Zone, zone))
-			t, err := s.postProcessor.driver.CloneStorage(ctx, storages[0].UUID, zone, storages[0].Title)
+			t, err := s.postProcessor.driver.CloneStorage(ctx, storages[0].UUID, zone, storages[0].Title, storages[0].Tier)
 			if err != nil {
 				ui.Error(err.Error())
 				halt = true

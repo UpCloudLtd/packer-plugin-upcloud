@@ -14,8 +14,11 @@ import (
 
 // packersdk.Artifact implementation.
 type Artifact struct {
-	config    *Config
-	driver    driver.Driver
+	config *Config
+	driver driver.Driver
+
+	// Templates holds what the build produced: storage templates, or detached regular
+	// storages when 'artifact_type' is 'storage'.
 	Templates []*upcloud.Storage
 
 	// StateData should store data such as GeneratedData
@@ -40,6 +43,9 @@ func (a *Artifact) Id() string { //nolint:revive // method is required by packer
 }
 
 func (a *Artifact) String() string {
+	if a.config != nil && a.config.ArtifactType == ArtifactTypeStorage {
+		return fmt.Sprintf("Storage created, UUID: %s", a.Id())
+	}
 	return fmt.Sprintf("Storage template created, UUID: %s", a.Id())
 }
 

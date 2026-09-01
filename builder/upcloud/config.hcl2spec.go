@@ -72,13 +72,15 @@ type FlatConfig struct {
 	Token                     *string                `mapstructure:"token" cty:"token" hcl:"token"`
 	Zone                      *string                `mapstructure:"zone" required:"true" cty:"zone" hcl:"zone"`
 	ServerPlan                *string                `mapstructure:"server_plan" cty:"server_plan" hcl:"server_plan"`
-	StorageUUID               *string                `mapstructure:"storage_uuid" required:"true" cty:"storage_uuid" hcl:"storage_uuid"`
+	StorageUUID               *string                `mapstructure:"storage_uuid" cty:"storage_uuid" hcl:"storage_uuid"`
 	StorageName               *string                `mapstructure:"storage_name" cty:"storage_name" hcl:"storage_name"`
 	TemplatePrefix            *string                `mapstructure:"template_prefix" cty:"template_prefix" hcl:"template_prefix"`
 	TemplateName              *string                `mapstructure:"template_name" cty:"template_name" hcl:"template_name"`
 	TemplateLabels            map[string]string      `mapstructure:"template_labels" cty:"template_labels" hcl:"template_labels"`
 	StorageSize               *int                   `mapstructure:"storage_size" cty:"storage_size" hcl:"storage_size"`
 	StorageTier               *string                `mapstructure:"storage_tier" cty:"storage_tier" hcl:"storage_tier"`
+	Storage                   []FlatStorage          `mapstructure:"storage" cty:"storage" hcl:"storage"`
+	ArtifactType              *string                `mapstructure:"artifact_type" cty:"artifact_type" hcl:"artifact_type"`
 	Timeout                   *string                `mapstructure:"state_timeout_duration" cty:"state_timeout_duration" hcl:"state_timeout_duration"`
 	BootWait                  *string                `mapstructure:"boot_wait" cty:"boot_wait" hcl:"boot_wait"`
 	CloneZones                []string               `mapstructure:"clone_zones" cty:"clone_zones" hcl:"clone_zones"`
@@ -168,6 +170,8 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"template_labels":              &hcldec.AttrSpec{Name: "template_labels", Type: cty.Map(cty.String), Required: false},
 		"storage_size":                 &hcldec.AttrSpec{Name: "storage_size", Type: cty.Number, Required: false},
 		"storage_tier":                 &hcldec.AttrSpec{Name: "storage_tier", Type: cty.String, Required: false},
+		"storage":                      &hcldec.BlockListSpec{TypeName: "storage", Nested: hcldec.ObjectSpec((*FlatStorage)(nil).HCL2Spec())},
+		"artifact_type":                &hcldec.AttrSpec{Name: "artifact_type", Type: cty.String, Required: false},
 		"state_timeout_duration":       &hcldec.AttrSpec{Name: "state_timeout_duration", Type: cty.String, Required: false},
 		"boot_wait":                    &hcldec.AttrSpec{Name: "boot_wait", Type: cty.String, Required: false},
 		"clone_zones":                  &hcldec.AttrSpec{Name: "clone_zones", Type: cty.List(cty.String), Required: false},
@@ -228,6 +232,33 @@ func (*FlatNetworkInterface) HCL2Spec() map[string]hcldec.Spec {
 		"ip_addresses": &hcldec.BlockListSpec{TypeName: "ip_addresses", Nested: hcldec.ObjectSpec((*FlatIPAddress)(nil).HCL2Spec())},
 		"type":         &hcldec.AttrSpec{Name: "type", Type: cty.String, Required: false},
 		"network":      &hcldec.AttrSpec{Name: "network", Type: cty.String, Required: false},
+	}
+	return s
+}
+
+// FlatStorage is an auto-generated flat version of Storage.
+// Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
+type FlatStorage struct {
+	UUID *string `mapstructure:"uuid" required:"true" cty:"uuid" hcl:"uuid"`
+	Size *int    `mapstructure:"size" cty:"size" hcl:"size"`
+	Tier *string `mapstructure:"tier" cty:"tier" hcl:"tier"`
+}
+
+// FlatMapstructure returns a new FlatStorage.
+// FlatStorage is an auto-generated flat version of Storage.
+// Where the contents a fields with a `mapstructure:,squash` tag are bubbled up.
+func (*Storage) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec } {
+	return new(FlatStorage)
+}
+
+// HCL2Spec returns the hcl spec of a Storage.
+// This spec is used by HCL to read the fields of Storage.
+// The decoded values from this spec will then be applied to a FlatStorage.
+func (*FlatStorage) HCL2Spec() map[string]hcldec.Spec {
+	s := map[string]hcldec.Spec{
+		"uuid": &hcldec.AttrSpec{Name: "uuid", Type: cty.String, Required: false},
+		"size": &hcldec.AttrSpec{Name: "size", Type: cty.Number, Required: false},
+		"tier": &hcldec.AttrSpec{Name: "tier", Type: cty.String, Required: false},
 	}
 	return s
 }
