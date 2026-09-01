@@ -34,14 +34,14 @@ type (
 		DeleteServer(ctx context.Context, serverUUID string) error
 		StopServer(ctx context.Context, serverUUID string) error
 		// TODO: rename method or split into two separate method GetStorageByUUID and GetTemplateByName
-		GetServerStorage(ctx context.Context, serverUUID string) (*upcloud.ServerStorageDevice, error)
+		GetServerStorages(ctx context.Context, serverUUID string) ([]upcloud.ServerStorageDevice, error)
 	}
 
 	// StorageManager handles storage operations.
 	StorageManager interface {
 		GetStorage(ctx context.Context, storageUUID, templateName string) (*upcloud.Storage, error)
 		RenameStorage(ctx context.Context, storageUUID, name string) (*upcloud.Storage, error)
-		CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error)
+		CloneStorage(ctx context.Context, storageUUID, zone, title, tier string) (*upcloud.Storage, error)
 		CreateTemplateStorage(ctx context.Context, title, zone string, size int, tier string) (*upcloud.Storage, error)
 		ImportStorage(ctx context.Context, storageUUID, contentType string, f io.Reader) (*upcloud.StorageImportDetails, error)
 		WaitStorageOnline(ctx context.Context, storageUUID string) (*upcloud.Storage, error)
@@ -81,14 +81,21 @@ type (
 		SSHUsername string
 	}
 
+	// StorageDevice describes a storage device to clone onto the server.
+	StorageDevice struct {
+		UUID string
+		Size int
+		Tier string
+	}
+
 	ServerOpts struct {
 		ServerPlan   string
-		StorageUUID  string
-		StorageSize  int
 		Zone         string
 		SSHPublicKey string
 		Networking   []request.CreateServerInterface
-		StorageTier  string
+
+		// Storage devices to clone, in device order: the server boots from the first one.
+		Storage []StorageDevice
 	}
 )
 
@@ -323,11 +330,15 @@ func (d *driver) DeleteStorage(ctx context.Context, storageUUID string) error {
 	return nil
 }
 
-func (d *driver) CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error) {
+// CloneStorage clones a storage, optionally into another zone. The tier is not inherited from the
+// source storage: the API falls back to maxiops when it is left out, so callers have to pass the
+// tier they want explicitly to avoid silently changing it.
+func (d *driver) CloneStorage(ctx context.Context, storageUUID, zone, title, tier string) (*upcloud.Storage, error) {
 	response, err := d.svc.CloneStorage(ctx, &request.CloneStorageRequest{
 		UUID:  storageUUID,
 		Zone:  zone,
 		Title: title,
+		Tier:  tier,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone storage %s to zone %s with title %s: %w", storageUUID, zone, title, err)
@@ -408,33 +419,46 @@ func (d *driver) getServerDetails(ctx context.Context, serverUUID string) (*upcl
 	return response, nil
 }
 
-func (d *driver) GetServerStorage(ctx context.Context, serverUUID string) (*upcloud.ServerStorageDevice, error) {
+// GetServerStorages returns every disk attached to the server, in device order, so that the
+// first one is the disk the server was created from. Devices that are not disks (e.g. a boot
+// CD-ROM) are skipped.
+func (d *driver) GetServerStorages(ctx context.Context, serverUUID string) ([]upcloud.ServerStorageDevice, error) {
 	details, err := d.getServerDetails(ctx, serverUUID)
 	if err != nil {
 		return nil, err
 	}
 
-	var found bool
-	var storage upcloud.ServerStorageDevice
+	storages := make([]upcloud.ServerStorageDevice, 0, len(details.StorageDevices))
 	for _, s := range details.StorageDevices {
 		if s.Type == upcloud.StorageTypeDisk {
-			found = true
-			storage = s
-			break
+			storages = append(storages, s)
 		}
 	}
-	if !found {
+	if len(storages) == 0 {
 		return nil, fmt.Errorf("failed to find storage type disk for server %q", serverUUID)
 	}
-	return &storage, nil
+	return storages, nil
 }
 
 func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerRequest {
 	title := fmt.Sprintf("packer-%s-%s", DefaultHostname, getNowString())
-	titleDisk := fmt.Sprintf("%s-disk1", DefaultHostname)
 	plan := opts.ServerPlan
 	if plan == "" {
 		plan = DefaultPlan
+	}
+
+	// Devices keep the configured order, since UpCloud assigns the device addresses in that
+	// same order and the server boots from the first one.
+	storageDevices := make([]request.CreateServerStorageDevice, 0, len(opts.Storage))
+	for _, storage := range opts.Storage {
+		deviceNumber := len(storageDevices) + 1
+		storageDevices = append(storageDevices, request.CreateServerStorageDevice{
+			Action:  request.CreateServerStorageDeviceActionClone,
+			Storage: storage.UUID,
+			Title:   fmt.Sprintf("%s-disk%d", DefaultHostname, deviceNumber),
+			Size:    storage.Size,
+			Tier:    storage.Tier,
+		})
 	}
 
 	request := request.CreateServerRequest{
@@ -443,15 +467,7 @@ func (d *driver) prepareCreateRequest(opts *ServerOpts) *request.CreateServerReq
 		Zone:             opts.Zone,
 		PasswordDelivery: request.PasswordDeliveryNone,
 		Plan:             plan,
-		StorageDevices: []request.CreateServerStorageDevice{
-			{
-				Action:  request.CreateServerStorageDeviceActionClone,
-				Storage: opts.StorageUUID,
-				Title:   titleDisk,
-				Size:    opts.StorageSize,
-				Tier:    opts.StorageTier,
-			},
-		},
+		StorageDevices:   storageDevices,
 		Networking: &request.CreateServerNetworking{
 			Interfaces: opts.Networking,
 		},

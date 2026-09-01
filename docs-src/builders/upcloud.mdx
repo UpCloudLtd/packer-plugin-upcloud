@@ -30,6 +30,12 @@ The upcloud builder is used to generate storage templates on UpCloud.
 
 @include 'builder/upcloud/Config-not-required.mdx'
 
+#### Storage object (Storage)
+
+@include 'builder/upcloud/Storage-required.mdx'
+
+@include 'builder/upcloud/Storage-not-required.mdx'
+
 #### Network Interfaces object (NetworkInterface)
 
 @include 'builder/upcloud/NetworkInterface-not-required.mdx'
@@ -72,4 +78,22 @@ This template uses `network_interfaces` to define network interfaces to be used 
 #### Private network interfaces
 ```hcl
 @include 'config/builder/upcloud/interfaces_private.pkr.hcl'
+```
+
+#### Storage artifacts instead of templates
+By default the build produces storage templates, which UpCloud can only clone inside the zone they
+were created in. Setting `artifact_type = "storage"` produces detached regular storages instead:
+those can be cloned into any zone, at the cost of not being usable as a server template directly.
+Use it when a single set of artifacts has to serve servers in several zones, as an alternative to
+building a per-zone template set with `clone_zones`; the two options cannot be combined.
+```hcl
+@include 'config/builder/upcloud/artifact_type_storage.pkr.hcl'
+```
+
+#### Multiple storage devices
+This template uses one `storage` block per disk to attach a second disk to the builder server. A
+template is created for every disk, so the build produces one template per disk. Note that a storage
+template can only be cloned within the zone it was created in.
+```hcl
+@include 'config/builder/upcloud/storage.pkr.hcl'
 ```

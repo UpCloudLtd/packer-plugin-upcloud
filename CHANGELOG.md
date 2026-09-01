@@ -5,6 +5,26 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+
+- `storage` block to builder configuration, one per disk to clone onto the builder server, so that
+  multi-disk servers can be built. A template is created for every disk of the builder server, so
+  multi-disk builds produce one template per disk. The `storage_uuid`, `storage_name`,
+  `storage_size` and `storage_tier` options keep working and describe the first storage.
+- `artifact_type` parameter to builder configuration for producing detached regular storages
+  instead of storage templates. Unlike a template, a regular storage can be cloned into any zone,
+  so a single set of artifacts can serve servers in several zones.
+
+### Deprecated
+
+- `storage_uuid`, `storage_name` and `storage_size` builder options, superseded by the `storage`
+  block. They are still honoured as the description of the first storage.
+
+### Fixed
+
+- Storage tier is no longer silently changed to `maxiops` when a storage is cloned to the zones
+  listed in `clone_zones` (builder) or `zones` (post-processor).
+
 ## [1.11.0] - 2026-07-20
 
 ### Added

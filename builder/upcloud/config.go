@@ -1,4 +1,4 @@
-//go:generate packer-sdc mapstructure-to-hcl2 -type Config,NetworkInterface,IPAddress
+//go:generate packer-sdc mapstructure-to-hcl2 -type Config,NetworkInterface,IPAddress,Storage
 //go:generate packer-sdc struct-markdown
 package upcloud
 
@@ -33,6 +33,14 @@ const (
 	InterfaceTypePrivate    InterfaceType = upcloud.IPAddressAccessPrivate
 	MaxTemplateNameLength                 = 40
 	MaxTemplatePrefixLength               = 40
+
+	// ArtifactTypeTemplate produces storage templates, which can only be cloned inside the
+	// zone they were created in.
+	ArtifactTypeTemplate = "template"
+	// ArtifactTypeStorage produces detached regular storages, which can be cloned into any
+	// zone.
+	ArtifactTypeStorage = "storage"
+	DefaultArtifactType = ArtifactTypeTemplate
 )
 
 // for config type conversion.
@@ -45,6 +53,20 @@ type NetworkInterface struct {
 
 	// Network UUID when connecting private network
 	Network string `mapstructure:"network,omitempty"`
+}
+
+// Storage describes a storage device to clone onto the builder server.
+type Storage struct {
+	// The UUID of the storage you want to clone.
+	UUID string `mapstructure:"uuid" required:"true"`
+
+	// The storage size in gigabytes. Defaults to the size of the source storage.
+	// Note that a cloned storage can only be grown, never shrunk.
+	Size int `mapstructure:"size"`
+
+	// The storage tier to use. Available options are `maxiops`, `archive`, and `standard`.
+	// Defaults to `maxiops`.
+	Tier string `mapstructure:"tier"`
 }
 
 type IPAddress struct {
@@ -79,8 +101,11 @@ type Config struct {
 
 	// The UUID of the storage you want to use as a template when creating the server.
 	//
-	// Optionally use `storage_name` parameter to find matching storage
-	StorageUUID string `mapstructure:"storage_uuid" required:"true"`
+	// Optionally use `storage_name` parameter to find matching storage.
+	//
+	// Deprecated: use a `storage` block instead. When no `storage` block is given, this
+	// option, `storage_size` and `storage_tier` describe the first one.
+	StorageUUID string `mapstructure:"storage_uuid"`
 
 	// The name of the storage that will be used to find the first matching storage in the list of existing templates.
 	//
@@ -103,11 +128,39 @@ type Config struct {
 	// The storage size in gigabytes. Defaults to `25`.
 	// Changing this value is useful if you aim to build a template for larger server configurations where the preconfigured server disk is larger than 25 GB.
 	// The operating system disk can also be later extended if needed. Note that Windows templates require large storage size, than default 25 Gb.
+	//
+	// Deprecated: use the `size` option of a `storage` block instead.
 	StorageSize int `mapstructure:"storage_size"`
 
 	// The storage tier to use. Available options are `maxiops`, `archive`, and `standard`. Defaults to `maxiops`.
 	// For most production workloads, MaxIOPS is recommended for best performance.
+	//
+	// Also the default for the `tier` option of a `storage` block.
 	StorageTier string `mapstructure:"storage_tier"`
+
+	// The storages to clone onto the builder server, one `storage` block per disk. Disks are
+	// attached in the order given, so the first block is the disk the server boots from.
+	//
+	// A template is created for every disk of the builder server, so this also controls how
+	// many templates the build produces. Use several blocks to build templates for a
+	// multi-disk server, e.g. one whose data volume lives on a separate disk.
+	//
+	// When omitted, the deprecated `storage_uuid`/`storage_name`, `storage_size` and
+	// `storage_tier` options describe the single storage to clone.
+	Storage []Storage `mapstructure:"storage"`
+
+	// What the build produces out of the disks of the builder server. Available options are
+	// `template` and `storage`. Defaults to `template`.
+	//
+	// A `template` is a storage of type template, ready to be used as the source of a new
+	// server, but UpCloud only lets it be cloned inside the zone it was created in. A
+	// `storage` is a detached regular storage, which can be cloned into any zone, at the cost
+	// of not being usable as a server template directly. Use `storage` when a single set of
+	// artifacts has to serve servers in several zones, instead of a per-zone template set
+	// built with `clone_zones`; the two cannot be combined.
+	//
+	// Note that `template_labels` only applies to templates.
+	ArtifactType string `mapstructure:"artifact_type"`
 
 	// The amount of time to wait for resource state changes. Defaults to `20m`.
 	Timeout time.Duration `mapstructure:"state_timeout_duration"`
@@ -176,8 +229,28 @@ func (c *Config) SetDefaults() {
 		c.StorageSize = DefaultStorageSize
 	}
 
+	if c.ArtifactType == "" {
+		c.ArtifactType = DefaultArtifactType
+	}
+
 	if c.StorageTier == "" {
 		c.StorageTier = DefaultStorageTier
+	}
+
+	// Deprecated single-storage configuration: it describes the disk the server boots from, so
+	// it becomes the first storage. Kept so that existing templates keep working unchanged.
+	if len(c.Storage) == 0 && (c.StorageUUID != "" || c.StorageName != "") {
+		c.Storage = []Storage{{
+			UUID: c.StorageUUID,
+			Size: c.StorageSize,
+			Tier: c.StorageTier,
+		}}
+	}
+
+	for i := range c.Storage {
+		if c.Storage[i].Tier == "" {
+			c.Storage[i].Tier = c.StorageTier
+		}
 	}
 
 	if c.Timeout == 0 {
@@ -207,9 +280,9 @@ func (c *Config) validate() *packer.MultiError {
 		)
 	}
 
-	if c.StorageUUID == "" && c.StorageName == "" {
+	if len(c.Storage) == 0 {
 		errs = packer.MultiErrorAppend(
-			errs, errors.New("'storage_uuid' or 'storage_name' must be specified"),
+			errs, errors.New("at least one 'storage' block must be specified"),
 		)
 	}
 
@@ -221,6 +294,28 @@ func (c *Config) validate() *packer.MultiError {
 	// Validate network interfaces
 	if networkErrs := c.validateNetworkInterfaces(); networkErrs != nil {
 		errs = packer.MultiErrorAppend(errs, networkErrs.Errors...)
+	}
+
+	// Validate storage devices
+	if storageErrs := c.validateStorage(); storageErrs != nil {
+		errs = packer.MultiErrorAppend(errs, storageErrs.Errors...)
+	}
+
+	switch c.ArtifactType {
+	case ArtifactTypeTemplate:
+		// valid
+	case ArtifactTypeStorage:
+		// A regular storage can be cloned into any zone, which is the whole point of this
+		// artifact type, so building a per-zone set of them makes no sense.
+		if len(c.CloneZones) > 0 {
+			errs = packer.MultiErrorAppend(
+				errs, fmt.Errorf("'clone_zones' cannot be used when 'artifact_type' is %q, since such a storage can be cloned into any zone", ArtifactTypeStorage),
+			)
+		}
+	default:
+		errs = packer.MultiErrorAppend(
+			errs, fmt.Errorf("'artifact_type' must be either %q or %q, got %q", ArtifactTypeTemplate, ArtifactTypeStorage, c.ArtifactType),
+		)
 	}
 
 	return errs
@@ -262,6 +357,32 @@ func (c *Config) SetEnv() error {
 	c.Password = creds.Password
 	c.Token = creds.Token
 	return nil
+}
+
+// validateStorage checks storage device configuration.
+func (c *Config) validateStorage() *packer.MultiError {
+	var errs *packer.MultiError
+
+	for i, storage := range c.Storage {
+		if storage.UUID == "" {
+			// the deprecated 'storage_name' lookup resolves the first storage at build time
+			if i == 0 && c.StorageName != "" {
+				continue
+			}
+			errs = packer.MultiErrorAppend(errs, fmt.Errorf("storage %d: 'uuid' must be specified", i))
+			continue
+		}
+
+		if _, err := uuid.Parse(storage.UUID); err != nil {
+			errs = packer.MultiErrorAppend(errs, fmt.Errorf("storage %d: invalid storage UUID '%s'", i, storage.UUID))
+		}
+
+		if storage.Size < 0 {
+			errs = packer.MultiErrorAppend(errs, fmt.Errorf("storage %d: 'size' must not be negative", i))
+		}
+	}
+
+	return errs
 }
 
 // validateNetworkInterfaces checks network interface configuration.
