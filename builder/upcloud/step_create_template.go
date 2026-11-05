@@ -50,7 +50,7 @@ func (s *StepCreateTemplate) Run(ctx context.Context, state multistep.StateBag) 
 	for _, zone := range s.Config.CloneZones {
 		ui.Say(fmt.Sprintf("Cloning storage %q to zone %q...", storage.UUID, zone))
 		title := fmt.Sprintf("packer-%s-cloned-disk1", getNowString())
-		clonedStorage, err := drv.CloneStorage(ctx, storage.UUID, zone, title)
+		clonedStorage, err := drv.CloneStorage(ctx, storage.UUID, zone, title, s.Config.StorageTier)
 		if err != nil {
 			return stepHaltWithError(state, err)
 		}

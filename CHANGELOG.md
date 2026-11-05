@@ -5,6 +5,10 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+
+- Use configured `storage_tier` also when cloning storages with `clone_zones` field of builder or `zones` field (items with non-zero index) of post-processor.
+
 ## [1.11.0] - 2026-07-20
 
 ### Added

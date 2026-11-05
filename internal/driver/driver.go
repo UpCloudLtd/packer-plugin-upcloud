@@ -41,7 +41,7 @@ type (
 	StorageManager interface {
 		GetStorage(ctx context.Context, storageUUID, templateName string) (*upcloud.Storage, error)
 		RenameStorage(ctx context.Context, storageUUID, name string) (*upcloud.Storage, error)
-		CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error)
+		CloneStorage(ctx context.Context, storageUUID, zone, title, tier string) (*upcloud.Storage, error)
 		CreateTemplateStorage(ctx context.Context, title, zone string, size int, tier string) (*upcloud.Storage, error)
 		ImportStorage(ctx context.Context, storageUUID, contentType string, f io.Reader) (*upcloud.StorageImportDetails, error)
 		WaitStorageOnline(ctx context.Context, storageUUID string) (*upcloud.Storage, error)
@@ -323,11 +323,12 @@ func (d *driver) DeleteStorage(ctx context.Context, storageUUID string) error {
 	return nil
 }
 
-func (d *driver) CloneStorage(ctx context.Context, storageUUID, zone, title string) (*upcloud.Storage, error) {
+func (d *driver) CloneStorage(ctx context.Context, storageUUID, zone, title, tier string) (*upcloud.Storage, error) {
 	response, err := d.svc.CloneStorage(ctx, &request.CloneStorageRequest{
 		UUID:  storageUUID,
 		Zone:  zone,
 		Title: title,
+		Tier:  tier,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone storage %s to zone %s with title %s: %w", storageUUID, zone, title, err)
