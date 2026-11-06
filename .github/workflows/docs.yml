@@ -8,6 +8,8 @@ on:
       - main
       - test-docs-generator # for testing
 
+# Testing permissions from non dependabot PR
+
 jobs:
   update:
     name: Update
