@@ -73,12 +73,15 @@ func (s *StepCreateServer) validateState(state multistep.StateBag) (packer.Ui, d
 	return ui, drv, sshKeyPublic, nil
 }
 
-// getStorage retrieves the storage template to use for server creation.
+// getStorage retrieves the storage the server boots from, which is the first configured one.
+// It is resolved through the API so that the deprecated 'storage_name' lookup keeps working and
+// so that its title is available for the template metadata.
 func (s *StepCreateServer) getStorage(ctx context.Context, ui packer.Ui, drv driver.Driver) (*upcloud.Storage, error) {
 	ui.Say("Getting storage...")
-	storage, err := drv.GetStorage(ctx, s.Config.StorageUUID, s.Config.StorageName)
+	bootStorage := s.Config.Storage[0]
+	storage, err := drv.GetStorage(ctx, bootStorage.UUID, s.Config.StorageName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get storage (UUID: %s, Name: %s): %w", s.Config.StorageUUID, s.Config.StorageName, err)
+		return nil, fmt.Errorf("failed to get storage (UUID: %s, Name: %s): %w", bootStorage.UUID, s.Config.StorageName, err)
 	}
 	return storage, nil
 }
@@ -94,12 +97,10 @@ func (s *StepCreateServer) createServer(ctx context.Context, ui packer.Ui, drv d
 
 	response, err := drv.CreateServer(ctx, &driver.ServerOpts{
 		ServerPlan:   s.Config.ServerPlan,
-		StorageUUID:  storage.UUID,
-		StorageSize:  s.Config.StorageSize,
 		Zone:         s.Config.Zone,
 		SSHPublicKey: sshKeyPublic,
 		Networking:   networking,
-		StorageTier:  s.Config.StorageTier,
+		Storage:      convertStorage(s.Config.Storage, storage.UUID),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create server in zone %s: %w", s.Config.Zone, err)

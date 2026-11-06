@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/acctest"
 
 	"github.com/UpCloudLtd/packer-plugin-upcloud/internal/driver"
+	"github.com/UpCloudLtd/upcloud-go-api/v8/upcloud"
 
 	_ "embed"
 )
@@ -120,6 +121,12 @@ var testBuilderStorageNameHcl string
 //go:embed test-fixtures/hcl2/labels.pkr.hcl
 var testBuilderLabelsHcl string
 
+//go:embed test-fixtures/hcl2/storage.pkr.hcl
+var testBuilderStorageHcl string
+
+//go:embed test-fixtures/hcl2/artifact_type_storage.pkr.hcl
+var testBuilderArtifactTypeStorageHcl string
+
 //go:embed test-fixtures/hcl2/network_interfaces.pkr.hcl
 var testBuilderNetworkInterfacesHcl string
 
@@ -213,6 +220,74 @@ func TestBuilderAcc_labels_hcl(t *testing.T) {
 	acctest.TestPlugin(t, testCase)
 }
 
+func TestBuilderAcc_storage_hcl(t *testing.T) {
+	t.Parallel()
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderStorageHcl,
+		Check: func(buildCommand *exec.Cmd, logfile string) error {
+			err := checkTestResult(t)(buildCommand, logfile)
+			if err != nil {
+				return err
+			}
+
+			uuids, err := getUuidsFromLog(t, logfile)
+			if err != nil {
+				return err
+			}
+			// one template per disk of the builder server
+			if len(uuids) != 2 {
+				return fmt.Errorf("expected 2 created templates, got %d: %v", len(uuids), uuids)
+			}
+			return nil
+		},
+		Teardown: teardown(t, t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
+func TestBuilderAcc_artifact_type_storage_hcl(t *testing.T) {
+	t.Parallel()
+	testAccPreCheck(t)
+	testCase := &acctest.PluginTestCase{
+		Name:     t.Name(),
+		Template: testBuilderArtifactTypeStorageHcl,
+		Check: func(buildCommand *exec.Cmd, logfile string) error {
+			err := checkTestResult(t)(buildCommand, logfile)
+			if err != nil {
+				return err
+			}
+
+			uuids, err := getUuidsFromLog(t, logfile)
+			if err != nil {
+				return err
+			}
+
+			creds, _ := driver.CredentialsFromEnv("", "", "")
+			drv := driver.NewDriver(&driver.DriverConfig{
+				Username: creds.Username,
+				Password: creds.Password,
+				Token:    creds.Token,
+				Timeout:  defaultTestTimeout,
+			})
+
+			for _, uuid := range uuids {
+				storage, err := drv.GetStorage(context.Background(), uuid, "")
+				if err != nil {
+					return fmt.Errorf("failed to get storage %s: %w", uuid, err)
+				}
+				if storage.Type != upcloud.StorageTypeNormal {
+					return fmt.Errorf("expected storage %s to be of type %q, got: %q", uuid, upcloud.StorageTypeNormal, storage.Type)
+				}
+			}
+			return nil
+		},
+		Teardown: teardown(t, t.Name()),
+	}
+	acctest.TestPlugin(t, testCase)
+}
+
 func TestBuilderAcc_network_interfaces_hcl(t *testing.T) {
 	t.Parallel()
 	testAccPreCheck(t)
@@ -279,7 +354,7 @@ func checkTestResult(t *testing.T) func(*exec.Cmd, string) error {
 	}
 }
 
-var re = regexp.MustCompile(`"Storage template created, UUID: (.*?)"`)
+var re = regexp.MustCompile(`"Storage (?:template )?created, UUID: (.*?)"`)
 
 func getUuidsFromLog(t *testing.T, logfile string) ([]string, error) {
 	t.Helper()
