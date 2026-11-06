@@ -8,9 +8,6 @@ on:
       - main
       - test-docs-generator # for testing
 
-permissions:
-  contents: read
-
 jobs:
   update:
     name: Update
