@@ -33,7 +33,7 @@ source "upcloud" "test" {
   storage_name    = "ubuntu server 24.04"
   template_prefix = "ubuntu-server"
   # uncomment to use standard tier storage
-  # storage_tier = "standard
+  # storage_tier = "standard"
 }
 
 build {

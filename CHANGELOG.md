@@ -5,6 +5,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [1.11.1] - 2026-11-06
+
 ### Fixed
 
 - Use configured `storage_tier` also when cloning storages with `clone_zones` field of builder or `zones` field (items with non-zero index) of post-processor.
@@ -173,7 +175,8 @@ See updating [Changelog example here](https://keepachangelog.com/en/1.0.0/)
 - Upgrade to Packer 1.7.0
 - Copy codebase from https://github.com/UpCloudLtd/upcloud-packer
 
-[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.11.0...HEAD
+[Unreleased]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.11.1...HEAD
+[1.11.1]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.11.0...v1.11.1
 [1.11.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.9.2...v1.10.0
 [1.9.2]: https://github.com/UpCloudLtd/packer-plugin-upcloud/compare/v1.9.1...v1.9.2
